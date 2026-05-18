@@ -1,0 +1,26 @@
+export const colors = {
+  sage: '#7BAE8B',
+  sageLight: '#EAF3EE',
+  sageMid: '#C0DBC9',
+  sageDark: '#3A6B4A',
+  blush: '#E8C5B8',
+  blushLight: '#FDF4F0',
+  blushDark: '#8B5E52',
+  blushAccent: '#C07060',
+  sky: '#B8CDE8',
+  skyLight: '#EBF2FA',
+  skyDark: '#3A6090',
+  skyAccent: '#5080B0',
+  warm: '#E8D5B8',
+  warmLight: '#FDF7EE',
+  warmDark: '#8B6030',
+  warmAccent: '#B08040',
+  ink: '#1F2A22',
+  muted: '#5C6D63',
+  hint: '#94A39A',
+  surface: '#FFFFFF',
+  bg: '#F7F8F6',
+  border: '#E4E8E5',
+} as const;
+
+export type ColorName = keyof typeof colors;
