@@ -117,7 +117,7 @@ export default function ProgressScreen() {
           label="Progress insight"
           body={
             minutesChange > 0
-              ? `Movement up ${minutesChange}% from last week. Patterns like this are what actually create change.`
+              ? `Movement up ${minutesChange}% over 4 weeks. Patterns like this are what actually create change.`
               : minutesChange < 0
               ? 'Quieter week than last. Rest adapts the body — returning is what matters.'
               : 'Consistent with last week. Steady rhythm is the goal.'
