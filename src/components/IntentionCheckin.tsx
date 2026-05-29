@@ -25,8 +25,11 @@ const FOLLOW_UP: Record<Response, string> = {
 
 export function IntentionCheckin({ intention, onRespond }: Props) {
   const [response, setResponse] = useState<Response | null>(null);
+  const [responded, setResponded] = useState(false);
 
   const handlePress = (r: Response, met: boolean) => {
+    if (responded) return;
+    setResponded(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setResponse(r);
     onRespond(met);
@@ -47,7 +50,8 @@ export function IntentionCheckin({ intention, onRespond }: Props) {
             {RESPONSES.map((r) => (
               <Pressable
                 key={r.key}
-                style={styles.btn}
+                style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
+                disabled={responded}
                 onPress={() => handlePress(r.key, r.met)}
               >
                 <Text style={styles.btnText}>{r.label}</Text>
@@ -102,6 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   btnText: { fontSize: 13, color: colors.sageDark, fontWeight: '500' },
+  btnPressed: { opacity: 0.6 },
   followUp: {
     fontSize: 13,
     color: colors.sageDark,

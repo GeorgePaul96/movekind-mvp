@@ -58,8 +58,12 @@ export const useIntentionStore = create<IntentionState>((set, get) => ({
   markPreviousMet: async (met) => {
     const { previousIntention } = get();
     if (!previousIntention) return;
-    await markIntentionMet(previousIntention.id, met);
     set({ previousIntention: { ...previousIntention, met } });
+    try {
+      await markIntentionMet(previousIntention.id, met);
+    } catch {
+      set({ previousIntention });
+    }
   },
 
   reset: () => set({ currentIntention: null, previousIntention: null }),
