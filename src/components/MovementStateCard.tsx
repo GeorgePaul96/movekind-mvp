@@ -25,7 +25,7 @@ const PALETTE_STYLES = {
     border: colors.sky,
     headline: colors.skyDark,
     subline: colors.skyAccent,
-    chipBg: '#D4E6F8',
+    chipBg: colors.skyLight,
     chipText: colors.skyDark,
   },
   warm: {
@@ -75,7 +75,7 @@ export function MovementStateCard({ state, rhythmScore, onQuickLog }: Props) {
           {rhythmScore.percentage}%
         </Text>
         <Text style={[styles.rhythmLabel, { color: p.subline }]}>
-          {rhythmScore.label} · 28 days
+          {rhythmScore.label} · 28-day window
         </Text>
       </View>
 
