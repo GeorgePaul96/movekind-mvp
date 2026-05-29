@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { startOfWeek } from 'date-fns';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
@@ -10,15 +11,15 @@ import { RhythmWave } from '@/components/RhythmWave';
 import { colors } from '@/constants/colors';
 import { useActivityStore } from '@/store/activityStore';
 import { useReflectionStore } from '@/store/reflectionStore';
-import { percentChange, weeklyMinutes, weeklyReflectionTrend } from '@/utils/analytics';
+import { percentChange, weeklyMinutes, weeklyReflectionTrend, activitiesInWeek } from '@/utils/analytics';
 import { computeRhythmScore, weeklySessionCounts } from '@/utils/rhythmScore';
-import { useScores } from '@/hooks/useScores';
+import { WEEK_OPTIONS } from '@/utils/date';
+import { ACTIVITY_BY_TYPE } from '@/constants/activities';
+import type { Activity, ActivityType } from '@/types';
 
 export default function ProgressScreen() {
   const activities = useActivityStore((s) => s.activities);
   const reflections = useReflectionStore((s) => s.reflections);
-  const scores = useScores();
-
   const rhythmScore = useMemo(() => computeRhythmScore(activities), [activities]);
   const waveData = useMemo(() => weeklySessionCounts(activities, 12), [activities]);
   const minutes = useMemo(() => weeklyMinutes(activities, 4), [activities]);
@@ -102,17 +103,11 @@ export default function ProgressScreen() {
         </Card>
       </Animated.View>
 
-      {/* Flow score summary */}
+      {/* This week's activity mix — no scoring, no zeroes */}
       <Animated.View entering={FadeInDown.delay(260).springify()}>
         <Card style={styles.chartCard}>
-          <Text style={styles.scoreLabel}>Weekly Flow Score</Text>
-          <Text style={styles.scoreValue}>{scores.overall}</Text>
-          <View style={styles.scoreBreakdown}>
-            <ScorePill label="Rhythm" value={scores.consistency} />
-            <ScorePill label="Strength" value={scores.strength} />
-            <ScorePill label="Vitality" value={scores.endurance} />
-            <ScorePill label="Rest" value={scores.recovery} />
-          </View>
+          <Text style={styles.scoreLabel}>This week's movement</Text>
+          <WeeklyMix activities={activities} />
         </Card>
       </Animated.View>
 
@@ -122,8 +117,10 @@ export default function ProgressScreen() {
           label="Progress insight"
           body={
             minutesChange > 0
-              ? 'You are building a strong foundation. Small, consistent changes are working — keep going at your own pace.'
-              : 'This week is a little quieter than last. That is okay — your body adapts when it rests, too.'
+              ? `Movement up ${minutesChange}% from last week. Patterns like this are what actually create change.`
+              : minutesChange < 0
+              ? 'Quieter week than last. Rest adapts the body — returning is what matters.'
+              : 'Consistent with last week. Steady rhythm is the goal.'
           }
         />
       </Animated.View>
@@ -131,19 +128,46 @@ export default function ProgressScreen() {
   );
 }
 
-function ScorePill({ label, value }: { label: string; value: number }) {
+function WeeklyMix({ activities }: { activities: Activity[] }) {
+  const typeEntries = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), WEEK_OPTIONS);
+    const thisWeek = activitiesInWeek(activities, weekStart);
+    const map = new Map<ActivityType, { count: number; minutes: number }>();
+    for (const a of thisWeek) {
+      const key = a.type as ActivityType;
+      const existing = map.get(key) ?? { count: 0, minutes: 0 };
+      map.set(key, { count: existing.count + 1, minutes: existing.minutes + a.duration_minutes });
+    }
+    return [...map.entries()];
+  }, [activities]);
+
+  if (typeEntries.length === 0) {
+    return <Text style={mix.empty}>No sessions logged this week yet.</Text>;
+  }
+
   return (
-    <View style={pill.wrap}>
-      <Text style={pill.value}>{value}</Text>
-      <Text style={pill.label}>{label}</Text>
+    <View style={mix.row}>
+      {typeEntries.map(([type, { count, minutes }]) => {
+        const def = ACTIVITY_BY_TYPE[type];
+        return (
+          <View key={type} style={mix.item}>
+            <Text style={mix.emoji}>{def?.emoji ?? '🏃'}</Text>
+            <Text style={mix.name}>{def?.label ?? type}</Text>
+            <Text style={mix.sub}>{count}× · {minutes}min</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
 
-const pill = StyleSheet.create({
-  wrap: { alignItems: 'center', flex: 1 },
-  value: { fontSize: 18, fontWeight: '600', color: colors.sageDark },
-  label: { fontSize: 10, color: colors.muted, marginTop: 2, textAlign: 'center' },
+const mix = StyleSheet.create({
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
+  item: { alignItems: 'center', minWidth: 64 },
+  emoji: { fontSize: 22, marginBottom: 3 },
+  name: { fontSize: 12, fontWeight: '500', color: colors.ink },
+  sub: { fontSize: 10, color: colors.muted, marginTop: 2 },
+  empty: { fontSize: 13, color: colors.hint, marginTop: 6 },
 });
 
 const styles = StyleSheet.create({
@@ -215,19 +239,5 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     fontWeight: '600',
     letterSpacing: 0.8,
-  },
-  scoreValue: {
-    fontSize: 44,
-    fontWeight: '500',
-    color: colors.sageDark,
-    marginVertical: 6,
-    lineHeight: 50,
-  },
-  scoreBreakdown: {
-    flexDirection: 'row',
-    marginTop: 4,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
   },
 });
