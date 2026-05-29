@@ -7,20 +7,10 @@ import type {
 import { addDays, isAfter, startOfWeek } from 'date-fns';
 import { WEEK_OPTIONS } from './date';
 
-/**
- * Analytics — pure functions that turn raw data into 0..100 scores.
- *
- * Design notes:
- * - All functions are side-effect-free so they can be unit-tested.
- * - Each sub-score is clamped to [0, 100] and rounded to an integer.
- * - "now" is injectable so tests can pin time.
- */
-
 const STRENGTH_TYPES: readonly ActivityType[] = ['weights', 'sport'];
 const ENDURANCE_TYPES: readonly ActivityType[] = ['run', 'cycle', 'swim'];
 const RECOVERY_TYPES: readonly ActivityType[] = ['yoga', 'stretch', 'walk'];
 
-const DEFAULT_WEEKLY_MINUTES_TARGET = 150;
 const DEFAULT_WEEKLY_SESSIONS_TARGET = 4;
 
 export function clampScore(n: number): number {
@@ -41,10 +31,6 @@ export function activitiesInWeek(
   });
 }
 
-/**
- * Consistency reflects "did you show up across the week", weighted toward
- * variety of days rather than total volume.
- */
 export function consistencyScore(
   activities: Activity[],
   reflection: Reflection | null,
@@ -59,7 +45,6 @@ export function consistencyScore(
   const sessionRatio = Math.min(1, uniqueDays / weeklySessionsTarget);
   let score = sessionRatio * 100;
   if (reflection) {
-    // Blend 70/30 with the user's own felt sense of consistency.
     score = score * 0.7 + (reflection.consistency / 10) * 100 * 0.3;
   }
   return clampScore(score);
@@ -76,9 +61,7 @@ export function strengthScore(
   const minutes = strengthActs.reduce((s, a) => s + a.duration_minutes, 0);
   const avgEffort =
     strengthActs.reduce((s, a) => s + a.effort, 0) / strengthActs.length;
-  // 90 minutes of strength work per week = full minutes credit.
   const minutesScore = Math.min(1, minutes / 90) * 60;
-  // Effort 1..10 maps to 0..40.
   const effortScore = (avgEffort / 10) * 40;
   return clampScore(minutesScore + effortScore);
 }
@@ -96,7 +79,6 @@ export function enduranceScore(
   const minutes = enduranceActs.reduce((s, a) => s + a.duration_minutes, 0);
   const avgEffort =
     enduranceActs.reduce((s, a) => s + a.effort, 0) / enduranceActs.length;
-  // 120 minutes of cardio = full minutes credit.
   const minutesScore = Math.min(1, minutes / 120) * 70;
   const effortScore = (avgEffort / 10) * 30;
   return clampScore(minutesScore + effortScore);
@@ -109,28 +91,20 @@ export function recoveryScore(
 ): number {
   const weekStart = startOfWeek(now, WEEK_OPTIONS);
   const weekly = activitiesInWeek(activities, weekStart);
-
-  // Base: did the user include any restorative work?
   const recoveryActs = weekly.filter((a) => RECOVERY_TYPES.includes(a.type));
   const recoveryMinutes = recoveryActs.reduce(
     (s, a) => s + a.duration_minutes,
     0,
   );
   const minutesScore = Math.min(1, recoveryMinutes / 60) * 50;
-
-  // Avoid penalising rest weeks — having a low-effort day actually helps.
   const hasEasyDay = weekly.some((a) => a.effort <= 4);
   const easyDayBonus = hasEasyDay ? 20 : 0;
-
-  // Subjective recovery from reflection (if available).
   const subjective = reflection ? (reflection.recovery / 10) * 30 : 15;
-
   return clampScore(minutesScore + easyDayBonus + subjective);
 }
 
 export function overallScore(parts: Omit<ComputedScores, 'overall'>): number {
   const { consistency, strength, endurance, recovery } = parts;
-  // Weight consistency highest — that's the MoveKind philosophy.
   const weighted =
     consistency * 0.4 + endurance * 0.25 + strength * 0.2 + recovery * 0.15;
   return clampScore(weighted);
@@ -142,12 +116,7 @@ export function computeScores(
   weeklySessionsTarget = DEFAULT_WEEKLY_SESSIONS_TARGET,
   now: Date = new Date(),
 ): ComputedScores {
-  const consistency = consistencyScore(
-    activities,
-    reflection,
-    weeklySessionsTarget,
-    now,
-  );
+  const consistency = consistencyScore(activities, reflection, weeklySessionsTarget, now);
   const strength = strengthScore(activities, now);
   const endurance = enduranceScore(activities, now);
   const recovery = recoveryScore(activities, reflection, now);
@@ -155,10 +124,131 @@ export function computeScores(
   return { consistency, strength, endurance, recovery, overall };
 }
 
-/**
- * Bin the last `weeks` weeks' activities by total minutes.
- * Returns oldest -> newest.
- */
+// ─── Movement Rhythm ─────────────────────────────────────────────────────────
+// Replaces streak-based thinking with a compassionate rhythm model.
+// Rest days and recovery weeks are never penalized — they are celebrated.
+
+export interface MovementRhythm {
+  label: string;
+  emoji: string;
+  description: string;
+  // 0-4: gentle/rebuilding, 5-7: steady, 8-10: thriving
+  intensity: number;
+}
+
+export function computeMovementRhythm(
+  activities: Activity[],
+  weeksBack: number = 4,
+  now: Date = new Date(),
+): MovementRhythm {
+  const currentStart = startOfWeek(now, WEEK_OPTIONS);
+
+  // Gather per-week counts over the last N weeks
+  const weekCounts = Array.from({ length: weeksBack }, (_, i) => {
+    const wStart = addDays(currentStart, -7 * (weeksBack - 1 - i));
+    return activitiesInWeek(activities, wStart).length;
+  });
+
+  const totalActiveDays = new Set(
+    activities.map((a) => new Date(a.performed_at).toDateString()),
+  ).size;
+
+  const thisWeekActs = activitiesInWeek(activities, currentStart);
+  const thisWeekCount = thisWeekActs.length;
+
+  // How many weeks had at least 1 activity
+  const activeWeeks = weekCounts.filter((c) => c > 0).length;
+
+  // Avg activities per active week (only counting weeks the user showed up)
+  const avgPerActiveWeek =
+    activeWeeks > 0
+      ? weekCounts.reduce((s, c) => s + c, 0) / activeWeeks
+      : 0;
+
+  // Did user move this week yet?
+  const movingThisWeek = thisWeekCount > 0;
+
+  // Returning after a quiet stretch
+  const lastWeekStart = addDays(currentStart, -7);
+  const lastWeekCount = activitiesInWeek(activities, lastWeekStart).length;
+  const isReturning = lastWeekCount === 0 && movingThisWeek;
+
+  // Is this a deliberately restorative week (all activities are recovery types)?
+  const isRestorativeWeek =
+    thisWeekCount > 0 &&
+    thisWeekActs.every((a) => RECOVERY_TYPES.includes(a.type));
+
+  // No movement logged at all
+  if (totalActiveDays === 0) {
+    return {
+      label: 'First Step',
+      emoji: '🌱',
+      description: 'Nothing logged yet. First session counts the same as every other.',
+      intensity: 0,
+    };
+  }
+
+  // Returning after a break
+  if (isReturning) {
+    return {
+      label: 'Rebuilding Momentum',
+      emoji: '🌿',
+      description: 'Back after a gap. The return is the move.',
+      intensity: 3,
+    };
+  }
+
+  // Purely restorative week
+  if (isRestorativeWeek) {
+    return {
+      label: 'Restorative Week',
+      emoji: '🌸',
+      description: 'Deliberate recovery week. Adaptation happens during rest.',
+      intensity: 4,
+    };
+  }
+
+  // Rest week (nothing logged, but has history)
+  if (!movingThisWeek && totalActiveDays > 0) {
+    return {
+      label: 'Rest Week',
+      emoji: '🌙',
+      description: 'Quiet week, no sessions. Your body is still adapting.',
+      intensity: 2,
+    };
+  }
+
+  // Steady rhythm across weeks
+  if (activeWeeks >= 3 && avgPerActiveWeek >= 2) {
+    return {
+      label: 'Steady Rhythm',
+      emoji: '🍃',
+      description: 'Consistent across weeks. This pattern is how lasting change works.',
+      intensity: 8,
+    };
+  }
+
+  // Gentle momentum
+  if (thisWeekCount >= 1 && activeWeeks >= 2) {
+    return {
+      label: 'Gentle Flow',
+      emoji: '🌱',
+      description: 'Moving across multiple weeks. The pattern is forming.',
+      intensity: 5,
+    };
+  }
+
+  // Just getting started
+  return {
+    label: 'Fresh Start',
+    emoji: '✨',
+    description: 'Early days. Whatever you log here counts.',
+    intensity: 3,
+  };
+}
+
+// ─── Trend Analytics ─────────────────────────────────────────────────────────
+
 export function weeklyMinutes(
   activities: Activity[],
   weeks: number,
@@ -178,9 +268,6 @@ export function weeklyMinutes(
   });
 }
 
-/**
- * Used by the energy and recovery trend charts.
- */
 export function weeklyReflectionTrend(
   reflections: Reflection[],
   key: 'energy' | 'recovery' | 'consistency' | 'mood',

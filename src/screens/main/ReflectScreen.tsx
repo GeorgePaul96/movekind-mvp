@@ -152,7 +152,7 @@ export default function ReflectScreen() {
       <Header
         tag="Weekly reflection"
         title="How was your week?"
-        subtitle="A moment of honest self-awareness is a movement in itself"
+        subtitle="Check in honestly. No performance required."
       />
 
       {/* Previous week intention check-in — only shows when unanswered */}
@@ -238,9 +238,6 @@ export default function ReflectScreen() {
       ) : null}
 
       <Button label={saving ? 'Saving…' : 'Save reflection'} onPress={onSubmit} loading={saving} />
-      <Text style={styles.footer}>
-        Reflection builds the awareness that gentle movement grows from.
-      </Text>
 
       <Toast message={message} onHide={hide} />
     </Screen>
@@ -320,12 +317,5 @@ const styles = StyleSheet.create({
     color: colors.sageDark,
     lineHeight: 19,
     fontStyle: 'italic',
-  },
-  footer: {
-    textAlign: 'center',
-    color: colors.hint,
-    fontSize: 12,
-    marginTop: 12,
-    lineHeight: 18,
   },
 });
