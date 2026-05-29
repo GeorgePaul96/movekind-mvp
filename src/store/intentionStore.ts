@@ -23,13 +23,17 @@ export const useIntentionStore = create<IntentionState>((set, get) => ({
 
   load: async (userId) => {
     set({ loading: true });
-    const data = await getIntention(userId, weekStartIso());
-    set({ currentIntention: data, loading: false });
+    try {
+      const data = await getIntention(userId, weekStartIso());
+      set({ currentIntention: data, loading: false });
+    } catch {
+      set({ loading: false });
+    }
   },
 
   save: async (userId, input) => {
     const data = await upsertIntention(userId, input);
-    set({ currentIntention: data });
+    if (data) set({ currentIntention: data });
   },
 
   markMet: async (met) => {

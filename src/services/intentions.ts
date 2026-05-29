@@ -37,11 +37,14 @@ export async function upsertIntention(
 ): Promise<Intention | null> {
   const { data, error } = await supabase
     .from('intentions')
-    .upsert({
-      user_id: userId,
-      ...input,
-      updated_at: new Date().toISOString(),
-    })
+    .upsert(
+      {
+        user_id: userId,
+        ...input,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,week_start' },
+    )
     .select('*')
     .single();
   if (error) return null;
