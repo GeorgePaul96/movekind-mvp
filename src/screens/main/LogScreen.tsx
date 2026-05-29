@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { Button } from '@/components/Button';
 import { Slider } from '@/components/Slider';
@@ -12,6 +13,8 @@ import { useActivityStore } from '@/store/activityStore';
 import { useAuthStore } from '@/store/authStore';
 import { sendNow } from '@/services/notifications';
 import type { ActivityType } from '@/types';
+import { detectPersonalBestEvents, type PersonalBestEvent } from '@/utils/personalBests';
+import { PersonalBestCard } from '@/components/PersonalBestCard';
 
 export default function LogScreen() {
   const user = useAuthStore((s) => s.user);
@@ -23,6 +26,7 @@ export default function LogScreen() {
   const [effort, setEffort] = useState(4);
   const [moods, setMoods] = useState<string[]>(['Energized']);
   const [saving, setSaving] = useState(false);
+  const [personalBestEvents, setPersonalBestEvents] = useState<PersonalBestEvent[]>([]);
 
   const toggleMood = (m: string) =>
     setMoods((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]));
@@ -30,23 +34,28 @@ export default function LogScreen() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
+    const existingActivities = useActivityStore.getState().activities;
+    const payload = {
+      type,
+      duration_minutes: duration,
+      effort,
+      moods,
+      notes: null,
+      performed_at: new Date().toISOString(),
+    };
     try {
-      await add(user.id, {
-        type,
-        duration_minutes: duration,
-        effort,
-        moods,
-        notes: null,
-        performed_at: new Date().toISOString(),
-      });
-      show('Activity saved. Well done!');
-      await sendNow(`Nice — ${duration} minutes logged.`);
-      // Reset to friendly defaults
+      const created = await add(user.id, payload);
+      const events = detectPersonalBestEvents(created, existingActivities);
+      setPersonalBestEvents(events);
+      if (events.length === 0) {
+        show(`Logged. ${duration} min of ${type}.`);
+      }
+      await sendNow(`${duration} minutes logged.`);
       setDuration(25);
       setEffort(4);
       setMoods([]);
-    } catch (e) {
-      show(e instanceof Error ? e.message : 'Could not save');
+    } catch (e: any) {
+      show(e?.message || 'Could not save — check your connection.');
     } finally {
       setSaving(false);
     }
@@ -55,11 +64,11 @@ export default function LogScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Log activity</Text>
-        <Text style={styles.subtitle}>Any movement counts</Text>
+        <Text style={styles.title}>Log movement</Text>
+        <Text style={styles.subtitle}>Any movement counts — even five minutes</Text>
       </View>
 
-      <Text style={styles.label}>What did you do?</Text>
+      <Text style={styles.sectionLabel}>What did you do?</Text>
       <View style={styles.picker}>
         {ACTIVITIES.map((a) => {
           const selected = type === a.type;
@@ -70,17 +79,17 @@ export default function LogScreen() {
               onPress={() => setType(a.type)}
               style={[
                 styles.actBtn,
-                selected && {
-                  backgroundColor: palette.bg,
-                  borderColor: palette.fg,
-                },
+                selected
+                  ? { backgroundColor: palette.bg, borderColor: palette.fg, borderWidth: 1.5 }
+                  : { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: StyleSheet.hairlineWidth },
               ]}
             >
-              <Text style={{ fontSize: 22 }}>{a.emoji}</Text>
+              <Text style={styles.actEmoji}>{a.emoji}</Text>
               <Text
                 style={[
                   styles.actLabel,
-                  selected && { color: palette.text, fontWeight: '500' },
+                  { color: selected ? palette.text : colors.muted },
+                  selected && { fontWeight: '600' },
                 ]}
               >
                 {a.label}
@@ -90,24 +99,37 @@ export default function LogScreen() {
         })}
       </View>
 
-      <View style={{ marginTop: 12 }}>
+      <View style={styles.section}>
         <View style={styles.row}>
-          <Text style={styles.label}>Duration (minutes)</Text>
-          <Text style={styles.value}>{duration}</Text>
+          <Text style={styles.sectionLabel}>Duration</Text>
+          <View style={styles.valueWrap}>
+            <Text style={styles.value}>{duration}</Text>
+            <Text style={styles.unit}>min</Text>
+          </View>
         </View>
         <Slider min={5} max={120} step={5} value={duration} onChange={setDuration} />
       </View>
 
-      <View style={{ marginTop: 16 }}>
+      <View style={styles.section}>
         <View style={styles.row}>
-          <Text style={styles.label}>How hard was it? (1–10)</Text>
-          <Text style={styles.value}>{effort}</Text>
+          <Text style={styles.sectionLabel}>How hard was it?</Text>
+          <View style={styles.valueWrap}>
+            <Text style={styles.value}>{effort}</Text>
+            <Text style={styles.unit}>/ 10</Text>
+          </View>
         </View>
         <Slider min={1} max={10} step={1} value={effort} onChange={setEffort} />
+        <Text style={styles.effortHint}>
+          {effort <= 3
+            ? 'Very gentle — good for recovery'
+            : effort <= 6
+              ? 'Moderate — a sustainable pace'
+              : 'High effort — recover well after this'}
+        </Text>
       </View>
 
-      <View style={{ marginTop: 16, marginBottom: 16 }}>
-        <Text style={styles.label}>Mood after activity</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Mood after</Text>
         <View style={styles.chipRow}>
           {MOOD_OPTIONS.map((m) => (
             <Chip
@@ -120,8 +142,8 @@ export default function LogScreen() {
         </View>
       </View>
 
-      <Button label={saving ? 'Saving…' : '+  Save activity'} onPress={save} loading={saving} />
-      <Text style={styles.footer}>Even 5 minutes matters. You showed up.</Text>
+      <PersonalBestCard events={personalBestEvents} />
+      <Button label={saving ? 'Saving…' : 'Save activity'} onPress={save} loading={saving} />
 
       <Toast message={message} onHide={hide} />
     </Screen>
@@ -130,46 +152,51 @@ export default function LogScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    alignItems: 'center',
-    paddingBottom: 12,
+    paddingBottom: 16,
     borderBottomColor: colors.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  title: { fontSize: 22, color: colors.ink, fontWeight: '500' },
-  subtitle: { fontSize: 13, color: colors.muted, marginTop: 4 },
-  label: {
-    fontSize: 12,
-    fontWeight: '500',
+  title: { fontSize: 24, color: colors.ink, fontWeight: '500' },
+  subtitle: { fontSize: 13, color: colors.muted, marginTop: 4, lineHeight: 18 },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
     color: colors.muted,
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 6,
+    letterSpacing: 0.8,
+    marginBottom: 8,
   },
-  value: { fontSize: 18, color: colors.sage, fontWeight: '500' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  section: { marginBottom: 20 },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  valueWrap: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+  value: { fontSize: 20, color: colors.sageDark, fontWeight: '600' },
+  unit: { fontSize: 12, color: colors.muted },
+  effortHint: {
+    fontSize: 12,
+    color: colors.hint,
+    marginTop: 8,
+    lineHeight: 16,
+  },
   picker: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 20,
   },
   actBtn: {
     width: '31%',
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     borderRadius: 14,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: colors.surface,
   },
-  actLabel: { fontSize: 11, color: colors.muted },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  footer: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: colors.muted,
-    marginTop: 12,
-  },
+  actEmoji: { fontSize: 22 },
+  actLabel: { fontSize: 11 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });
