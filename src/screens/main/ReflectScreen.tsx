@@ -16,6 +16,7 @@ import { weekStartIso } from '@/utils/date';
 import { useToast } from '@/hooks/useToast';
 import { parseWellness, serializeWellness, type WellnessSnapshot } from '@/types';
 import { IntentionPrompt, type IntentionDraft } from '@/components/IntentionPrompt';
+import { IntentionCheckin } from '@/components/IntentionCheckin';
 import { useIntentionStore } from '@/store/intentionStore';
 
 type CoreKey = 'energy' | 'recovery' | 'consistency' | 'mood';
@@ -57,6 +58,8 @@ export default function ReflectScreen() {
   const intentionLoad = useIntentionStore((s) => s.load);
   const intentionSave = useIntentionStore((s) => s.save);
   const currentIntention = useIntentionStore((s) => s.currentIntention);
+  const previousIntention = useIntentionStore((s) => s.previousIntention);
+  const markPreviousMet = useIntentionStore((s) => s.markPreviousMet);
 
   const [intentionDraft, setIntentionDraft] = useState<IntentionDraft>({
     description: '',
@@ -152,6 +155,16 @@ export default function ReflectScreen() {
         subtitle="A moment of honest self-awareness is a movement in itself"
       />
 
+      {/* Previous week intention check-in — only shows when unanswered */}
+      {previousIntention && previousIntention.met === null && (
+        <Animated.View entering={FadeInDown.delay(0).springify()}>
+          <IntentionCheckin
+            intention={previousIntention}
+            onRespond={markPreviousMet}
+          />
+        </Animated.View>
+      )}
+
       {/* Core reflection */}
       <Text style={styles.sectionTitle}>Movement & Energy</Text>
       {REFLECTION_PROMPTS.map((p, i) => (
@@ -165,6 +178,14 @@ export default function ReflectScreen() {
           </Card>
         </Animated.View>
       ))}
+
+      <Animated.View entering={FadeInDown.delay(280).springify()}>
+        <IntentionPrompt
+          value={intentionDraft}
+          onChange={setIntentionDraft}
+          existingDescription={currentIntention?.description}
+        />
+      </Animated.View>
 
       {/* Deep wellness */}
       <Text style={[styles.sectionTitle, { marginTop: 8 }]}>Body & Mind Check-in</Text>
@@ -215,14 +236,6 @@ export default function ReflectScreen() {
           <Text style={styles.coachText}>{compassionateNote}</Text>
         </Animated.View>
       ) : null}
-
-      <Animated.View entering={FadeInDown.delay(660).springify()}>
-        <IntentionPrompt
-          value={intentionDraft}
-          onChange={setIntentionDraft}
-          existingDescription={currentIntention?.description}
-        />
-      </Animated.View>
 
       <Button label={saving ? 'Saving…' : 'Save reflection'} onPress={onSubmit} loading={saving} />
       <Text style={styles.footer}>
