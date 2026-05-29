@@ -86,12 +86,12 @@ export default function HomeScreen() {
 
   const recent = useMemo(() => activities.slice(0, 5), [activities]);
 
-  const handleQuickLog = async (type: Activity['type'], durationMinutes: number) => {
+  const handleQuickLog = async (type: Activity['type'], durationMinutes: number, effort: number) => {
     if (!user) return;
     await useActivityStore.getState().add(user.id, {
       type,
       duration_minutes: durationMinutes,
-      effort: 4,
+      effort,
       moods: [],
       notes: null,
       performed_at: new Date().toISOString(),
@@ -116,6 +116,7 @@ export default function HomeScreen() {
       <Animated.View entering={FadeInDown.delay(80).springify()}>
         <QuickLogBar
           lastActivity={activities[0] ?? null}
+          mode={movementState.mode}
           onLog={handleQuickLog}
         />
       </Animated.View>
