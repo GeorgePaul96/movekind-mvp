@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 18,
     marginBottom: 12,
-    shadowColor: '#1F2A22',
+    shadowColor: colors.ink,
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },

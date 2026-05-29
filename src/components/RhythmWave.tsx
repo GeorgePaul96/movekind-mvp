@@ -20,7 +20,7 @@ export function RhythmWave({ weeks }: Props) {
             : 0;
 
         return (
-          <View key={i} style={styles.col}>
+          <View key={w.label} style={styles.col}>
             <View style={styles.barTrack}>
               {fillHeight > 0 ? (
                 <View
