@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, ActivityIndicator } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/colors';
-import { ACTIVITIES } from '@/constants/activities';
+import { ACTIVITY_BY_TYPE } from '@/constants/activities';
 import type { Activity } from '@/types';
 import type { MovementMode } from '@/utils/movementState';
 
@@ -36,20 +36,21 @@ function buildConfig(mode: MovementMode, lastActivity: Activity | null): LogConf
   }
 
   if (mode === 'returning') {
-    const def = lastActivity ? ACTIVITIES.find((a) => a.type === lastActivity.type) : null;
+    if (!lastActivity) return null;
+    const def = ACTIVITY_BY_TYPE[lastActivity.type];
     return {
       emoji: def?.emoji ?? '🚶',
       label: 'Ease back in',
-      detail: `${Math.min(lastActivity?.duration_minutes ?? 10, 15)} min${def ? ` of ${def.label}` : ''}`,
-      type: lastActivity?.type ?? 'walk',
-      duration: Math.min(lastActivity?.duration_minutes ?? 10, 15),
-      effort: Math.min(lastActivity?.effort ?? 3, 4),
+      detail: `${Math.min(lastActivity.duration_minutes, 15)} min${def ? ` of ${def.label}` : ''}`,
+      type: lastActivity.type,
+      duration: Math.min(lastActivity.duration_minutes, 15),
+      effort: Math.min(lastActivity.effort, 4),
     };
   }
 
   // building / steady — normal repeat behavior
   if (!lastActivity) return null;
-  const def = ACTIVITIES.find((a) => a.type === lastActivity.type);
+  const def = ACTIVITY_BY_TYPE[lastActivity.type];
   return {
     emoji: def?.emoji ?? '🏃',
     label: 'Quick log',
