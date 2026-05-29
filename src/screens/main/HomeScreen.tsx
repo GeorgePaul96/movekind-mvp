@@ -12,6 +12,7 @@ import { InsightCard } from '@/components/InsightCard';
 import { ActivityRow } from '@/components/ActivityRow';
 import { MovementStateCard } from '@/components/MovementStateCard';
 import { TinyWins } from '@/components/TinyWins';
+import { QuickLogBar } from '@/components/QuickLogBar';
 import { colors } from '@/constants/colors';
 import { QUOTES, FALLBACK_INSIGHTS } from '@/constants/copy';
 import { pickRandom } from '@/utils/format';
@@ -23,7 +24,7 @@ import { generateAndStoreInsight, getLatestInsight } from '@/services/ai';
 import { computeMovementState } from '@/utils/movementState';
 import { computeRhythmScore } from '@/utils/rhythmScore';
 import { weekStartIso } from '@/utils/date';
-import type { AIInsight } from '@/types';
+import type { Activity, AIInsight } from '@/types';
 import type { TabParamList } from '@/navigation/types';
 
 function getGreeting(): string {
@@ -85,6 +86,18 @@ export default function HomeScreen() {
 
   const recent = useMemo(() => activities.slice(0, 5), [activities]);
 
+  const handleQuickLog = async (type: Activity['type'], durationMinutes: number) => {
+    if (!user) return;
+    await useActivityStore.getState().add(user.id, {
+      type,
+      duration_minutes: durationMinutes,
+      effort: 4,
+      moods: [],
+      notes: null,
+      performed_at: new Date().toISOString(),
+    });
+  };
+
   return (
     <Screen>
       <Header tag={getGreeting()} title="How are you\nmoving today?" />
@@ -99,8 +112,16 @@ export default function HomeScreen() {
         <WeekStrip activities={activities} />
       </Animated.View>
 
+      {/* Quick log — one tap to repeat last activity */}
+      <Animated.View entering={FadeInDown.delay(80).springify()}>
+        <QuickLogBar
+          lastActivity={activities[0] ?? null}
+          onLog={handleQuickLog}
+        />
+      </Animated.View>
+
       {/* Movement state — replaces identity card + rhythm strip + 4 score cards */}
-      <Animated.View entering={FadeInDown.delay(100).springify()}>
+      <Animated.View entering={FadeInDown.delay(120).springify()}>
         <MovementStateCard
           state={movementState}
           rhythmScore={rhythmScore}
