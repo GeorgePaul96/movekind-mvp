@@ -40,6 +40,16 @@ describe('computeRhythmScore', () => {
     expect(computeRhythmScore(acts, FIXED_NOW).activeDays).toBe(1);
   });
 
+  it('excludes activities exactly 28 days old (boundary)', () => {
+    const acts = [mkAct(28), mkAct(1)];
+    expect(computeRhythmScore(acts, FIXED_NOW).activeDays).toBe(1);
+  });
+
+  it('labels 8–11 active days as Early Rhythm', () => {
+    const acts = Array.from({ length: 9 }, (_, i) => mkAct(i));
+    expect(computeRhythmScore(acts, FIXED_NOW).label).toBe('Early Rhythm');
+  });
+
   it('counts each calendar day only once regardless of session count', () => {
     const d = new Date(FIXED_NOW);
     d.setDate(d.getDate() - 1);

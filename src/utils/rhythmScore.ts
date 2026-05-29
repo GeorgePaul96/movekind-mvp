@@ -23,7 +23,7 @@ export function computeRhythmScore(
   const cutoff = subDays(now, 28);
   const activeDaySet = new Set(
     activities
-      .filter((a) => new Date(a.performed_at) >= cutoff)
+      .filter((a) => new Date(a.performed_at) > cutoff)
       .map((a) => new Date(a.performed_at).toDateString()),
   );
   const activeDays = activeDaySet.size;
