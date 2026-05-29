@@ -54,10 +54,7 @@ export function detectPersonalBestEvents(
     });
   }
 
-  if (
-    newBests.mostSessionsIn7Days > oldBests.mostSessionsIn7Days &&
-    oldBests.mostSessionsIn7Days >= 2
-  ) {
+  if (newBests.mostSessionsIn7Days > oldBests.mostSessionsIn7Days) {
     events.push({
       type: 'most_weekly_sessions',
       newValue: newBests.mostSessionsIn7Days,

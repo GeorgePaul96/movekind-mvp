@@ -58,20 +58,24 @@ describe('detectPersonalBestEvents', () => {
   it('detects a new longest session', () => {
     const existing = [mkAct({ duration_minutes: 30 })];
     const events = detectPersonalBestEvents(mkAct({ duration_minutes: 45 }), existing);
-    expect(events).toHaveLength(1);
-    expect(events[0]!.type).toBe('longest_session');
-    expect(events[0]!.newValue).toBe(45);
-    expect(typeof events[0]!.message).toBe('string');
+    const longest = events.find((e) => e.type === 'longest_session');
+    expect(longest).toBeDefined();
+    expect(longest!.newValue).toBe(45);
+    expect(typeof longest!.message).toBe('string');
   });
 
   it('does not fire when new session is shorter than existing best', () => {
     const existing = [mkAct({ duration_minutes: 60 })];
-    expect(detectPersonalBestEvents(mkAct({ duration_minutes: 30 }), existing)).toHaveLength(0);
+    const events = detectPersonalBestEvents(mkAct({ duration_minutes: 30 }), existing);
+    const longest = events.find((e) => e.type === 'longest_session');
+    expect(longest).toBeUndefined();
   });
 
   it('does not fire when new session exactly equals existing best', () => {
     const existing = [mkAct({ duration_minutes: 30 })];
-    expect(detectPersonalBestEvents(mkAct({ duration_minutes: 30 }), existing)).toHaveLength(0);
+    const events = detectPersonalBestEvents(mkAct({ duration_minutes: 30 }), existing);
+    const longest = events.find((e) => e.type === 'longest_session');
+    expect(longest).toBeUndefined();
   });
 
   it('detects most sessions in 7 days', () => {
@@ -86,5 +90,17 @@ describe('detectPersonalBestEvents', () => {
     const weekEvent = events.find((e) => e.type === 'most_weekly_sessions');
     expect(weekEvent).toBeDefined();
     expect(weekEvent!.newValue).toBe(4);
+  });
+
+  it('fires most_weekly_sessions when going from 1 to 2 sessions in a week', () => {
+    const base = new Date('2025-06-01T10:00:00Z');
+    const existing = [mkAct({ performed_at: base.toISOString() })];
+    const d = new Date(base);
+    d.setDate(d.getDate() + 1);
+    const newAct = mkAct({ performed_at: d.toISOString() });
+    const events = detectPersonalBestEvents(newAct, existing);
+    const weekEvent = events.find((e) => e.type === 'most_weekly_sessions');
+    expect(weekEvent).toBeDefined();
+    expect(weekEvent!.newValue).toBe(2);
   });
 });
