@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useActivityStore } from '@/store/activityStore';
 import { useReflectionStore } from '@/store/reflectionStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useIntentionStore } from '@/store/intentionStore';
 
 /**
  * One-shot loader called inside the authenticated layer.
@@ -15,6 +16,7 @@ export function useBootstrapData(): void {
   const hydrateRefs = useReflectionStore((s) => s.hydrate);
   const loadRefs = useReflectionStore((s) => s.load);
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
+  const loadIntention = useIntentionStore((s) => s.load);
 
   useEffect(() => {
     hydrateActs();
@@ -26,5 +28,6 @@ export function useBootstrapData(): void {
     if (!user) return;
     loadActs(user.id);
     loadRefs(user.id);
-  }, [user, loadActs, loadRefs]);
+    loadIntention(user.id);
+  }, [user, loadActs, loadRefs, loadIntention]);
 }

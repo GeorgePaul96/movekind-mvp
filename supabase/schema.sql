@@ -248,3 +248,40 @@ create policy "ai_insights_delete_own" on public.ai_insights
 --   VALUES (u, 150, 4, 'overall')
 --   ON CONFLICT (user_id) DO NOTHING;
 -- END $$;
+
+-- =====================================================================
+-- intentions
+-- =====================================================================
+create table if not exists public.intentions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  week_start date not null,
+  description text not null,
+  intended_day text,
+  intended_time text,
+  met boolean,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, week_start)
+);
+
+create index if not exists idx_intentions_user_week
+  on public.intentions(user_id, week_start desc);
+
+alter table public.intentions enable row level security;
+
+drop policy if exists "intentions_select_own" on public.intentions;
+create policy "intentions_select_own" on public.intentions
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "intentions_insert_own" on public.intentions;
+create policy "intentions_insert_own" on public.intentions
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "intentions_update_own" on public.intentions;
+create policy "intentions_update_own" on public.intentions
+  for update using (auth.uid() = user_id);
+
+drop policy if exists "intentions_delete_own" on public.intentions;
+create policy "intentions_delete_own" on public.intentions
+  for delete using (auth.uid() = user_id);
