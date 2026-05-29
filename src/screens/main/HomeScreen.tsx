@@ -1,28 +1,46 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { QuoteCard } from '@/components/QuoteCard';
 import { WeekStrip } from '@/components/WeekStrip';
 import { SectionLabel } from '@/components/SectionLabel';
-import { ScoreCard } from '@/components/ScoreCard';
 import { InsightCard } from '@/components/InsightCard';
 import { ActivityRow } from '@/components/ActivityRow';
+import { MovementStateCard } from '@/components/MovementStateCard';
+import { TinyWins } from '@/components/TinyWins';
 import { colors } from '@/constants/colors';
 import { QUOTES, FALLBACK_INSIGHTS } from '@/constants/copy';
 import { pickRandom } from '@/utils/format';
 import { useAuthStore } from '@/store/authStore';
 import { useActivityStore } from '@/store/activityStore';
+import { useReflectionStore } from '@/store/reflectionStore';
 import { useScores } from '@/hooks/useScores';
 import { generateAndStoreInsight, getLatestInsight } from '@/services/ai';
-import { useReflectionStore } from '@/store/reflectionStore';
+import { computeMovementState } from '@/utils/movementState';
+import { computeRhythmScore } from '@/utils/rhythmScore';
 import { weekStartIso } from '@/utils/date';
 import type { AIInsight } from '@/types';
+import type { TabParamList } from '@/navigation/types';
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+type Nav = BottomTabNavigationProp<TabParamList>;
 
 export default function HomeScreen() {
+  const navigation = useNavigation<Nav>();
   const user = useAuthStore((s) => s.user);
   const activities = useActivityStore((s) => s.activities);
   const reflections = useReflectionStore((s) => s.reflections);
+  // scores are still needed for the AI coaching context — just not displayed as cards
   const scores = useScores();
 
   const [insight, setInsight] = useState<AIInsight | null>(null);
@@ -34,12 +52,10 @@ export default function HomeScreen() {
     const loadInsight = async () => {
       const latest = await getLatestInsight(user.id);
       if (!cancelled && latest) setInsight(latest);
-
       const fresh = await generateAndStoreInsight(user.id, {
         scores,
         recentActivities: activities,
-        latestReflection:
-          reflections.find((r) => r.week_start === weekStartIso()) ?? null,
+        latestReflection: reflections.find((r) => r.week_start === weekStartIso()) ?? null,
       });
       if (!cancelled) setInsight(fresh);
     };
@@ -54,54 +70,89 @@ export default function HomeScreen() {
         });
       }
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user, activities.length, reflections.length, scores.overall]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const movementState = useMemo(
+    () => computeMovementState(activities, reflections),
+    [activities, reflections],
+  );
+
+  const rhythmScore = useMemo(
+    () => computeRhythmScore(activities),
+    [activities],
+  );
 
   const recent = useMemo(() => activities.slice(0, 5), [activities]);
 
   return (
     <Screen>
-      <Header tag="Good morning" title={`How are you\nmoving today?`} />
-      <QuoteCard quote={quote} />
-      <WeekStrip activities={activities} />
+      <Header tag={getGreeting()} title="How are you\nmoving today?" />
 
-      <SectionLabel>Your scores this week</SectionLabel>
-      <View style={styles.grid}>
-        <ScoreCard emoji="🔥" label="Consistency" value={scores.consistency} palette="sage" />
-        <ScoreCard emoji="🏋️" label="Strength" value={scores.strength} palette="blush" />
-      </View>
-      <View style={styles.grid}>
-        <ScoreCard emoji="🏃" label="Endurance" value={scores.endurance} palette="sky" />
-        <ScoreCard emoji="🌙" label="Recovery" value={scores.recovery} palette="warm" />
-      </View>
+      {/* Daily quote */}
+      <Animated.View entering={FadeInDown.delay(0).springify()}>
+        <QuoteCard quote={quote} />
+      </Animated.View>
 
-      <View style={{ height: 12 }} />
-      <InsightCard body={insight?.body ?? FALLBACK_INSIGHTS[0]!} />
+      {/* Week at a glance */}
+      <Animated.View entering={FadeInDown.delay(60).springify()}>
+        <WeekStrip activities={activities} />
+      </Animated.View>
 
-      <SectionLabel>Recent activities</SectionLabel>
+      {/* Movement state — replaces identity card + rhythm strip + 4 score cards */}
+      <Animated.View entering={FadeInDown.delay(100).springify()}>
+        <MovementStateCard
+          state={movementState}
+          rhythmScore={rhythmScore}
+          onQuickLog={() => navigation.navigate('Log')}
+        />
+      </Animated.View>
+
+      {/* Tiny win — only renders when a win is detected */}
+      <Animated.View entering={FadeInDown.delay(130).springify()}>
+        <TinyWins activities={activities} reflections={reflections} />
+      </Animated.View>
+
+      {/* AI coach insight */}
+      <Animated.View entering={FadeInDown.delay(160).springify()}>
+        <InsightCard body={insight?.body ?? FALLBACK_INSIGHTS[0]!} />
+      </Animated.View>
+
+      {/* Recent activity log */}
+      <SectionLabel>Recent</SectionLabel>
       {recent.length === 0 ? (
-        <Text style={styles.empty}>
-          No activities yet. Tap Log to add your first one — even five minutes counts.
-        </Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyEmoji}>🌱</Text>
+          <Text style={styles.emptyText}>
+            No activities yet. Tap Log to add your first — even five minutes counts.
+          </Text>
+        </View>
       ) : (
-        recent.map((a) => <ActivityRow key={a.id} activity={a} />)
+        recent.map((a, i) => (
+          <Animated.View key={a.id} entering={FadeInDown.delay(i * 40).springify()}>
+            <ActivityRow activity={a} />
+          </Animated.View>
+        ))
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  empty: {
-    color: colors.muted,
-    fontSize: 14,
+  emptyState: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    borderRadius: 14,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    gap: 10,
+  },
+  emptyEmoji: { fontSize: 28 },
+  emptyText: {
+    color: colors.muted,
+    fontSize: 13,
     lineHeight: 20,
+    textAlign: 'center',
   },
 });
