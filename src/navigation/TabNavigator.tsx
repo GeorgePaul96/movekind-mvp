@@ -10,11 +10,13 @@ import { colors } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
 import type { TabParamList } from './types';
 import { useBootstrapData } from '@/hooks/useBootstrapData';
+import { useNotificationSync } from '@/hooks/useNotificationSync';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
   useBootstrapData();
+  useNotificationSync();
   return (
     <Tab.Navigator
       screenOptions={{
