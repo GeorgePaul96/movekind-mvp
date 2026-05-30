@@ -71,11 +71,6 @@ function int(
   };
 }
 
-describe('behavioralProfile stubs compile', () => {
-  it('throws on unimplemented stubs', () => {
-    expect(() => computeBehavioralProfile([], [], [], NOW)).toThrow('not implemented');
-  });
-});
 
 describe('computeGapProfile', () => {
   it('returns empty profile with no activities', () => {
@@ -498,6 +493,92 @@ describe('detectBehavioralMoments', () => {
     const m = detectBehavioralMoments([act(1)], [], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
     const types = m.map((x) => x.type);
     expect(types).not.toContain('return_after_long_gap');
+  });
+});
+
+describe('computeBehavioralProfile', () => {
+  it('composes all domains without throwing', () => {
+    const profile = computeBehavioralProfile([], [], [], NOW);
+    expect(profile).toHaveProperty('gaps');
+    expect(profile).toHaveProperty('rhythm');
+    expect(profile).toHaveProperty('recovery');
+    expect(profile).toHaveProperty('returnReliability');
+    expect(profile).toHaveProperty('moments');
+    expect(profile).toHaveProperty('profileConfidence');
+  });
+
+  it('returns low profileConfidence with no data', () => {
+    const profile = computeBehavioralProfile([], [], [], NOW);
+    expect(profile.profileConfidence).toBe('low');
+  });
+
+  it('is deterministic — same inputs produce same output', () => {
+    const activities = [act(1), act(8), act(20), act(30)];
+    const reflections = [ref(0)];
+    const intentions = [int(0, true)];
+    const a = computeBehavioralProfile(activities, reflections, intentions, NOW);
+    const b = computeBehavioralProfile(activities, reflections, intentions, NOW);
+    expect(a.gaps.totalGapCount).toBe(b.gaps.totalGapCount);
+    expect(a.rhythm.trajectory).toBe(b.rhythm.trajectory);
+    expect(a.recovery.signal).toBe(b.recovery.signal);
+    expect(a.returnReliability.label).toBe(b.returnReliability.label);
+    expect(a.profileConfidence).toBe(b.profileConfidence);
+  });
+
+  it('profileConfidence is minimum across all four domain confidences', () => {
+    // With only 1 activity — all domains should be low
+    const profile = computeBehavioralProfile([act(1)], [], [], NOW);
+    expect(profile.profileConfidence).toBe('low');
+  });
+
+  it('moments array never exceeds MAX_MOMENTS', () => {
+    const activities: Activity[] = [];
+    for (let i = 0; i < 20; i += 2) activities.push(act(i));
+    const profile = computeBehavioralProfile(
+      activities,
+      [ref(1, { energy: 2 })],
+      [int(0, true)],
+      NOW,
+    );
+    expect(profile.moments.length).toBeLessThanOrEqual(3);
+  });
+
+  it('uses provided now parameter — injectable for testing', () => {
+    const pastNow = new Date('2025-01-01T10:00:00Z');
+    const activities = [{
+      id: 'a1', user_id: 'u', type: 'walk' as const, duration_minutes: 30,
+      effort: 5, moods: [], notes: null,
+      performed_at: new Date('2024-12-31T10:00:00Z').toISOString(),
+      created_at: new Date('2024-12-31T10:00:00Z').toISOString(),
+    }];
+    const profile = computeBehavioralProfile(activities, [], [], pastNow);
+    expect(profile.gaps.lastGapDays).toBe(1);
+  });
+
+  it('profileConfidence elevates with rich data', () => {
+    // 8+ weeks of consistent activity + reflections → at least medium confidence
+    const activities: Activity[] = [];
+    for (let w = 0; w < 10; w++) {
+      for (let d = 0; d < 3; d++) activities.push(act(w * 7 + d));
+    }
+    // Add gaps to build gap confidence
+    activities.push(act(80));
+    activities.push(act(95));
+    activities.push(act(110));
+    const profile = computeBehavioralProfile(
+      activities,
+      [ref(0), ref(1), ref(2)],
+      [int(0, true)],
+      NOW,
+    );
+    expect(['medium', 'high']).toContain(profile.profileConfidence);
+  });
+
+  it('gaps are shared between computeGapProfile and computeReturnReliability', () => {
+    // Both should see the same totalGapCount
+    const activities = [act(1), act(15), act(30), act(50)];
+    const profile = computeBehavioralProfile(activities, [], [], NOW);
+    expect(profile.returnReliability.gapCount).toBe(profile.gaps.totalGapCount);
   });
 });
 

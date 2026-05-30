@@ -559,11 +559,47 @@ export function detectBehavioralMoments(
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
+// Aggregate confidence: minimum confidence across all four domains.
+// A profile is only as confident as its weakest signal.
+// Consumers can gate on this single value without inspecting each domain.
+function aggregateConfidence(
+  gaps: GapProfile,
+  rhythm: RhythmStability,
+  recovery: RecoveryState,
+  returnReliability: ReturnReliability,
+): Confidence {
+  const rank: Record<Confidence, number> = { low: 0, medium: 1, high: 2 };
+  const min = Math.min(
+    rank[gaps.confidence],
+    rank[rhythm.confidence],
+    rank[recovery.confidence],
+    rank[returnReliability.confidence],
+  );
+  return (['low', 'medium', 'high'] as const)[min]!;
+}
+
 export function computeBehavioralProfile(
-  _activities: Activity[],
-  _reflections: Reflection[],
-  _intentions: Intention[],
-  _now: Date = new Date(),
+  activities: Activity[],
+  reflections: Reflection[],
+  intentions: Intention[],
+  now: Date = new Date(),
 ): BehavioralProfile {
-  throw new Error('not implemented');
+  // Gap detection runs once — result is shared with computeReturnReliability
+  // to avoid redundant computation over the same activities array.
+  const gaps = computeGapProfile(activities, now);
+  const rhythm = computeRhythmStability(activities, now);
+  const recovery = computeRecoveryState(activities, reflections, intentions, now);
+  const returnReliability = computeReturnReliability(activities, gaps, now);
+  const moments = detectBehavioralMoments(
+    activities,
+    reflections,
+    intentions,
+    gaps,
+    rhythm,
+    returnReliability,
+    now,
+  );
+  const profileConfidence = aggregateConfidence(gaps, rhythm, recovery, returnReliability);
+
+  return { gaps, rhythm, recovery, returnReliability, moments, profileConfidence };
 }
