@@ -41,6 +41,12 @@ export const INTERMITTENT_ACTIVE_RATIO_MIN = 0.3;
 export const FRAGMENTED_AVG_GAP_MIN = 20;
 export const FRAGMENTED_GAP_COUNT_MIN = 3;
 
+// RecoveryState signal thresholds
+export const RETURNING_GAP_MIN_DAYS = 4;      // gap >= N days → 'returning' window
+export const RETURNING_GAP_MAX_DAYS = 10;     // gap <= N days → 'returning' window
+export const THRIVING_AVG_SESSIONS_MIN = 2;   // avg sessions/week > N → 'thriving'
+export const NO_ACTIVITY_DAYS_SENTINEL = 999; // sentinel when no activity history exists
+
 // Moments
 export const MAX_MOMENTS = 3;
 export const DIFFICULT_WEEK_ENERGY_MAX = 4;
@@ -228,8 +234,9 @@ export function computeRhythmStability(activities: Activity[], now: Date): Rhyth
   const mean = weekCounts.reduce((s, c) => s + c, 0) / RHYTHM_WINDOW_WEEKS;
   const variance = populationVariance(weekCounts);
 
-  const firstHalf = weekCounts.slice(0, 4);
-  const secondHalf = weekCounts.slice(4);
+  const halfWindow = Math.floor(RHYTHM_WINDOW_WEEKS / 2);
+  const firstHalf = weekCounts.slice(0, halfWindow);
+  const secondHalf = weekCounts.slice(halfWindow);
   const firstVariance = populationVariance(firstHalf);
   const secondVariance = populationVariance(secondHalf);
 
@@ -277,10 +284,14 @@ export function computeRecoveryState(
   intentions: Intention[],
   now: Date,
 ): RecoveryState {
-  const hasActivityHistory = activities.length > 0;
+  // Sort descending so activities[0] is always the most recent
+  const sortedDesc = [...activities].sort(
+    (a, b) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime(),
+  );
+  const hasActivityHistory = sortedDesc.length > 0;
   const daysSinceLast = hasActivityHistory
-    ? differenceInCalendarDays(now, new Date(activities[0]!.performed_at))
-    : 999;
+    ? differenceInCalendarDays(now, new Date(sortedDesc[0]!.performed_at))
+    : NO_ACTIVITY_DAYS_SENTINEL;
 
   const sortedReflections = [...reflections].sort((a, b) =>
     b.week_start.localeCompare(a.week_start),
@@ -315,7 +326,7 @@ export function computeRecoveryState(
   let signal: RecoveryState['signal'];
   if (needsReentry) {
     signal = 'needs_reentry';
-  } else if (daysSinceLast >= 4 && daysSinceLast <= 10) {
+  } else if (daysSinceLast >= RETURNING_GAP_MIN_DAYS && daysSinceLast <= RETURNING_GAP_MAX_DAYS) {
     signal = 'returning';
   } else {
     // Check recent session frequency for thriving
@@ -325,12 +336,12 @@ export function computeRecoveryState(
       return activitiesInWeek(activities, wStart).length;
     });
     const avgSessions = recentCounts.reduce((s, c) => s + c, 0) / 4;
-    signal = avgSessions > 2 && daysSinceLast < 4 ? 'thriving' : 'stable';
+    signal = avgSessions > THRIVING_AVG_SESSIONS_MIN && daysSinceLast < RETURNING_GAP_MIN_DAYS ? 'thriving' : 'stable';
   }
 
   let reEntryReadiness: RecoveryState['reEntryReadiness'] = 'high';
   if (isExtendedAbsence || isPatternDisrupted) reEntryReadiness = 'low';
-  else if (isHighStressSignal || daysSinceLast >= 4) reEntryReadiness = 'medium';
+  else if (isHighStressSignal || daysSinceLast >= RETURNING_GAP_MIN_DAYS) reEntryReadiness = 'medium';
 
   // Confidence: based on recency of reflection data and activity
   let confidence: Confidence = 'low';
