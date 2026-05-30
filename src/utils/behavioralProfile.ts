@@ -272,12 +272,84 @@ export function computeRhythmStability(activities: Activity[], now: Date): Rhyth
 }
 
 export function computeRecoveryState(
-  _activities: Activity[],
-  _reflections: Reflection[],
-  _intentions: Intention[],
-  _now: Date,
+  activities: Activity[],
+  reflections: Reflection[],
+  intentions: Intention[],
+  now: Date,
 ): RecoveryState {
-  throw new Error('not implemented');
+  const hasActivityHistory = activities.length > 0;
+  const daysSinceLast = hasActivityHistory
+    ? differenceInCalendarDays(now, new Date(activities[0]!.performed_at))
+    : 999;
+
+  const sortedReflections = [...reflections].sort((a, b) =>
+    b.week_start.localeCompare(a.week_start),
+  );
+  const latestReflection = sortedReflections[0] ?? null;
+  const wellnessData = latestReflection ? parseWellness(latestReflection.notes) : null;
+
+  // isExtendedAbsence: purely behavioral — gap > threshold; requires activity history
+  const isExtendedAbsence = hasActivityHistory && daysSinceLast > EXTENDED_ABSENCE_DAYS;
+
+  // isPatternDisrupted: consecutive unmet intentions (met === false) + gap
+  // Filters out null-met intentions — only considers intentions the user responded to
+  const intentionsWithMet = [...intentions]
+    .filter((i) => i.met !== null)
+    .sort((a, b) => b.week_start.localeCompare(a.week_start));
+  const isPatternDisrupted =
+    intentionsWithMet.length >= CONSECUTIVE_UNMET_THRESHOLD &&
+    intentionsWithMet
+      .slice(0, CONSECUTIVE_UNMET_THRESHOLD)
+      .every((i) => i.met === false) &&
+    daysSinceLast > PATTERN_DISRUPTED_GAP_DAYS;
+
+  // isHighStressSignal: uses user-reported wellness data (user told us their state)
+  const isHighStressSignal =
+    wellnessData !== null &&
+    wellnessData.stress >= HIGH_STRESS_THRESHOLD &&
+    wellnessData.soreness >= HIGH_SORENESS_THRESHOLD &&
+    daysSinceLast > HIGH_STRESS_GAP_DAYS;
+
+  // 4-state action signal — needs_reentry collapses all three flags
+  const needsReentry = isExtendedAbsence || isPatternDisrupted || isHighStressSignal;
+  let signal: RecoveryState['signal'];
+  if (needsReentry) {
+    signal = 'needs_reentry';
+  } else if (daysSinceLast >= 4 && daysSinceLast <= 10) {
+    signal = 'returning';
+  } else {
+    // Check recent session frequency for thriving
+    const weekStart = startOfWeek(now, WEEK_OPTIONS);
+    const recentCounts = Array.from({ length: 4 }, (_, i) => {
+      const wStart = addDays(weekStart, -7 * (3 - i));
+      return activitiesInWeek(activities, wStart).length;
+    });
+    const avgSessions = recentCounts.reduce((s, c) => s + c, 0) / 4;
+    signal = avgSessions > 2 && daysSinceLast < 4 ? 'thriving' : 'stable';
+  }
+
+  let reEntryReadiness: RecoveryState['reEntryReadiness'] = 'high';
+  if (isExtendedAbsence || isPatternDisrupted) reEntryReadiness = 'low';
+  else if (isHighStressSignal || daysSinceLast >= 4) reEntryReadiness = 'medium';
+
+  // Confidence: based on recency of reflection data and activity
+  let confidence: Confidence = 'low';
+  if (latestReflection) {
+    const weeksSinceReflection = Math.floor(
+      differenceInCalendarDays(now, new Date(latestReflection.week_start)) / 7,
+    );
+    if (weeksSinceReflection <= 1 && daysSinceLast < 7) confidence = 'high';
+    else if (weeksSinceReflection <= 3) confidence = 'medium';
+  }
+
+  return {
+    signal,
+    isExtendedAbsence,
+    isPatternDisrupted,
+    isHighStressSignal,
+    reEntryReadiness,
+    confidence,
+  };
 }
 
 export function computeReturnReliability(

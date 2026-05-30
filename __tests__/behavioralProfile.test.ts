@@ -262,3 +262,101 @@ describe('computeRhythmStability', () => {
     expect(typeof r.weeklyVariance).toBe('number');
   });
 });
+
+describe('computeRecoveryState', () => {
+  it('returns stable with no history', () => {
+    const r = computeRecoveryState([], [], [], NOW);
+    expect(r.signal).toBe('stable');
+    expect(r.isExtendedAbsence).toBe(false);
+    expect(r.isPatternDisrupted).toBe(false);
+    expect(r.isHighStressSignal).toBe(false);
+    expect(r.confidence).toBe('low');
+  });
+
+  it('detects extended absence when gap > EXTENDED_ABSENCE_DAYS', () => {
+    const r = computeRecoveryState([act(15)], [], [], NOW);
+    expect(r.isExtendedAbsence).toBe(true);
+    expect(r.signal).toBe('needs_reentry');
+    expect(r.reEntryReadiness).toBe('low');
+  });
+
+  it('does not trigger extended absence at or below threshold', () => {
+    const r = computeRecoveryState([act(9)], [], [], NOW);
+    expect(r.isExtendedAbsence).toBe(false);
+  });
+
+  it('detects pattern disruption with consecutive unmet intentions + gap', () => {
+    const intentions = [int(0, false), int(1, false)];
+    const r = computeRecoveryState([act(8)], [], intentions, NOW);
+    expect(r.isPatternDisrupted).toBe(true);
+    expect(r.signal).toBe('needs_reentry');
+  });
+
+  it('does not trigger pattern disruption without sufficient gap', () => {
+    const intentions = [int(0, false), int(1, false)];
+    const r = computeRecoveryState([act(2)], [], intentions, NOW);
+    expect(r.isPatternDisrupted).toBe(false);
+  });
+
+  it('does not trigger pattern disruption with only one unmet intention', () => {
+    const r = computeRecoveryState([act(8)], [], [int(0, false)], NOW);
+    expect(r.isPatternDisrupted).toBe(false);
+  });
+
+  it('does not trigger pattern disruption when most recent intention is met', () => {
+    const intentions = [int(0, true), int(1, false), int(2, false)];
+    const r = computeRecoveryState([act(8)], [], intentions, NOW);
+    expect(r.isPatternDisrupted).toBe(false);
+  });
+
+  it('does not trigger pattern disruption for null met intentions', () => {
+    const intentions = [int(0, null), int(1, null)];
+    const r = computeRecoveryState([act(8)], [], intentions, NOW);
+    expect(r.isPatternDisrupted).toBe(false);
+  });
+
+  it('detects high stress signal from user-reported wellness', () => {
+    const highStressRef = ref(0, {
+      notes: JSON.stringify({ stress: 8, soreness: 8, sleep: 5, motivation: 4, confidence: 4 }),
+    });
+    const r = computeRecoveryState([act(7)], [highStressRef], [], NOW);
+    expect(r.isHighStressSignal).toBe(true);
+    expect(r.signal).toBe('needs_reentry');
+  });
+
+  it('does not trigger high stress below thresholds', () => {
+    const normalRef = ref(0, {
+      notes: JSON.stringify({ stress: 5, soreness: 5, sleep: 7, motivation: 6, confidence: 6 }),
+    });
+    const r = computeRecoveryState([act(2)], [normalRef], [], NOW);
+    expect(r.isHighStressSignal).toBe(false);
+  });
+
+  it('returns returning signal for gap of 4-10 days with no flags', () => {
+    const r = computeRecoveryState([act(6)], [], [], NOW);
+    expect(r.signal).toBe('returning');
+    expect(r.reEntryReadiness).toBe('medium');
+  });
+
+  it('compound state: all three flags true → needs_reentry with all flags visible', () => {
+    const highStressRef = ref(0, {
+      notes: JSON.stringify({ stress: 9, soreness: 9, sleep: 3, motivation: 2, confidence: 2 }),
+    });
+    const intentions = [int(0, false), int(1, false)];
+    const r = computeRecoveryState([act(12)], [highStressRef], intentions, NOW);
+    expect(r.isExtendedAbsence).toBe(true);
+    expect(r.isPatternDisrupted).toBe(true);
+    expect(r.isHighStressSignal).toBe(true);
+    expect(r.signal).toBe('needs_reentry');
+  });
+
+  it('returns low confidence without reflection data', () => {
+    const r = computeRecoveryState([act(1)], [], [], NOW);
+    expect(r.confidence).toBe('low');
+  });
+
+  it('returns high confidence with recent reflection and recent activity', () => {
+    const r = computeRecoveryState([act(1)], [ref(0)], [], NOW);
+    expect(r.confidence).toBe('high');
+  });
+});
