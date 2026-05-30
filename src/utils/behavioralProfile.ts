@@ -353,11 +353,78 @@ export function computeRecoveryState(
 }
 
 export function computeReturnReliability(
-  _activities: Activity[],
-  _gaps: GapProfile,
-  _now: Date,
+  activities: Activity[],
+  gaps: GapProfile,
+  now: Date,
 ): ReturnReliability {
-  throw new Error('not implemented');
+  const gapCount = gaps.totalGapCount;
+  const longestGapDays = gaps.longestGapDays;
+  const avgGapDays = gaps.avgGapDays;
+
+  // Count calendar months in trailing 12 months with ≥ 1 activity
+  const cutoff = new Date(now);
+  cutoff.setFullYear(cutoff.getFullYear() - 1);
+  const monthKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const activeMonthSet = new Set(
+    activities
+      .filter((a) => new Date(a.performed_at) >= cutoff)
+      .map((a) => monthKey(new Date(a.performed_at))),
+  );
+  const activeMonths = activeMonthSet.size;
+
+  // trackedMonths: months since first activity, clamped to 12
+  const sortedAsc = [...activities].sort(
+    (a, b) => new Date(a.performed_at).getTime() - new Date(b.performed_at).getTime(),
+  );
+  const firstDate = sortedAsc.length > 0 ? new Date(sortedAsc[0]!.performed_at) : now;
+  const monthsDiff =
+    (now.getFullYear() - firstDate.getFullYear()) * 12 +
+    (now.getMonth() - firstDate.getMonth());
+  const trackedMonths = Math.min(12, Math.max(1, monthsDiff + 1));
+  const activeRatio = activeMonths / trackedMonths;
+
+  // Label derivation
+  // Note: anchored is checked before insufficient_data because truly anchored users
+  // may have zero recorded gaps (intervals always ≤ GAP_DEFINITION_DAYS), yet their
+  // high active ratio and low avg interval make the classification unambiguous.
+  let label: ReturnReliability['label'];
+  if (avgGapDays <= ANCHORED_AVG_GAP_MAX && activeRatio >= ANCHORED_ACTIVE_RATIO_MIN) {
+    label = 'anchored';
+  } else if (gapCount < 2) {
+    label = 'insufficient_data';
+  } else if (
+    (gaps.trend === 'shrinking' || gaps.trend === 'stable') &&
+    activeRatio >= RESILIENT_ACTIVE_RATIO_MIN
+  ) {
+    label = 'resilient';
+  } else if (activeRatio >= INTERMITTENT_ACTIVE_RATIO_MIN) {
+    label = 'intermittent';
+  } else {
+    label = 'fragmented';
+  }
+
+  // Force fragmented when gaps are very long and numerous
+  if (
+    label !== 'insufficient_data' &&
+    gapCount >= FRAGMENTED_GAP_COUNT_MIN &&
+    avgGapDays >= FRAGMENTED_AVG_GAP_MIN
+  ) {
+    label = 'fragmented';
+  }
+
+  // Confidence: gap-count is the primary signal, but anchored users never accumulate
+  // gaps — for them, activeMonths is the right proxy for how much data we have.
+  let confidence: Confidence = 'low';
+  if (label === 'anchored') {
+    if (activeMonths >= 5) confidence = 'high';
+    else if (activeMonths >= 2) confidence = 'medium';
+  } else {
+    if (gapCount >= 5) confidence = 'high';
+    else if (gapCount >= 2) confidence = 'medium';
+  }
+
+  return { label, gapCount, longestGapDays, activeMonths, confidence };
 }
 
 export function detectBehavioralMoments(

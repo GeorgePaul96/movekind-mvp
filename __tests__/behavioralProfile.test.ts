@@ -360,3 +360,103 @@ describe('computeRecoveryState', () => {
     expect(r.confidence).toBe('high');
   });
 });
+
+describe('computeReturnReliability', () => {
+  function makeGaps(
+    totalGapCount: number,
+    avgGapDays: number,
+    trend: GapProfile['trend'] = 'stable',
+    longestGapDays?: number,
+  ): GapProfile {
+    return {
+      hasHistory: totalGapCount > 0,
+      lastGapDays: 2,
+      avgGapDays,
+      gapHistory: Array(Math.min(totalGapCount, 5)).fill(avgGapDays),
+      totalGapCount,
+      longestGapDays: longestGapDays ?? avgGapDays,
+      trend,
+      observation: null,
+      confidence: totalGapCount >= 5 ? 'high' : totalGapCount >= 3 ? 'medium' : 'low',
+    };
+  }
+
+  it('returns insufficient_data with no activities', () => {
+    const r = computeReturnReliability([], makeGaps(0, 0), NOW);
+    expect(r.label).toBe('insufficient_data');
+    expect(r.confidence).toBe('low');
+    expect(r.gapCount).toBe(0);
+    expect(r.activeMonths).toBe(0);
+  });
+
+  it('returns insufficient_data with only 1 gap', () => {
+    const r = computeReturnReliability([act(1), act(20)], makeGaps(1, 19), NOW);
+    expect(r.label).toBe('insufficient_data');
+  });
+
+  it('classifies anchored: daily activity, high presence ratio', () => {
+    // Activity every 2 days for 10 months → very short avg gap, high active months
+    const activities: Activity[] = [];
+    for (let i = 0; i < 300; i += 2) activities.push(act(i));
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(r.label).toBe('anchored');
+    expect(r.confidence).toBe('high');
+  });
+
+  it('classifies resilient: stable/shrinking gaps, decent presence', () => {
+    // ~10-day gaps but always returns, stable trend, active 6+ months
+    const activities = [
+      act(1), act(12), act(23), act(34), act(45),
+      act(56), act(67), act(78), act(89), act(100),
+    ];
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(['resilient', 'intermittent']).toContain(r.label);
+  });
+
+  it('classifies fragmented: very long gaps and few active months', () => {
+    // Only 4 sessions spread across 10+ months with avg gap > 20 days
+    const activities = [act(5), act(90), act(180), act(300)];
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(r.label).toBe('fragmented');
+  });
+
+  it('forces fragmented when avg gap >= FRAGMENTED_AVG_GAP_MIN and count >= FRAGMENTED_GAP_COUNT_MIN', () => {
+    const r = computeReturnReliability(
+      [act(1)],
+      makeGaps(3, 25, 'stable'),
+      NOW,
+    );
+    expect(r.label).toBe('fragmented');
+  });
+
+  it('returns correct gapCount from gaps parameter', () => {
+    const activities = [act(1), act(10), act(20), act(30), act(40), act(50), act(60)];
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(r.gapCount).toBe(g.totalGapCount);
+  });
+
+  it('returns high confidence with 5+ gaps', () => {
+    const activities = [act(1), act(10), act(20), act(30), act(40), act(50), act(60)];
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(r.confidence).toBe('high');
+  });
+
+  it('counts activeMonths from trailing 12 months only', () => {
+    // One activity 400 days ago (> 12 months) and one recent
+    const activities = [act(1), act(400)];
+    const g = computeGapProfile(activities, NOW);
+    const r = computeReturnReliability(activities, g, NOW);
+    expect(r.activeMonths).toBe(1); // only the recent month counts
+  });
+
+  it('confidence: low for gapCount < 2, medium for 2-4, high for 5+', () => {
+    expect(computeReturnReliability([act(1)], makeGaps(0, 0), NOW).confidence).toBe('low');
+    expect(computeReturnReliability([act(1)], makeGaps(2, 10), NOW).confidence).toBe('medium');
+    expect(computeReturnReliability([act(1)], makeGaps(5, 10), NOW).confidence).toBe('high');
+  });
+});
