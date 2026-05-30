@@ -135,8 +135,78 @@ export interface BehavioralProfile {
 
 // ─── Sub-functions (exported for independent testing) ─────────────────────────
 
-export function computeGapProfile(_activities: Activity[], _now: Date): GapProfile {
-  throw new Error('not implemented');
+export function computeGapProfile(activities: Activity[], now: Date): GapProfile {
+  if (activities.length === 0) {
+    return {
+      hasHistory: false,
+      lastGapDays: 0,
+      avgGapDays: 0,
+      gapHistory: [],
+      totalGapCount: 0,
+      longestGapDays: 0,
+      trend: 'insufficient_data',
+      observation: null,
+      confidence: 'low',
+    };
+  }
+
+  const sorted = [...activities].sort(
+    (a, b) => new Date(a.performed_at).getTime() - new Date(b.performed_at).getTime(),
+  );
+
+  const allGaps: number[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = differenceInCalendarDays(
+      new Date(sorted[i]!.performed_at),
+      new Date(sorted[i - 1]!.performed_at),
+    );
+    if (gap > GAP_DEFINITION_DAYS) allGaps.push(gap);
+  }
+
+  const totalGapCount = allGaps.length;
+  const longestGapDays = allGaps.length > 0 ? Math.max(...allGaps) : 0;
+  const avgGapDays =
+    allGaps.length > 0
+      ? Math.round(allGaps.reduce((s, g) => s + g, 0) / allGaps.length)
+      : 0;
+  const gapHistory = allGaps.slice(-GAP_HISTORY_SIZE);
+  const lastGapDays = differenceInCalendarDays(
+    now,
+    new Date(sorted[sorted.length - 1]!.performed_at),
+  );
+
+  let trend: GapProfile['trend'] = 'insufficient_data';
+  if (gapHistory.length >= 2) {
+    const lastGap = gapHistory[gapHistory.length - 1]!;
+    if (lastGap < avgGapDays * TREND_SHRINKING_FACTOR) trend = 'shrinking';
+    else if (lastGap > avgGapDays * TREND_GROWING_FACTOR) trend = 'growing';
+    else trend = 'stable';
+  }
+
+  let observation: string | null = null;
+  if (
+    trend === 'shrinking' &&
+    gapHistory.length >= 2 &&
+    lastGapDays < avgGapDays * FASTER_RETURN_FACTOR
+  ) {
+    observation = `Back in ${lastGapDays} days — ${avgGapDays} is your usual.`;
+  }
+
+  let confidence: Confidence = 'low';
+  if (gapHistory.length >= 5) confidence = 'high';
+  else if (gapHistory.length >= 3) confidence = 'medium';
+
+  return {
+    hasHistory: true,
+    lastGapDays,
+    avgGapDays,
+    gapHistory,
+    totalGapCount,
+    longestGapDays,
+    trend,
+    observation,
+    confidence,
+  };
 }
 
 export function computeRhythmStability(_activities: Activity[], _now: Date): RhythmStability {
