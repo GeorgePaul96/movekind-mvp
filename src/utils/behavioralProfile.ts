@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, startOfWeek } from 'date-fns';
+import { addDays, differenceInCalendarDays, startOfWeek, subDays } from 'date-fns';
 import { activitiesInWeek } from './analytics';
 import { WEEK_OPTIONS } from './date';
 import { parseWellness } from '@/types';
@@ -428,15 +428,141 @@ export function computeReturnReliability(
 }
 
 export function detectBehavioralMoments(
-  _activities: Activity[],
-  _reflections: Reflection[],
-  _intentions: Intention[],
-  _gaps: GapProfile,
-  _rhythm: RhythmStability,
-  _returnReliability: ReturnReliability,
-  _now: Date,
+  activities: Activity[],
+  reflections: Reflection[],
+  intentions: Intention[],
+  gaps: GapProfile,
+  rhythm: RhythmStability,
+  returnReliability: ReturnReliability,
+  now: Date,
 ): BehavioralMoment[] {
-  throw new Error('not implemented');
+  const moments: BehavioralMoment[] = [];
+
+  const isoDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const recentActivityDate =
+    activities.length > 0 ? activities[0]!.performed_at.slice(0, 10) : isoDate(now);
+
+  const isWithinWindow = (observedAt: string, type: MomentType) =>
+    differenceInCalendarDays(now, new Date(observedAt)) <= MOMENT_RELEVANCE_DAYS[type];
+
+  // 1. reliable_returner — highest priority, most enduring signal
+  if (
+    returnReliability.label === 'resilient' &&
+    (returnReliability.confidence === 'medium' || returnReliability.confidence === 'high')
+  ) {
+    const observedAt = recentActivityDate;
+    if (isWithinWindow(observedAt, 'reliable_returner')) {
+      moments.push({
+        type: 'reliable_returner',
+        observation:
+          "You've returned after every extended gap. That pattern is harder to build than it looks.",
+        observedAt,
+      });
+    }
+  }
+
+  // 2. faster_return
+  if (moments.length < MAX_MOMENTS && gaps.gapHistory.length >= 2 && gaps.confidence !== 'low') {
+    const lastGap = gaps.gapHistory[gaps.gapHistory.length - 1]!;
+    if (lastGap < gaps.avgGapDays * FASTER_RETURN_FACTOR) {
+      const observedAt = recentActivityDate;
+      if (isWithinWindow(observedAt, 'faster_return')) {
+        moments.push({
+          type: 'faster_return',
+          observation: `Back in ${lastGap} days — ${gaps.avgGapDays} is your usual gap.`,
+          observedAt,
+        });
+      }
+    }
+  }
+
+  // 3. staying_connected
+  if (moments.length < MAX_MOMENTS) {
+    const sortedRefs = [...reflections].sort((a, b) =>
+      b.week_start.localeCompare(a.week_start),
+    );
+    const latestRef = sortedRefs[0];
+    if (latestRef && isWithinWindow(latestRef.week_start, 'staying_connected')) {
+      const wellnessData = parseWellness(latestRef.notes);
+      const lowEnergy =
+        latestRef.energy <= DIFFICULT_WEEK_ENERGY_MAX ||
+        (wellnessData !== null && wellnessData.motivation <= DIFFICULT_WEEK_ENERGY_MAX);
+      if (lowEnergy) {
+        // Use ±7 day UTC window around week_start to capture activities in the
+        // reflection period regardless of local timezone offset.
+        const refDate = new Date(latestRef.week_start + 'T00:00:00Z');
+        const windowStart = subDays(refDate, 7);
+        const windowEnd = addDays(refDate, 7);
+        const weekActs = activities.filter((a) => {
+          const t = new Date(a.performed_at);
+          return t >= windowStart && t < windowEnd;
+        });
+        if (weekActs.length > 0) {
+          moments.push({
+            type: 'staying_connected',
+            observation: 'You stayed connected during a low-energy week.',
+            observedAt: latestRef.week_start,
+          });
+        }
+      }
+    }
+  }
+
+  // 4. intention_followed
+  if (moments.length < MAX_MOMENTS) {
+    const metIntentions = [...intentions]
+      .filter((i) => i.met === true)
+      .sort((a, b) => b.week_start.localeCompare(a.week_start));
+    const latest = metIntentions[0];
+    if (latest && isWithinWindow(latest.week_start, 'intention_followed')) {
+      const desc =
+        latest.description.length > 33
+          ? latest.description.slice(0, 33) + '…'
+          : latest.description;
+      moments.push({
+        type: 'intention_followed',
+        observation: `You followed through: '${desc}'.`,
+        observedAt: latest.week_start,
+      });
+    }
+  }
+
+  // 5. gaps_narrowing
+  if (
+    moments.length < MAX_MOMENTS &&
+    gaps.trend === 'shrinking' &&
+    gaps.gapHistory.length >= 3 &&
+    gaps.confidence !== 'low'
+  ) {
+    const observedAt = recentActivityDate;
+    if (isWithinWindow(observedAt, 'gaps_narrowing')) {
+      moments.push({
+        type: 'gaps_narrowing',
+        observation: 'The time between your sessions is getting shorter.',
+        observedAt,
+      });
+    }
+  }
+
+  // 6. rhythm_rebuilding
+  if (
+    moments.length < MAX_MOMENTS &&
+    rhythm.trajectory === 'stabilizing' &&
+    rhythm.confidence !== 'low'
+  ) {
+    const observedAt = recentActivityDate;
+    if (isWithinWindow(observedAt, 'rhythm_rebuilding')) {
+      moments.push({
+        type: 'rhythm_rebuilding',
+        observation: 'More consistent recently than a month ago.',
+        observedAt,
+      });
+    }
+  }
+
+  return moments.slice(0, MAX_MOMENTS);
 }
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────

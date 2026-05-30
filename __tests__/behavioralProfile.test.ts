@@ -361,6 +361,146 @@ describe('computeRecoveryState', () => {
   });
 });
 
+describe('detectBehavioralMoments', () => {
+  const emptyGaps: GapProfile = {
+    hasHistory: false, lastGapDays: 0, avgGapDays: 0, gapHistory: [],
+    totalGapCount: 0, longestGapDays: 0, trend: 'insufficient_data',
+    observation: null, confidence: 'low',
+  };
+  const emptyRhythm: RhythmStability = {
+    weeklyVariance: 0, avgWeeklySessions: 0, trajectory: 'insufficient_data',
+    observation: null, confidence: 'low',
+  };
+  const emptyReliability: ReturnReliability = {
+    label: 'insufficient_data', gapCount: 0, longestGapDays: 0,
+    activeMonths: 0, confidence: 'low',
+  };
+
+  it('returns empty array when no conditions are met', () => {
+    const m = detectBehavioralMoments([], [], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m).toHaveLength(0);
+  });
+
+  it('surfaces reliable_returner for resilient user with medium confidence', () => {
+    const reliability: ReturnReliability = {
+      ...emptyReliability, label: 'resilient', confidence: 'medium', gapCount: 3,
+    };
+    const m = detectBehavioralMoments([act(1)], [], [], emptyGaps, emptyRhythm, reliability, NOW);
+    expect(m.map((x) => x.type)).toContain('reliable_returner');
+  });
+
+  it('does not surface reliable_returner for low confidence', () => {
+    const reliability: ReturnReliability = {
+      ...emptyReliability, label: 'resilient', confidence: 'low', gapCount: 2,
+    };
+    const m = detectBehavioralMoments([], [], [], emptyGaps, emptyRhythm, reliability, NOW);
+    expect(m.map((x) => x.type)).not.toContain('reliable_returner');
+  });
+
+  it('surfaces faster_return when last gap is well below average', () => {
+    const shortLastGapGaps: GapProfile = {
+      ...emptyGaps,
+      hasHistory: true, lastGapDays: 5, avgGapDays: 14,
+      // gapHistory last element is 5, which is < 14 * 0.8 = 11.2
+      gapHistory: [14, 16, 5], totalGapCount: 3, confidence: 'medium',
+      trend: 'shrinking',
+    };
+    const m = detectBehavioralMoments([act(5)], [], [], shortLastGapGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).toContain('faster_return');
+    const moment = m.find((x) => x.type === 'faster_return')!;
+    expect(moment.observation).toContain('5 days');
+    expect(moment.observation).toContain('14');
+  });
+
+  it('does not surface faster_return for low confidence gaps', () => {
+    const lowConfGaps: GapProfile = {
+      ...emptyGaps, gapHistory: [14, 5], avgGapDays: 14, confidence: 'low', trend: 'shrinking',
+    };
+    const m = detectBehavioralMoments([act(5)], [], [], lowConfGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).not.toContain('faster_return');
+  });
+
+  it('surfaces staying_connected for low-energy week with activity', () => {
+    const lowEnergyRef = ref(0, { energy: 3 }); // within 14 days
+    const m = detectBehavioralMoments([act(2)], [lowEnergyRef], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).toContain('staying_connected');
+  });
+
+  it('does not surface staying_connected for stale reflection (> 14 days)', () => {
+    const oldRef = ref(3, { energy: 3 }); // 3 weeks ago
+    const m = detectBehavioralMoments([act(2)], [oldRef], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).not.toContain('staying_connected');
+  });
+
+  it('does not surface staying_connected if no activity that week', () => {
+    const lowEnergyRef = ref(0, { energy: 3 });
+    // Activity is from 2 weeks ago — not in the reflection week
+    const m = detectBehavioralMoments([act(14)], [lowEnergyRef], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).not.toContain('staying_connected');
+  });
+
+  it('surfaces intention_followed for recent met intention', () => {
+    const recentMet = int(0, true, 'walk on tuesday');
+    const m = detectBehavioralMoments([], [], [recentMet], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).toContain('intention_followed');
+    const moment = m.find((x) => x.type === 'intention_followed')!;
+    expect(moment.observation).toContain('walk on tuesday');
+  });
+
+  it('does not surface intention_followed for stale met intention (> 14 days)', () => {
+    const oldMet = int(3, true); // 3 weeks ago
+    const m = detectBehavioralMoments([], [], [oldMet], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    expect(m.map((x) => x.type)).not.toContain('intention_followed');
+  });
+
+  it('truncates long intention descriptions at 40 chars with ellipsis', () => {
+    const longDesc = 'a'.repeat(50);
+    const recentMet = int(0, true, longDesc);
+    const m = detectBehavioralMoments([], [], [recentMet], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    const moment = m.find((x) => x.type === 'intention_followed');
+    if (moment) {
+      expect(moment.observation).toContain('…');
+      expect(moment.observation.length).toBeLessThan(60);
+    }
+  });
+
+  it('caps moments at MAX_MOMENTS (3)', () => {
+    const reliability: ReturnReliability = {
+      ...emptyReliability, label: 'resilient', confidence: 'high', gapCount: 5,
+    };
+    const shrinkingGaps: GapProfile = {
+      ...emptyGaps, hasHistory: true, lastGapDays: 5, avgGapDays: 14,
+      gapHistory: [14, 16, 5], totalGapCount: 3, confidence: 'medium', trend: 'shrinking',
+    };
+    const stabilizingRhythm: RhythmStability = {
+      ...emptyRhythm, trajectory: 'stabilizing', confidence: 'high',
+    };
+    const m = detectBehavioralMoments(
+      [act(5)],
+      [ref(0, { energy: 2 })],
+      [int(0, true)],
+      shrinkingGaps, stabilizingRhythm, reliability, NOW,
+    );
+    expect(m.length).toBeLessThanOrEqual(3);
+  });
+
+  it('all moments have observedAt as an ISO date string', () => {
+    const reliability: ReturnReliability = {
+      ...emptyReliability, label: 'resilient', confidence: 'medium', gapCount: 3,
+    };
+    const m = detectBehavioralMoments([act(1)], [], [], emptyGaps, emptyRhythm, reliability, NOW);
+    for (const moment of m) {
+      expect(moment.observedAt).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    }
+  });
+
+  it('does not include return_after_long_gap type', () => {
+    const m = detectBehavioralMoments([act(1)], [], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
+    const types = m.map((x) => x.type);
+    expect(types).not.toContain('return_after_long_gap');
+  });
+});
+
 describe('computeReturnReliability', () => {
   function makeGaps(
     totalGapCount: number,
