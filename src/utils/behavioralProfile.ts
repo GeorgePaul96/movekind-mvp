@@ -133,6 +133,14 @@ export interface BehavioralProfile {
   // bodyPattern?: BodyPattern;
 }
 
+// ─── Private Helpers ──────────────────────────────────────────────────────────
+
+function populationVariance(arr: number[]): number {
+  if (arr.length === 0) return 0;
+  const mean = arr.reduce((s, v) => s + v, 0) / arr.length;
+  return arr.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / arr.length;
+}
+
 // ─── Sub-functions (exported for independent testing) ─────────────────────────
 
 export function computeGapProfile(activities: Activity[], now: Date): GapProfile {
@@ -209,8 +217,58 @@ export function computeGapProfile(activities: Activity[], now: Date): GapProfile
   };
 }
 
-export function computeRhythmStability(_activities: Activity[], _now: Date): RhythmStability {
-  throw new Error('not implemented');
+export function computeRhythmStability(activities: Activity[], now: Date): RhythmStability {
+  const weekStart = startOfWeek(now, WEEK_OPTIONS);
+  const weekCounts = Array.from({ length: RHYTHM_WINDOW_WEEKS }, (_, i) => {
+    const wStart = addDays(weekStart, -7 * (RHYTHM_WINDOW_WEEKS - 1 - i));
+    return activitiesInWeek(activities, wStart).length;
+  });
+
+  const activeWeeks = weekCounts.filter((c) => c > 0).length;
+  const mean = weekCounts.reduce((s, c) => s + c, 0) / RHYTHM_WINDOW_WEEKS;
+  const variance = populationVariance(weekCounts);
+
+  const firstHalf = weekCounts.slice(0, 4);
+  const secondHalf = weekCounts.slice(4);
+  const firstVariance = populationVariance(firstHalf);
+  const secondVariance = populationVariance(secondHalf);
+
+  let trajectory: RhythmStability['trajectory'];
+  if (activeWeeks < 2) {
+    trajectory = 'insufficient_data';
+  } else if (
+    secondVariance < firstVariance * STABILIZING_VARIANCE_FACTOR &&
+    secondHalf.some((c) => c > 0)
+  ) {
+    trajectory = 'stabilizing';
+  } else if (variance < STABLE_VARIANCE_MAX && mean >= STABLE_AVG_SESSIONS_MIN) {
+    trajectory = 'stable';
+  } else if (secondVariance > firstVariance * FRAGMENTING_VARIANCE_FACTOR) {
+    trajectory = 'fragmenting';
+  } else if (secondVariance < firstVariance && secondHalf.some((c) => c > 0)) {
+    trajectory = 'rebuilding';
+  } else {
+    trajectory = 'insufficient_data';
+  }
+
+  const observation: string | null =
+    trajectory === 'stabilizing'
+      ? 'More consistent across recent weeks than the month before.'
+      : trajectory === 'stable'
+        ? 'Consistent week-to-week. Weeks like these compound.'
+        : null;
+
+  let confidence: Confidence = 'low';
+  if (activeWeeks >= 5) confidence = 'high';
+  else if (activeWeeks >= 2) confidence = 'medium';
+
+  return {
+    weeklyVariance: Math.round(variance * 10) / 10,
+    avgWeeklySessions: Math.round(mean * 10) / 10,
+    trajectory,
+    observation,
+    confidence,
+  };
 }
 
 export function computeRecoveryState(

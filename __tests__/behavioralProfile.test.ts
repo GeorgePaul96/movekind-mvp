@@ -72,8 +72,7 @@ function int(
 }
 
 describe('behavioralProfile stubs compile', () => {
-  it('throws on all stubs', () => {
-    expect(() => computeRhythmStability([], NOW)).toThrow('not implemented');
+  it('throws on unimplemented stubs', () => {
     expect(() => computeBehavioralProfile([], [], [], NOW)).toThrow('not implemented');
   });
 });
@@ -186,5 +185,80 @@ describe('computeGapProfile', () => {
     const p = computeGapProfile(activities, NOW);
     expect(p.gapHistory.length).toBeLessThanOrEqual(5);
     expect(p.totalGapCount).toBeGreaterThan(5);
+  });
+});
+
+describe('computeRhythmStability', () => {
+  it('returns insufficient_data with no activities', () => {
+    const r = computeRhythmStability([], NOW);
+    expect(r.trajectory).toBe('insufficient_data');
+    expect(r.confidence).toBe('low');
+    expect(r.observation).toBeNull();
+  });
+
+  it('returns insufficient_data with only 1 active week', () => {
+    const r = computeRhythmStability([act(1)], NOW);
+    expect(r.trajectory).toBe('insufficient_data');
+  });
+
+  it('returns stable when variance is low and consistent', () => {
+    // 3 activities per week for 8 weeks → very low variance
+    const activities: Activity[] = [];
+    for (let week = 0; week < 8; week++) {
+      activities.push(act(week * 7 + 1));
+      activities.push(act(week * 7 + 3));
+      activities.push(act(week * 7 + 5));
+    }
+    const r = computeRhythmStability(activities, NOW);
+    expect(r.trajectory).toBe('stable');
+    expect(r.confidence).toBe('high');
+    expect(r.observation).not.toBeNull();
+  });
+
+  it('computes avgWeeklySessions correctly', () => {
+    // 8 weeks, 2 activities each = avg 2
+    const activities: Activity[] = [];
+    for (let week = 0; week < 8; week++) {
+      activities.push(act(week * 7 + 1));
+      activities.push(act(week * 7 + 3));
+    }
+    const r = computeRhythmStability(activities, NOW);
+    expect(r.avgWeeklySessions).toBeCloseTo(2, 0);
+  });
+
+  it('returns medium confidence with 2-4 active weeks', () => {
+    const r = computeRhythmStability([act(1), act(8), act(15)], NOW);
+    expect(r.confidence).toBe('medium');
+  });
+
+  it('returns stabilizing observation when trajectory is stabilizing', () => {
+    // Build a scenario: first 4 weeks volatile, last 4 weeks consistent
+    const activities: Activity[] = [];
+    // Last 4 weeks (recent in window): 2 sessions/week consistently
+    for (let w = 0; w < 4; w++) {
+      activities.push(act(w * 7 + 1));
+      activities.push(act(w * 7 + 3));
+    }
+    // First 4 weeks (older in window): alternating 0 and 4 sessions
+    activities.push(act(4 * 7 + 1));
+    activities.push(act(4 * 7 + 2));
+    activities.push(act(4 * 7 + 3));
+    activities.push(act(4 * 7 + 4));
+    // week at -5w: 0 sessions (skip)
+    activities.push(act(6 * 7 + 1));
+    activities.push(act(6 * 7 + 2));
+    activities.push(act(6 * 7 + 3));
+    activities.push(act(6 * 7 + 4));
+    // week at -7w: 0 sessions (skip)
+    const r = computeRhythmStability(activities, NOW);
+    // recent half is more consistent than old half → stabilizing or stable
+    expect(['stabilizing', 'stable']).toContain(r.trajectory);
+  });
+
+  it('weeklyVariance is a non-negative number', () => {
+    const activities = [act(1), act(3), act(8), act(10)];
+    const r = computeRhythmStability(activities, NOW);
+    expect(r.weeklyVariance).toBeGreaterThanOrEqual(0);
+    expect(typeof r.weeklyVariance).toBe('number');
   });
 });
