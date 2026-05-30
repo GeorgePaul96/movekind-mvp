@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, startOfWeek, subDays } from 'date-fns';
+import { addDays, differenceInCalendarDays, startOfWeek } from 'date-fns';
 import { activitiesInWeek } from './analytics';
 import { WEEK_OPTIONS } from './date';
 import { parseWellness } from '@/types';
@@ -490,15 +490,7 @@ export function detectBehavioralMoments(
         latestRef.energy <= DIFFICULT_WEEK_ENERGY_MAX ||
         (wellnessData !== null && wellnessData.motivation <= DIFFICULT_WEEK_ENERGY_MAX);
       if (lowEnergy) {
-        // Use ±7 day UTC window around week_start to capture activities in the
-        // reflection period regardless of local timezone offset.
-        const refDate = new Date(latestRef.week_start + 'T00:00:00Z');
-        const windowStart = subDays(refDate, 7);
-        const windowEnd = addDays(refDate, 7);
-        const weekActs = activities.filter((a) => {
-          const t = new Date(a.performed_at);
-          return t >= windowStart && t < windowEnd;
-        });
+        const weekActs = activitiesInWeek(activities, new Date(latestRef.week_start));
         if (weekActs.length > 0) {
           moments.push({
             type: 'staying_connected',
@@ -518,8 +510,8 @@ export function detectBehavioralMoments(
     const latest = metIntentions[0];
     if (latest && isWithinWindow(latest.week_start, 'intention_followed')) {
       const desc =
-        latest.description.length > 33
-          ? latest.description.slice(0, 33) + '…'
+        latest.description.length > 40
+          ? latest.description.slice(0, 40) + '…'
           : latest.description;
       moments.push({
         type: 'intention_followed',

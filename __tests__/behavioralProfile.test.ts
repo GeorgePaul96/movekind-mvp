@@ -421,7 +421,7 @@ describe('detectBehavioralMoments', () => {
   });
 
   it('surfaces staying_connected for low-energy week with activity', () => {
-    const lowEnergyRef = ref(0, { energy: 3 }); // within 14 days
+    const lowEnergyRef = ref(1, { energy: 3 }); // previous week (June 8), within 14 days
     const m = detectBehavioralMoments([act(2)], [lowEnergyRef], [], emptyGaps, emptyRhythm, emptyReliability, NOW);
     expect(m.map((x) => x.type)).toContain('staying_connected');
   });
@@ -460,7 +460,7 @@ describe('detectBehavioralMoments', () => {
     const moment = m.find((x) => x.type === 'intention_followed');
     if (moment) {
       expect(moment.observation).toContain('…');
-      expect(moment.observation.length).toBeLessThan(60);
+      expect(moment.observation.length).toBeLessThan(70);
     }
   });
 
