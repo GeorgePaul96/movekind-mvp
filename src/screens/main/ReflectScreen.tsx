@@ -13,7 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { weekStartIso } from '@/utils/date';
 import { useToast } from '@/hooks/useToast';
 
-type Key = 'energy' | 'recovery' | 'consistency' | 'mood';
+type Key = 'energy' | 'recovery' | 'mood';
 
 export default function ReflectScreen() {
   const user = useAuthStore((s) => s.user);
@@ -28,7 +28,6 @@ export default function ReflectScreen() {
   const [values, setValues] = useState<Record<Key, number>>({
     energy: 8,
     recovery: 6,
-    consistency: 8,
     mood: 7,
   });
 
@@ -37,7 +36,6 @@ export default function ReflectScreen() {
       setValues({
         energy: existing.energy,
         recovery: existing.recovery,
-        consistency: existing.consistency,
         mood: existing.mood,
       });
     }
@@ -51,7 +49,6 @@ export default function ReflectScreen() {
         week_start: weekIso,
         energy: values.energy,
         recovery: values.recovery,
-        consistency: values.consistency,
         mood: values.mood,
         notes: null,
       });

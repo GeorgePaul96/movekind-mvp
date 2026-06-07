@@ -30,20 +30,6 @@ export default function ProgressScreen() {
     [reflections],
   );
 
-  const streakDays = useMemo(() => {
-    const days = new Set(
-      activities.map((a) => new Date(a.performed_at).toDateString()),
-    );
-    let count = 0;
-    const cur = new Date();
-    cur.setHours(0, 0, 0, 0);
-    while (days.has(cur.toDateString())) {
-      count += 1;
-      cur.setDate(cur.getDate() - 1);
-    }
-    return count;
-  }, [activities]);
-
   const minutesChange = percentChange(minutes.map((d) => d.minutes));
   const energyChange = percentChange(energy.map((d) => d.value));
 
@@ -54,8 +40,8 @@ export default function ProgressScreen() {
       <View style={styles.streakStrip}>
         <Text style={{ fontSize: 28 }}>🌿</Text>
         <View>
-          <Text style={styles.streakValue}>{streakDays} days</Text>
-          <Text style={styles.streakDesc}>of consistent movement</Text>
+          <Text style={styles.streakValue}>Recovery Momentum</Text>
+          <Text style={styles.streakDesc}>Building safe consistency</Text>
         </View>
       </View>
 
@@ -72,7 +58,7 @@ export default function ProgressScreen() {
           </Text>
         </View>
         <BarChart
-          data={minutes}
+          data={minutes.map((d) => ({ label: d.label, value: d.minutes }))}
           color={colors.sageMid}
           highlightColor={colors.sage}
           unit="minutes"
@@ -105,7 +91,7 @@ export default function ProgressScreen() {
 
       <Card style={{ marginBottom: 10 }}>
         <View style={styles.trendHeader}>
-          <Text style={styles.trendName}>Recovery score</Text>
+          <Text style={styles.trendName}>Recovery state</Text>
           <Text style={[styles.trendChange, { color: colors.muted }]}>stable</Text>
         </View>
         <BarChart
@@ -117,11 +103,10 @@ export default function ProgressScreen() {
       </Card>
 
       <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.scoreTitle}>Overall progress score</Text>
-        <Text style={styles.scoreValue}>{scores.overall}</Text>
+        <Text style={styles.scoreTitle}>Nervous System State</Text>
+        <Text style={styles.scoreValue}>{scores.recoveryState}</Text>
         <Text style={styles.scoreSub}>
-          Consistency {scores.consistency} · Strength {scores.strength} · Endurance{' '}
-          {scores.endurance} · Recovery {scores.recovery}
+          Energy {scores.energy} · Stress Load {scores.stressLoad}
         </Text>
       </Card>
 

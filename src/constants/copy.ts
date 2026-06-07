@@ -27,6 +27,5 @@ export const FALLBACK_INSIGHTS = [
 export const REFLECTION_PROMPTS = [
   { key: 'energy',      label: 'How energized did you feel?' },
   { key: 'recovery',    label: 'How was your recovery?' },
-  { key: 'consistency', label: 'How consistent were you?' },
   { key: 'mood',        label: 'How was your mood overall?' },
 ] as const;

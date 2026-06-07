@@ -57,7 +57,7 @@ export default function HomeScreen() {
     return () => {
       cancelled = true;
     };
-  }, [user, activities.length, reflections.length, scores.overall]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, activities.length, reflections.length, scores.energy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const recent = useMemo(() => activities.slice(0, 5), [activities]);
 
@@ -69,12 +69,11 @@ export default function HomeScreen() {
 
       <SectionLabel>Your scores this week</SectionLabel>
       <View style={styles.grid}>
-        <ScoreCard emoji="🔥" label="Consistency" value={scores.consistency} palette="sage" />
-        <ScoreCard emoji="🏋️" label="Strength" value={scores.strength} palette="blush" />
+        <ScoreCard emoji="⚡" label="Energy" value={scores.energy} palette="sage" />
+        <ScoreCard emoji="📉" label="Stress Load" value={scores.stressLoad} palette="blush" />
       </View>
       <View style={styles.grid}>
-        <ScoreCard emoji="🏃" label="Endurance" value={scores.endurance} palette="sky" />
-        <ScoreCard emoji="🌙" label="Recovery" value={scores.recovery} palette="warm" />
+        <ScoreCard emoji="🧘" label="Recovery State" value={scores.recoveryState} palette="sky" />
       </View>
 
       <View style={{ height: 12 }} />
