@@ -14,11 +14,9 @@ import { startCheckout } from '@/services/premium';
 import type { Goal, Profile, ScoreFocus } from '@/types';
 
 const FOCUSES: ScoreFocus[] = [
-  'overall',
-  'consistency',
-  'strength',
-  'endurance',
-  'recovery',
+  'energy',
+  'stressLoad',
+  'recoveryState'
 ];
 
 export default function ProfileScreen() {
@@ -31,7 +29,7 @@ export default function ProfileScreen() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [name, setName] = useState('');
   const [minutesTarget, setMinutesTarget] = useState('150');
-  const [focus, setFocus] = useState<ScoreFocus>('overall');
+  const [focus, setFocus] = useState<ScoreFocus>('energy');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {

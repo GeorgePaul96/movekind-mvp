@@ -10,11 +10,9 @@ export type ActivityType =
   | 'other';
 
 export type ScoreFocus =
-  | 'overall'
-  | 'strength'
-  | 'endurance'
-  | 'recovery'
-  | 'consistency';
+  | 'energy'
+  | 'stressLoad'
+  | 'recoveryState';
 
 export interface Profile {
   id: string;
@@ -55,7 +53,6 @@ export interface Reflection {
   week_start: string; // ISO date (yyyy-mm-dd)
   energy: number;
   recovery: number;
-  consistency: number;
   mood: number;
   notes: string | null;
   created_at: string;
@@ -67,11 +64,9 @@ export interface ProgressScore {
   id: string;
   user_id: string;
   week_start: string;
-  consistency: number;
-  strength: number;
-  endurance: number;
-  recovery: number;
-  overall: number;
+  energy: number;
+  stressLoad: number;
+  recoveryState: number;
   computed_at: string;
 }
 
@@ -84,9 +79,7 @@ export interface AIInsight {
 }
 
 export interface ComputedScores {
-  consistency: number;
-  strength: number;
-  endurance: number;
-  recovery: number;
-  overall: number;
+  energy: number;
+  stressLoad: number;
+  recoveryState: number;
 }
