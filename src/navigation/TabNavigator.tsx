@@ -2,14 +2,20 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import HomeScreen from '@/screens/main/HomeScreen';
-import LogScreen from '@/screens/main/LogScreen';
+import CheckInScreen from '@/screens/main/CheckInScreen';
 import ProgressScreen from '@/screens/main/ProgressScreen';
-import ReflectScreen from '@/screens/main/ReflectScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import { colors } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
-import type { TabParamList } from './types';
 import { useBootstrapData } from '@/hooks/useBootstrapData';
+
+// Replace ReflectScreen and LogScreen with CheckInScreen
+export type TabParamList = {
+  Home: undefined;
+  CheckIn: undefined;
+  Progress: undefined;
+  Profile: undefined;
+};
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -38,31 +44,25 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Log"
-        component={LogScreen}
+        name="CheckIn"
+        component={CheckInScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="➕" />,
+          tabBarLabel: 'Check In',
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🧘" />,
         }}
       />
       <Tab.Screen
         name="Progress"
         component={ProgressScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="📈" />,
-        }}
-      />
-      <Tab.Screen
-        name="Reflect"
-        component={ReflectScreen}
-        options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="💚" />,
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="📊" />,
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌿" />,
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="👤" />,
         }}
       />
     </Tab.Navigator>

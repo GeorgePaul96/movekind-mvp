@@ -1,19 +1,20 @@
-import type { NavigatorScreenParams } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { TabParamList } from './TabNavigator';
+
+export type RootStackParamList = {
+  Auth: undefined;
+  Main: undefined;
+};
 
 export type AuthStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
 };
 
-export type TabParamList = {
-  Home: undefined;
-  Log: undefined;
-  Progress: undefined;
-  Reflect: undefined;
-  Profile: undefined;
-};
+export type { TabParamList };
 
-export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthStackParamList>;
-  Main: NavigatorScreenParams<TabParamList>;
-};
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+}

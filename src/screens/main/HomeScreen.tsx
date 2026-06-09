@@ -1,106 +1,78 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
-import { QuoteCard } from '@/components/QuoteCard';
-import { WeekStrip } from '@/components/WeekStrip';
-import { SectionLabel } from '@/components/SectionLabel';
-import { ScoreCard } from '@/components/ScoreCard';
-import { InsightCard } from '@/components/InsightCard';
-import { ActivityRow } from '@/components/ActivityRow';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import { colors } from '@/constants/colors';
-import { QUOTES, FALLBACK_INSIGHTS } from '@/constants/copy';
-import { pickRandom } from '@/utils/format';
 import { useAuthStore } from '@/store/authStore';
-import { useActivityStore } from '@/store/activityStore';
-import { useScores } from '@/hooks/useScores';
-import { generateAndStoreInsight, getLatestInsight } from '@/services/ai';
-import { useReflectionStore } from '@/store/reflectionStore';
-import { weekStartIso } from '@/utils/date';
-import type { AIInsight } from '@/types';
+import { useCheckInStore } from '@/store/checkInStore';
+import { getRecommendation } from '@/domain/recovery/recommendationEngine';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { format } from 'date-fns';
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
-  const activities = useActivityStore((s) => s.activities);
-  const reflections = useReflectionStore((s) => s.reflections);
-  const scores = useScores();
-
-  const [insight, setInsight] = useState<AIInsight | null>(null);
-  const [quote] = useState(() => pickRandom(QUOTES));
+  const { latestCheckIn, loadLatest } = useCheckInStore();
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    const loadInsight = async () => {
-      const latest = await getLatestInsight(user.id);
-      if (!cancelled && latest) setInsight(latest);
+    if (user) {
+      loadLatest(user.id);
+    }
+  }, [user, loadLatest]);
 
-      const fresh = await generateAndStoreInsight(user.id, {
-        scores,
-        recentActivities: activities,
-        latestReflection:
-          reflections.find((r) => r.week_start === weekStartIso()) ?? null,
-      });
-      if (!cancelled) setInsight(fresh);
-    };
-    loadInsight().catch(() => {
-      if (!cancelled) {
-        setInsight({
-          id: 'fallback',
-          user_id: user.id,
-          body: pickRandom(FALLBACK_INSIGHTS),
-          source: 'fallback',
-          created_at: new Date().toISOString(),
-        });
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, activities.length, reflections.length, scores.energy]); // eslint-disable-line react-hooks/exhaustive-deps
+  const onCheckIn = () => {
+    navigation.navigate('CheckIn');
+  };
 
-  const recent = useMemo(() => activities.slice(0, 5), [activities]);
+  if (!latestCheckIn) {
+    return (
+      <Screen>
+        <Header tag="Good morning" title="How are you moving today?" />
+        <Card style={styles.emptyCard}>
+          <Text style={styles.emptyText}>You haven't checked in today.</Text>
+          <Button label="Start Daily Check-In" onPress={onCheckIn} />
+        </Card>
+      </Screen>
+    );
+  }
+
+  const rec = getRecommendation(latestCheckIn.generated_state);
 
   return (
     <Screen>
-      <Header tag="Good morning" title={`How are you\nmoving today?`} />
-      <QuoteCard quote={quote} />
-      <WeekStrip activities={activities} />
+      <Header tag="Nervous System State" title={latestCheckIn.generated_state} />
 
-      <SectionLabel>Your scores this week</SectionLabel>
-      <View style={styles.grid}>
-        <ScoreCard emoji="⚡" label="Energy" value={scores.energy} palette="sage" />
-        <ScoreCard emoji="📉" label="Stress Load" value={scores.stress_load} palette="blush" />
-      </View>
-      <View style={styles.grid}>
-        <ScoreCard emoji="🧘" label="Recovery State" value={scores.recovery_state} palette="sky" />
-      </View>
+      <Card style={styles.card}>
+        <Text style={styles.label}>Today's Recommendation</Text>
+        <Text style={styles.title}>{rec.title}</Text>
+        <Text style={styles.desc}>{rec.description}</Text>
+        <Text style={styles.rationale}>Why: {rec.rationale}</Text>
+      </Card>
 
-      <View style={{ height: 12 }} />
-      <InsightCard body={insight?.body ?? FALLBACK_INSIGHTS[0]!} />
-
-      <SectionLabel>Recent activities</SectionLabel>
-      {recent.length === 0 ? (
-        <Text style={styles.empty}>
-          No activities yet. Tap Log to add your first one — even five minutes counts.
+      <Card style={styles.card}>
+        <Text style={styles.label}>Last Check-In</Text>
+        <Text style={styles.meta}>
+          {format(new Date(latestCheckIn.created_at), 'h:mm a, MMM d')}
         </Text>
-      ) : (
-        recent.map((a) => <ActivityRow key={a.id} activity={a} />)
-      )}
+        <Text style={styles.meta}>Energy: {latestCheckIn.energy}/10</Text>
+        <Text style={styles.meta}>Stress: {latestCheckIn.stress_load}/10</Text>
+      </Card>
+
+      <Button label="Update Check-In" onPress={onCheckIn} variant="sage-soft" />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  empty: {
-    color: colors.muted,
-    fontSize: 14,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    borderRadius: 14,
-    lineHeight: 20,
-  },
+  emptyCard: { padding: 24, alignItems: 'center', gap: 16, marginTop: 20 },
+  emptyText: { color: colors.ink, fontSize: 16, fontWeight: '500' },
+  card: { marginBottom: 12, padding: 16 },
+  label: { fontSize: 12, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  title: { fontSize: 18, color: colors.ink, fontWeight: '600', marginBottom: 4 },
+  desc: { fontSize: 14, color: colors.ink, lineHeight: 20, marginBottom: 8 },
+  rationale: { fontSize: 13, color: colors.sageDark, fontStyle: 'italic' },
+  meta: { fontSize: 14, color: colors.ink, marginBottom: 4 },
 });
