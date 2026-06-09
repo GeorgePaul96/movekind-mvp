@@ -61,7 +61,7 @@ create table if not exists public.goals (
   user_id uuid not null references auth.users(id) on delete cascade,
   weekly_minutes_target integer not null default 150,
   weekly_sessions_target integer not null default 4,
-  focus text not null default 'overall' check (focus in ('overall','strength','endurance','recovery','consistency')),
+  focus text not null default 'energy' check (focus in ('energy','stress_load','recovery_state')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id)
@@ -132,7 +132,6 @@ create table if not exists public.reflections (
   week_start date not null,
   energy integer not null check (energy between 1 and 10),
   recovery integer not null check (recovery between 1 and 10),
-  consistency integer not null check (consistency between 1 and 10),
   mood integer not null check (mood between 1 and 10),
   notes text,
   created_at timestamptz not null default now(),
@@ -167,11 +166,9 @@ create table if not exists public.progress_scores (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   week_start date not null,
-  consistency integer not null check (consistency between 0 and 100),
-  strength integer not null check (strength between 0 and 100),
-  endurance integer not null check (endurance between 0 and 100),
-  recovery integer not null check (recovery between 0 and 100),
-  overall integer not null check (overall between 0 and 100),
+  energy integer not null check (energy between 0 and 100),
+  stress_load integer not null check (stress_load between 0 and 100),
+  recovery_state integer not null check (recovery_state between 0 and 100),
   computed_at timestamptz not null default now(),
   unique (user_id, week_start)
 );

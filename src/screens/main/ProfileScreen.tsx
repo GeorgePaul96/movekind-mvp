@@ -15,8 +15,8 @@ import type { Goal, Profile, ScoreFocus } from '@/types';
 
 const FOCUSES: ScoreFocus[] = [
   'energy',
-  'stressLoad',
-  'recoveryState'
+  'stress_load',
+  'recovery_state'
 ];
 
 export default function ProfileScreen() {

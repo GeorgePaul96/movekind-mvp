@@ -70,10 +70,10 @@ export default function HomeScreen() {
       <SectionLabel>Your scores this week</SectionLabel>
       <View style={styles.grid}>
         <ScoreCard emoji="⚡" label="Energy" value={scores.energy} palette="sage" />
-        <ScoreCard emoji="📉" label="Stress Load" value={scores.stressLoad} palette="blush" />
+        <ScoreCard emoji="📉" label="Stress Load" value={scores.stress_load} palette="blush" />
       </View>
       <View style={styles.grid}>
-        <ScoreCard emoji="🧘" label="Recovery State" value={scores.recoveryState} palette="sky" />
+        <ScoreCard emoji="🧘" label="Recovery State" value={scores.recovery_state} palette="sky" />
       </View>
 
       <View style={{ height: 12 }} />
