@@ -11,8 +11,8 @@ export type ActivityType =
 
 export type ScoreFocus =
   | 'energy'
-  | 'stressLoad'
-  | 'recoveryState';
+  | 'stress_load'
+  | 'recovery_state';
 
 export interface Profile {
   id: string;
@@ -65,8 +65,8 @@ export interface ProgressScore {
   user_id: string;
   week_start: string;
   energy: number;
-  stressLoad: number;
-  recoveryState: number;
+  stress_load: number;
+  recovery_state: number;
   computed_at: string;
 }
 
@@ -80,6 +80,6 @@ export interface AIInsight {
 
 export interface ComputedScores {
   energy: number;
-  stressLoad: number;
-  recoveryState: number;
+  stress_load: number;
+  recovery_state: number;
 }

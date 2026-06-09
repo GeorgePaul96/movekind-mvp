@@ -104,9 +104,9 @@ export default function ProgressScreen() {
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.scoreTitle}>Nervous System State</Text>
-        <Text style={styles.scoreValue}>{scores.recoveryState}</Text>
+        <Text style={styles.scoreValue}>{scores.recovery_state}</Text>
         <Text style={styles.scoreSub}>
-          Energy {scores.energy} · Stress Load {scores.stressLoad}
+          Energy {scores.energy} · Stress Load {scores.stress_load}
         </Text>
       </Card>
 

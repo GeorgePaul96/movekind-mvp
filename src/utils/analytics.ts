@@ -6,6 +6,7 @@ import type {
 } from '@/types';
 import { addDays, isAfter, startOfWeek } from 'date-fns';
 import { WEEK_OPTIONS } from './date';
+import { previousWeeks, isoDate } from './date';
 
 export function clampScore(n: number): number {
   if (Number.isNaN(n) || !Number.isFinite(n)) return 0;
@@ -56,8 +57,8 @@ export function computeScores(
 ): ComputedScores {
   return {
     energy: energyScore(reflection),
-    stressLoad: stressLoadScore(activities, now),
-    recoveryState: recoveryStateScore(reflection),
+    stress_load: stressLoadScore(activities, now),
+    recovery_state: recoveryStateScore(reflection),
   };
 }
 
@@ -70,7 +71,6 @@ export function percentChange(values: number[]): number {
   return Math.round(change);
 }
 
-import { previousWeeks, isoDate } from './date';
 
 export function weeklyMinutes(
   activities: Activity[],

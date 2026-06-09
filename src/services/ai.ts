@@ -25,7 +25,7 @@ function buildPrompt(input: BuildPromptInput): string {
 Use the data below to give one specific observation and one gentle regulation suggestion.
 No guilt, no fitness-shaming, no exclamation marks. Avoid medical claims.
 
-Scores (0-100): Energy ${input.scores.energy}, Stress Load ${input.scores.stressLoad}, Recovery State ${input.scores.recoveryState}.
+Scores (0-100): Energy ${input.scores.energy}, Stress Load ${input.scores.stress_load}, Recovery State ${input.scores.recovery_state}.
 Recent activities:
 ${acts.join('\n') || '(none logged this week)'}
 ${reflection}`;
