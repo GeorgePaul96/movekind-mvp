@@ -1,12 +1,22 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface OnboardingAnswers {
+  movementFeel: string;
+  appFatigueReason: string;
+  approachableMovements: string[];
+  averageEnergy: number;
+}
+
 interface SettingsState {
   notificationsEnabled: boolean;
   reduceMotion: boolean;
+  onboarded: boolean;
+  onboardingAnswers: OnboardingAnswers | null;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
+  completeOnboarding: (answers: OnboardingAnswers) => Promise<void>;
 }
 
 const KEY = '@movekind/settings';
@@ -14,11 +24,15 @@ const KEY = '@movekind/settings';
 interface PersistedSettings {
   notificationsEnabled: boolean;
   reduceMotion: boolean;
+  onboarded: boolean;
+  onboardingAnswers: OnboardingAnswers | null;
 }
 
 const DEFAULTS: PersistedSettings = {
   notificationsEnabled: true,
   reduceMotion: false,
+  onboarded: false,
+  onboardingAnswers: null,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -56,4 +70,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ reduceMotion: v });
     await write({ ...get(), reduceMotion: v });
   },
+
+  completeOnboarding: async (answers) => {
+    set({ onboarded: true, onboardingAnswers: answers });
+    await write({ ...get(), onboarded: true, onboardingAnswers: answers });
+  },
 }));
+

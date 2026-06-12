@@ -41,6 +41,7 @@ The schema includes a demo seed block. When a new user signs up, a `profile` row
 | --- | --- | --- |
 | `EXPO_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon public key |
+| `EXPO_PUBLIC_OPENAI_API_KEY` | no | Enables real GPT-based coaching. Mock used otherwise. |
 
 ## Running the project
 

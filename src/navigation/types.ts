@@ -7,13 +7,13 @@ export type AuthStackParamList = {
 
 export type TabParamList = {
   Home: undefined;
-  Log: undefined;
-  Progress: undefined;
-  Reflect: undefined;
+  Journey: undefined;
   Profile: undefined;
 };
 
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<TabParamList>;
+  Onboarding: undefined;
 };
+

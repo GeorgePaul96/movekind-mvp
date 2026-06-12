@@ -2,9 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import HomeScreen from '@/screens/main/HomeScreen';
-import LogScreen from '@/screens/main/LogScreen';
-import ProgressScreen from '@/screens/main/ProgressScreen';
-import ReflectScreen from '@/screens/main/ReflectScreen';
+import JourneyScreen from '@/screens/main/JourneyScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import { colors } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
@@ -38,24 +36,10 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Log"
-        component={LogScreen}
+        name="Journey"
+        component={JourneyScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="➕" />,
-        }}
-      />
-      <Tab.Screen
-        name="Progress"
-        component={ProgressScreen}
-        options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="📈" />,
-        }}
-      />
-      <Tab.Screen
-        name="Reflect"
-        component={ReflectScreen}
-        options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="💚" />,
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌱" />,
         }}
       />
       <Tab.Screen

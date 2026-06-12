@@ -1,106 +1,159 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
-import { QuoteCard } from '@/components/QuoteCard';
-import { WeekStrip } from '@/components/WeekStrip';
-import { SectionLabel } from '@/components/SectionLabel';
-import { ScoreCard } from '@/components/ScoreCard';
-import { InsightCard } from '@/components/InsightCard';
-import { ActivityRow } from '@/components/ActivityRow';
+import { Card } from '@/components/Card';
 import { colors } from '@/constants/colors';
-import { QUOTES, FALLBACK_INSIGHTS } from '@/constants/copy';
-import { pickRandom } from '@/utils/format';
 import { useAuthStore } from '@/store/authStore';
-import { useActivityStore } from '@/store/activityStore';
-import { useScores } from '@/hooks/useScores';
-import { generateAndStoreInsight, getLatestInsight } from '@/services/ai';
-import { useReflectionStore } from '@/store/reflectionStore';
-import { weekStartIso } from '@/utils/date';
-import type { AIInsight } from '@/types';
+import { useSessionStore } from '@/store/sessionStore';
+
+// Components
+import { CheckInFlow } from '@/components/CheckInFlow';
+import { SessionOverview } from '@/components/SessionOverview';
+import { SessionPlayer } from '@/components/SessionPlayer';
+import { SessionComplete } from '@/components/SessionComplete';
+import { Paywall } from '@/components/Paywall';
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
-  const activities = useActivityStore((s) => s.activities);
-  const reflections = useReflectionStore((s) => s.reflections);
-  const scores = useScores();
-
-  const [insight, setInsight] = useState<AIInsight | null>(null);
-  const [quote] = useState(() => pickRandom(QUOTES));
+  
+  const currentSession = useSessionStore((s) => s.currentSession);
+  const currentCheckIn = useSessionStore((s) => s.currentCheckIn);
+  const composedBlocks = useSessionStore((s) => s.composedBlocks);
+  const activeIndex = useSessionStore((s) => s.activeBlockIndex);
+  const paywallVisible = useSessionStore((s) => s.paywallVisible);
+  
+  const loadStatsAndHistory = useSessionStore((s) => s.loadStatsAndHistory);
+  const loading = useSessionStore((s) => s.loading);
 
   useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    const loadInsight = async () => {
-      const latest = await getLatestInsight(user.id);
-      if (!cancelled && latest) setInsight(latest);
+    loadStatsAndHistory();
+  }, [loadStatsAndHistory]);
 
-      const fresh = await generateAndStoreInsight(user.id, {
-        scores,
-        recentActivities: activities,
-        latestReflection:
-          reflections.find((r) => r.week_start === weekStartIso()) ?? null,
-      });
-      if (!cancelled) setInsight(fresh);
-    };
-    loadInsight().catch(() => {
-      if (!cancelled) {
-        setInsight({
-          id: 'fallback',
-          user_id: user.id,
-          body: pickRandom(FALLBACK_INSIGHTS),
-          source: 'fallback',
-          created_at: new Date().toISOString(),
-        });
+  const renderContent = () => {
+    if (paywallVisible) {
+      return <Paywall />;
+    }
+
+    if (loading && !currentSession) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.sage} />
+        </View>
+      );
+    }
+
+    // 1. Check if there's an active session
+    if (currentSession) {
+      if (currentSession.status === 'generated') {
+        return <SessionOverview />;
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, activities.length, reflections.length, scores.energy]); // eslint-disable-line react-hooks/exhaustive-deps
+      
+      if (currentSession.status === 'started') {
+        // If there are still blocks left to play
+        if (activeIndex < composedBlocks.length) {
+          return <SessionPlayer />;
+        }
+        // If all blocks are completed/played, show the completion/rating view
+        return <SessionComplete />;
+      }
+    }
 
-  const recent = useMemo(() => activities.slice(0, 5), [activities]);
+    // 2. If no active session, check if checked in today
+    if (!currentCheckIn) {
+      return <CheckInFlow />;
+    }
+
+    // 3. Already checked in and no active session (i.e. completed or bypassed for today)
+    return (
+      <View style={{ gap: 12 }}>
+        <Card style={styles.doneCard}>
+          <Text style={{ fontSize: 32 }}>🌿</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.doneTitle}>All Set for Today</Text>
+            <Text style={styles.doneDesc}>
+              You completed your daily attunement. Your capacity rating was successfully logged.
+            </Text>
+          </View>
+        </Card>
+
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.sectionTitle}>Today's Capacity Win</Text>
+          <View style={styles.winRow}>
+            <Text style={{ fontSize: 22 }}>🌱</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.winTitle}>Body Attunement</Text>
+              <Text style={styles.winSub}>
+                You listened to your nervous system capacity and completed today's composed routine.
+              </Text>
+            </View>
+          </View>
+        </Card>
+      </View>
+    );
+  };
 
   return (
     <Screen>
-      <Header tag="Good morning" title={`How are you\nmoving today?`} />
-      <QuoteCard quote={quote} />
-      <WeekStrip activities={activities} />
-
-      <SectionLabel>Your scores this week</SectionLabel>
-      <View style={styles.grid}>
-        <ScoreCard emoji="⚡" label="Energy" value={scores.energy} palette="sage" />
-        <ScoreCard emoji="📉" label="Stress Load" value={scores.stress_load} palette="blush" />
-      </View>
-      <View style={styles.grid}>
-        <ScoreCard emoji="🧘" label="Recovery State" value={scores.recovery_state} palette="sky" />
-      </View>
-
-      <View style={{ height: 12 }} />
-      <InsightCard body={insight?.body ?? FALLBACK_INSIGHTS[0]!} />
-
-      <SectionLabel>Recent activities</SectionLabel>
-      {recent.length === 0 ? (
-        <Text style={styles.empty}>
-          No activities yet. Tap Log to add your first one — even five minutes counts.
-        </Text>
-      ) : (
-        recent.map((a) => <ActivityRow key={a.id} activity={a} />)
-      )}
+      <Header 
+        tag="Daily attunement" 
+        title={user?.user_metadata?.name ? `Hello, ${user.user_metadata.name}` : 'MoveKind'} 
+      />
+      {renderContent()}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  empty: {
-    color: colors.muted,
-    fontSize: 14,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+  loadingContainer: {
+    height: 300,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneCard: {
+    backgroundColor: colors.sageLight,
+    borderColor: colors.sage,
     borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 14,
-    lineHeight: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  doneTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.sageDark,
+  },
+  doneDesc: {
+    fontSize: 12,
+    color: colors.sageDark,
+    opacity: 0.8,
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    color: colors.muted,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    marginBottom: 12,
+  },
+  winRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  winTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.ink,
+  },
+  winSub: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 2,
+    lineHeight: 16,
   },
 });

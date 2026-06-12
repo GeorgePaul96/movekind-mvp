@@ -1,85 +1,65 @@
-export type ActivityType =
-  | 'walk'
-  | 'run'
-  | 'weights'
-  | 'cycle'
-  | 'yoga'
-  | 'swim'
-  | 'sport'
-  | 'stretch'
-  | 'other';
-
-export type ScoreFocus =
-  | 'energy'
-  | 'stress_load'
-  | 'recovery_state';
+export type UserState = 'overloaded' | 'recovering' | 'regulated' | 'activated';
 
 export interface Profile {
   id: string;
   name: string | null;
   is_premium: boolean;
-  stripe_customer_id: string | null;
   created_at: string;
-  updated_at: string;
 }
 
-export interface Goal {
+export interface CheckIn {
   id: string;
   user_id: string;
-  weekly_minutes_target: number;
-  weekly_sessions_target: number;
-  focus: ScoreFocus;
+  energy_score: number; // 1 to 5
+  sleep_quality: 'good' | 'fair' | 'poor' | null;
+  engine_version: string;
   created_at: string;
-  updated_at: string;
 }
 
-export interface Activity {
+export interface Exercise {
+  id: string;
+  name: string;
+  category: 'regulate' | 'mobilize' | 'strengthen' | 'move' | 'downshift';
+  base_difficulty: number; // 1 to 3
+  cues: string[];
+  illustration_ref: string;
+  created_at: string;
+}
+
+export interface Session {
   id: string;
   user_id: string;
-  type: ActivityType;
-  duration_minutes: number;
-  effort: number;
-  moods: string[];
+  check_in_id: string | null;
+  state: UserState;
+  status: 'generated' | 'started' | 'completed' | 'abandoned';
+  engine_version: string;
+  created_at: string;
+}
+
+export interface SessionBlock {
+  id: string;
+  session_id: string;
+  exercise_id: string;
+  block_order: number;
+  target_duration: number; // in seconds
+  actual_duration: number | null;
+  status: 'pending' | 'completed' | 'skipped' | 'swapped';
+}
+
+export interface PostRating {
+  id: string;
+  session_id: string;
+  rating_delta: number; // -1 to 2
   notes: string | null;
-  performed_at: string;
   created_at: string;
 }
 
-export type NewActivity = Omit<Activity, 'id' | 'user_id' | 'created_at'>;
-
-export interface Reflection {
+export interface UserExerciseStats {
   id: string;
   user_id: string;
-  week_start: string; // ISO date (yyyy-mm-dd)
-  energy: number;
-  recovery: number;
-  mood: number;
-  notes: string | null;
-  created_at: string;
-}
-
-export type NewReflection = Omit<Reflection, 'id' | 'user_id' | 'created_at'>;
-
-export interface ProgressScore {
-  id: string;
-  user_id: string;
-  week_start: string;
-  energy: number;
-  stress_load: number;
-  recovery_state: number;
-  computed_at: string;
-}
-
-export interface AIInsight {
-  id: string;
-  user_id: string;
-  body: string;
-  source: 'openai' | 'fallback';
-  created_at: string;
-}
-
-export interface ComputedScores {
-  energy: number;
-  stress_load: number;
-  recovery_state: number;
+  exercise_id: string;
+  times_completed: number;
+  average_energy_delta: number;
+  average_session_completion_rate: number;
+  last_completed_at: string;
 }

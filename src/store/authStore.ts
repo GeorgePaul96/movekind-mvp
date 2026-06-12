@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/services/supabase';
+import { telemetry } from '@/services/telemetry';
 
 interface AuthState {
   session: Session | null;
@@ -18,6 +19,13 @@ export const useAuthStore = create<AuthState>((set) => {
   // Keep store in sync with Supabase auth events.
   supabase.auth.onAuthStateChange((_event, session) => {
     set({ session, user: session?.user ?? null });
+    if (session?.user) {
+      telemetry.identify(
+        session.user.id,
+        session.user.email,
+        session.user.user_metadata?.name
+      );
+    }
   });
 
   return {
@@ -31,14 +39,22 @@ export const useAuthStore = create<AuthState>((set) => {
     restoreSession: async () => {
       const { data } = await supabase.auth.getSession();
       set({ session: data.session, user: data.session?.user ?? null });
+      if (data.session?.user) {
+        telemetry.identify(
+          data.session.user.id,
+          data.session.user.email,
+          data.session.user.user_metadata?.name
+        );
+      }
     },
 
     signIn: async (email, password) => {
-      set({ loading: true, error: null });
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      console.log('LOGIN DATA:', JSON.stringify(data));
+      console.log('LOGIN ERROR:', JSON.stringify(error));
       if (error) {
         set({ loading: false, error: error.message });
         throw error;
@@ -49,6 +65,13 @@ export const useAuthStore = create<AuthState>((set) => {
         loading: false,
         error: null,
       });
+      if (data.user) {
+        telemetry.identify(
+          data.user.id,
+          data.user.email,
+          data.user.user_metadata?.name
+        );
+      }
     },
 
     signUp: async (email, password, name) => {
@@ -68,10 +91,18 @@ export const useAuthStore = create<AuthState>((set) => {
         loading: false,
         error: null,
       });
+      if (data.user) {
+        telemetry.identify(
+          data.user.id,
+          data.user.email,
+          data.user.user_metadata?.name
+        );
+      }
     },
 
     signOut: async () => {
       await supabase.auth.signOut();
+      telemetry.reset();
       set({ session: null, user: null });
     },
   };

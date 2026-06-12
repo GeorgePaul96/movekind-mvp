@@ -31,12 +31,17 @@ export function Slider({
 }: Props) {
   const [width, setWidth] = React.useState(0);
 
+  const onChangeRef = React.useRef(onChange);
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   const update = (x: number) => {
     if (width === 0) return;
     const ratio = clamp(x / width, 0, 1);
     const raw = min + ratio * (max - min);
     const stepped = Math.round(raw / step) * step;
-    onChange(clamp(stepped, min, max));
+    onChangeRef.current(clamp(stepped, min, max));
   };
 
   const responder = React.useMemo(
@@ -61,14 +66,15 @@ export function Slider({
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       {...responder.panHandlers}
     >
-      <View style={styles.track} />
+      <View style={styles.track} pointerEvents="none" />
       <View
         style={[
           styles.fill,
           { width: `${clamp(ratio * 100, 0, 100)}%`, backgroundColor: color },
         ]}
+        pointerEvents="none"
       />
-      <View style={[styles.knob, { left: knobX, borderColor: color }]} />
+      <View style={[styles.knob, { left: knobX, borderColor: color }]} pointerEvents="none" />
     </View>
   );
 }
