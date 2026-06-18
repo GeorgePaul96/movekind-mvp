@@ -28,9 +28,5 @@ export async function clearCache(key: string): Promise<void> {
 }
 
 export const cacheKeys = {
-  activities: 'activities',
-  reflections: 'reflections',
-  goals: 'goals',
   profile: 'profile',
-  insight: 'insight',
 };
