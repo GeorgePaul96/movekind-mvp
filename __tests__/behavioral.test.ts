@@ -4,6 +4,7 @@ import { computeGapProfile } from '../src/domain/behavioral/gaps';
 import { computeRhythm } from '../src/domain/behavioral/rhythm';
 import { computeRecovery } from '../src/domain/behavioral/recovery';
 import { detectWins } from '../src/domain/behavioral/wins';
+import { computeBehavioralProfile } from '../src/domain/behavioral';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-06-18T12:00:00.000Z');
@@ -184,6 +185,25 @@ describe('detectWins', () => {
     // which are keyed to the most recent completed session (daysAgo 1), so it sorts last.
     expect(types.indexOf('difficult_week_log')).toBe(types.length - 1);
     expect(types[0]).not.toBe('difficult_week_log');
+  });
+});
+
+describe('computeBehavioralProfile', () => {
+  test('assembles all four sub-profiles', () => {
+    const sessions = [1, 8, 15, 22].map((d) => session({ created_at: daysAgo(d) }));
+    const profile = computeBehavioralProfile(sessions, [checkIn()], [rating()], NOW);
+    expect(profile).toHaveProperty('gaps');
+    expect(profile).toHaveProperty('rhythm');
+    expect(profile).toHaveProperty('recovery');
+    expect(Array.isArray(profile.wins)).toBe(true);
+    expect(profile.wins.length).toBeLessThanOrEqual(3);
+  });
+
+  test('empty inputs never throw and report no history', () => {
+    const profile = computeBehavioralProfile([], [], [], NOW);
+    expect(profile.gaps.hasHistory).toBe(false);
+    expect(profile.recovery.signal).toBe('returning');
+    expect(profile.wins).toEqual([]);
   });
 });
 
