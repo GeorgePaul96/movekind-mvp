@@ -13,7 +13,7 @@ export function BehavioralBanner({ profile }: { profile: BehavioralProfile | nul
   const insight = profile.gaps.observation ?? profile.rhythm.observation ?? null;
 
   return (
-    <Card style={styles.card} testID="behavioral-banner">
+    <Card style={styles.card}>
       <Text style={styles.message}>{message}</Text>
       {insight ? <Text style={styles.insight}>{insight}</Text> : null}
     </Card>
