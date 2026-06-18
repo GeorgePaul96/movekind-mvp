@@ -1,3 +1,5 @@
+import type { RecoverySignal } from '@/domain/behavioral/types';
+
 export const QUOTES = [
   'Rest is part of progress. Your body remembers consistency, not perfection.',
   'Even five minutes of gentle movement is a gift to yourself.',
@@ -30,3 +32,12 @@ export const REFLECTION_PROMPTS = [
   { key: 'consistency', label: 'How did you feel about your movement rhythm?' },
   { key: 'mood',        label: 'How did you feel emotionally?' },
 ] as const;
+
+export const BEHAVIORAL_FALLBACK: Record<RecoverySignal, { message: string }> = {
+  returning: { message: "Glad you're here. Whenever you're ready, we'll meet you where you are." },
+  collapse: { message: "It's been a little while — and that's completely okay. One gentle check-in is enough." },
+  spiral: { message: 'No pressure today. Even opening the app is a step. We keep it light.' },
+  burnout_risk: { message: 'Your body might be asking for rest. A short, soft session is more than enough.' },
+  thriving: { message: "You've found a beautiful rhythm. Keep listening to your body." },
+  stable: { message: "Steady and kind. You're showing up for yourself." },
+};

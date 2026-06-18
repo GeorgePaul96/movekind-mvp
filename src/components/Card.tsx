@@ -5,10 +5,11 @@ import { colors } from '@/constants/colors';
 interface Props {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
-export function Card({ children, style }: Props) {
-  return <View style={[styles.card, style]}>{children}</View>;
+export function Card({ children, style, testID }: Props) {
+  return <View style={[styles.card, style]} testID={testID}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
