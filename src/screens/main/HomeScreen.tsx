@@ -13,6 +13,8 @@ import { SessionOverview } from '@/components/SessionOverview';
 import { SessionPlayer } from '@/components/SessionPlayer';
 import { SessionComplete } from '@/components/SessionComplete';
 import { Paywall } from '@/components/Paywall';
+import { BehavioralBanner } from '@/components/BehavioralBanner';
+import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
@@ -25,6 +27,8 @@ export default function HomeScreen() {
   
   const loadStatsAndHistory = useSessionStore((s) => s.loadStatsAndHistory);
   const loading = useSessionStore((s) => s.loading);
+
+  const { profile: behavioralProfile } = useBehavioralProfile();
 
   useEffect(() => {
     loadStatsAndHistory();
@@ -61,7 +65,12 @@ export default function HomeScreen() {
 
     // 2. If no active session, check if checked in today
     if (!currentCheckIn) {
-      return <CheckInFlow />;
+      return (
+        <View style={{ gap: 12 }}>
+          <BehavioralBanner profile={behavioralProfile} />
+          <CheckInFlow />
+        </View>
+      );
     }
 
     // 3. Already checked in and no active session (i.e. completed or bypassed for today)
