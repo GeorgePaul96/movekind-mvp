@@ -1,0 +1,47 @@
+# .claudeignore — files Claude Code should not read or scan.
+# Goal: stop accidental reads of huge/opaque files from burning context, and
+# keep search (Grep/Glob) focused on the ~4.5k lines of real source.
+
+# --- Dependencies (398 MB / 47k files) ---
+node_modules/
+
+# --- Lockfile: 545 KB, tracked, ~150k tokens if read. Never useful to read. ---
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# --- Build / bundler / Expo outputs ---
+dist/
+web-build/
+.expo/
+.expo-shared/
+android/
+ios/
+
+# --- Test & coverage reports ---
+coverage/
+
+# --- Logs, caches, temp ---
+*.log
+.cache/
+tmp/
+*.tmp
+
+# --- Binary / media assets (opaque to reasoning; metadata lives in code) ---
+assets/*.png
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.mp4
+*.mov
+
+# --- Secrets (also gitignored; never load) ---
+.env
+.env.*
+!.env.example
+
+# --- Editor/OS noise ---
+.DS_Store
+.vscode/
