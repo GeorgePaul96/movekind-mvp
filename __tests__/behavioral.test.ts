@@ -3,6 +3,7 @@ import type { GapProfile, RhythmStability } from '../src/domain/behavioral/types
 import { computeGapProfile } from '../src/domain/behavioral/gaps';
 import { computeRhythm } from '../src/domain/behavioral/rhythm';
 import { computeRecovery } from '../src/domain/behavioral/recovery';
+import { detectWins } from '../src/domain/behavioral/wins';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-06-18T12:00:00.000Z');
@@ -128,6 +129,43 @@ describe('computeRecovery', () => {
     const r = computeRecovery([], lows, [], gapProfile({ lastGapDays: 4 }), rhythmProfile({ trajectory: 'fragmenting' }));
     expect(r.isBurnoutRisk).toBe(true);
     expect(r.signal).toBe('burnout_risk');
+  });
+});
+
+describe('detectWins', () => {
+  test('most recent gap below average → faster_return', () => {
+    const wins = detectWins(
+      [session({ created_at: daysAgo(1) })],
+      gapProfile({ avgGapDays: 7, gapHistory: [9, 8, 4] }),
+      rhythmProfile({ trajectory: 'fragmenting' }),
+      NOW,
+    );
+    expect(wins.some((w) => w.type === 'faster_return')).toBe(true);
+  });
+
+  test('completed an overloaded session recently → difficult_week_log', () => {
+    const wins = detectWins(
+      [session({ created_at: daysAgo(3), state: 'overloaded', status: 'completed' })],
+      gapProfile({ trend: 'stable' }),
+      rhythmProfile({ trajectory: 'fragmenting' }),
+      NOW,
+    );
+    expect(wins.some((w) => w.type === 'difficult_week_log')).toBe(true);
+  });
+
+  test('caps at 3 wins, most recent first', () => {
+    const wins = detectWins(
+      [session({ created_at: daysAgo(2), state: 'overloaded' })],
+      gapProfile({ avgGapDays: 7, gapHistory: [9, 4], trend: 'shrinking' }),
+      rhythmProfile({ trajectory: 'stabilizing' }),
+      NOW,
+    );
+    expect(wins.length).toBeLessThanOrEqual(3);
+  });
+
+  test('no signals → no wins', () => {
+    const wins = detectWins([], gapProfile({ hasHistory: false, gapHistory: [], avgGapDays: 0, trend: 'insufficient_data' }), rhythmProfile({ trajectory: 'fragmenting' }), NOW);
+    expect(wins).toEqual([]);
   });
 });
 
