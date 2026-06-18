@@ -1,6 +1,7 @@
 import type { Session, CheckIn, PostRating } from '../src/types';
 import type { GapProfile, RhythmStability } from '../src/domain/behavioral/types';
 import { computeGapProfile } from '../src/domain/behavioral/gaps';
+import { computeRhythm } from '../src/domain/behavioral/rhythm';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-06-18T12:00:00.000Z');
@@ -63,6 +64,28 @@ describe('computeGapProfile', () => {
     const g = computeGapProfile(sessions, NOW);
     expect(g.gapHistory).toEqual([]); // only one completed session → no intervals
     expect(g.lastGapDays).toBe(10);
+  });
+});
+
+describe('computeRhythm', () => {
+  test('no sessions → insufficient_data', () => {
+    const r = computeRhythm([], NOW);
+    expect(r.trajectory).toBe('insufficient_data');
+    expect(r.avgWeeklySessions).toBe(0);
+  });
+
+  test('steady 2/week across 4 weeks → stable, zero variance', () => {
+    const sessions = [1, 3, 8, 10, 15, 17, 22, 24].map((d) => session({ created_at: daysAgo(d) }));
+    const r = computeRhythm(sessions, NOW);
+    expect(r.avgWeeklySessions).toBe(2);
+    expect(r.weeklyVariance).toBe(0);
+    expect(r.trajectory).toBe('stable');
+  });
+
+  test('activity after an empty week → rebuilding', () => {
+    const sessions = [1, 20, 22].map((d) => session({ created_at: daysAgo(d) }));
+    const r = computeRhythm(sessions, NOW);
+    expect(r.trajectory).toBe('rebuilding');
   });
 });
 
