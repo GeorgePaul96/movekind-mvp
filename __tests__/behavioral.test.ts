@@ -167,6 +167,24 @@ describe('detectWins', () => {
     const wins = detectWins([], gapProfile({ hasHistory: false, gapHistory: [], avgGapDays: 0, trend: 'insufficient_data' }), rhythmProfile({ trajectory: 'fragmenting' }), NOW);
     expect(wins).toEqual([]);
   });
+
+  test('orders wins most-recent-first by underlying event date', () => {
+    const sessions = [
+      session({ created_at: daysAgo(10), state: 'overloaded', status: 'completed' }),
+      session({ created_at: daysAgo(1), state: 'regulated', status: 'completed' }),
+    ];
+    const wins = detectWins(
+      sessions,
+      gapProfile({ avgGapDays: 7, gapHistory: [9, 4], trend: 'shrinking' }),
+      rhythmProfile({ trajectory: 'fragmenting' }),
+      NOW,
+    );
+    const types = wins.map((w) => w.type);
+    // difficult_week_log's event (daysAgo 10) is older than the gap-based wins,
+    // which are keyed to the most recent completed session (daysAgo 1), so it sorts last.
+    expect(types.indexOf('difficult_week_log')).toBe(types.length - 1);
+    expect(types[0]).not.toBe('difficult_week_log');
+  });
 });
 
 // Factories above are reused by later tasks in this file.
