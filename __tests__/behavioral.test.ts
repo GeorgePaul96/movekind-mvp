@@ -2,6 +2,7 @@ import type { Session, CheckIn, PostRating } from '../src/types';
 import type { GapProfile, RhythmStability } from '../src/domain/behavioral/types';
 import { computeGapProfile } from '../src/domain/behavioral/gaps';
 import { computeRhythm } from '../src/domain/behavioral/rhythm';
+import { computeRecovery } from '../src/domain/behavioral/recovery';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-06-18T12:00:00.000Z');
@@ -86,6 +87,47 @@ describe('computeRhythm', () => {
     const sessions = [1, 20, 22].map((d) => session({ created_at: daysAgo(d) }));
     const r = computeRhythm(sessions, NOW);
     expect(r.trajectory).toBe('rebuilding');
+  });
+});
+
+describe('computeRecovery', () => {
+  test('long gap + low energy → collapse', () => {
+    const r = computeRecovery([], [checkIn({ energy_score: 1 })], [], gapProfile({ lastGapDays: 12 }), rhythmProfile());
+    expect(r.isMotivationalCollapse).toBe(true);
+    expect(r.signal).toBe('collapse');
+  });
+
+  test('two consecutive abandons + gap > 7 → spiral', () => {
+    const sessions = [
+      session({ created_at: daysAgo(2), status: 'abandoned' }),
+      session({ created_at: daysAgo(4), status: 'abandoned' }),
+      session({ created_at: daysAgo(20), status: 'completed' }),
+    ];
+    const r = computeRecovery(sessions, [checkIn({ energy_score: 3 })], [], gapProfile({ lastGapDays: 8 }), rhythmProfile());
+    expect(r.isAvoidanceSpiral).toBe(true);
+    expect(r.signal).toBe('spiral');
+  });
+
+  test('no history → returning', () => {
+    const r = computeRecovery([], [], [], gapProfile({ hasHistory: false }), rhythmProfile({ trajectory: 'insufficient_data' }));
+    expect(r.signal).toBe('returning');
+  });
+
+  test('steady rhythm + positive ratings → thriving', () => {
+    const r = computeRecovery(
+      [], [checkIn({ energy_score: 4, sleep_quality: 'good' })], [rating({ rating_delta: 2 }), rating({ rating_delta: 1 })],
+      gapProfile({ lastGapDays: 3, trend: 'stable' }),
+      rhythmProfile({ trajectory: 'stable', avgWeeklySessions: 3 }),
+    );
+    expect(r.signal).toBe('thriving');
+    expect(r.reEntryReadiness).toBe('high');
+  });
+
+  test('repeated low energy + fragmenting → burnout_risk', () => {
+    const lows = [checkIn({ energy_score: 2 }), checkIn({ energy_score: 1 }), checkIn({ energy_score: 2 })];
+    const r = computeRecovery([], lows, [], gapProfile({ lastGapDays: 4 }), rhythmProfile({ trajectory: 'fragmenting' }));
+    expect(r.isBurnoutRisk).toBe(true);
+    expect(r.signal).toBe('burnout_risk');
   });
 });
 
