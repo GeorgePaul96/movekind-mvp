@@ -12,7 +12,7 @@ export function computeRhythm(sessions: Session[], now: Date = new Date()): Rhyt
     .sort((a, b) => a - b);
 
   if (completed.length === 0) {
-    return { weeklyVariance: 0, avgWeeklySessions: 0, trajectory: 'insufficient_data', observation: null };
+    return { weeklyVariance: 0, avgWeeklySessions: 0, weeklyCounts: [], trajectory: 'insufficient_data', observation: null };
   }
 
   const nowMs = now.getTime();
@@ -59,5 +59,5 @@ export function computeRhythm(sessions: Session[], now: Date = new Date()): Rhyt
     }
   }
 
-  return { weeklyVariance, avgWeeklySessions, trajectory, observation };
+  return { weeklyVariance, avgWeeklySessions, weeklyCounts: counts, trajectory, observation };
 }

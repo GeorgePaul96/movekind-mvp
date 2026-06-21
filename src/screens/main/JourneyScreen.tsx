@@ -7,6 +7,9 @@ import { colors } from '@/constants/colors';
 import { supabase } from '@/services/supabase';
 import { useAuthStore } from '@/store/authStore';
 import type { UserState } from '@/types';
+import { BarChart } from '@/components/BarChart';
+import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
+import { BEHAVIORAL_FALLBACK, RE_ENTRY_READINESS } from '@/constants/copy';
 
 interface StateStats {
   label: string;
@@ -24,7 +27,8 @@ interface PlaybookItem {
 
 export default function JourneyScreen() {
   const user = useAuthStore((s) => s.user);
-  
+  const { profile } = useBehavioralProfile();
+
   const [loading, setLoading] = useState(true);
   const [stateStats, setStateStats] = useState<StateStats[]>([]);
   const [playbook, setPlaybook] = useState<PlaybookItem[]>([]);
@@ -221,6 +225,65 @@ export default function JourneyScreen() {
             </View>
           )}
         </Card>
+        {/* --- Behavioral Insights (Spec B) --- */}
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.sectionTitle}>Rhythm Over Time</Text>
+          {profile && profile.rhythm.weeklyCounts.length > 0 ? (
+            <View>
+              <Text style={styles.sectionDesc}>Sessions per week as you return:</Text>
+              <BarChart
+                data={profile.rhythm.weeklyCounts.map((v, i) => ({ label: `W${i + 1}`, value: v }))}
+                color={colors.sageMid}
+                highlightColor={colors.sage}
+                unit="sessions / week"
+              />
+              {profile.rhythm.observation ? (
+                <Text style={styles.insightLine}>{profile.rhythm.observation}</Text>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.sectionDesc}>Your weekly rhythm will appear here as you return.</Text>
+          )}
+        </Card>
+
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.sectionTitle}>Return Rhythm</Text>
+          {profile && profile.gaps.gapHistory.length > 0 ? (
+            <View>
+              <Text style={styles.sectionDesc}>Days between your recent sessions:</Text>
+              <BarChart
+                data={profile.gaps.gapHistory.map((v, i) => ({ label: `${i + 1}`, value: v }))}
+                color={colors.sky}
+                unit="days between sessions"
+              />
+              {profile.gaps.observation ? (
+                <Text style={styles.insightLine}>{profile.gaps.observation}</Text>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.sectionDesc}>We'll show the rhythm of your returns here.</Text>
+          )}
+        </Card>
+
+        {profile ? (
+          <Card style={{ marginBottom: 12 }}>
+            <Text style={styles.sectionTitle}>Where You Are Now</Text>
+            <Text style={styles.recoveryMessage}>{BEHAVIORAL_FALLBACK[profile.recovery.signal].message}</Text>
+            <Text style={styles.insightLine}>{RE_ENTRY_READINESS[profile.recovery.reEntryReadiness]}</Text>
+          </Card>
+        ) : null}
+
+        {profile && profile.wins.length > 0 ? (
+          <Card style={{ marginBottom: 12 }}>
+            <Text style={styles.sectionTitle}>Recent Wins</Text>
+            {profile.wins.map((w, i) => (
+              <View key={i} style={styles.winRow}>
+                <Text style={{ fontSize: 16 }}>🌱</Text>
+                <Text style={styles.winText}>{w.observation}</Text>
+              </View>
+            ))}
+          </Card>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -258,6 +321,30 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginBottom: 12,
     lineHeight: 16,
+  },
+  insightLine: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 10,
+    lineHeight: 16,
+  },
+  recoveryMessage: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.sageDark,
+    lineHeight: 20,
+  },
+  winRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+  },
+  winText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.ink,
+    lineHeight: 18,
   },
   barContainer: {
     gap: 12,

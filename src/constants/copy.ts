@@ -41,3 +41,9 @@ export const BEHAVIORAL_FALLBACK: Record<RecoverySignal, { message: string }> = 
   thriving: { message: "You've found a beautiful rhythm. Keep listening to your body." },
   stable: { message: "Steady and kind. You're showing up for yourself." },
 };
+
+export const RE_ENTRY_READINESS: Record<'high' | 'medium' | 'low', string> = {
+  high: 'Your body looks ready for a fuller session today.',
+  medium: 'Meet yourself where you are — a moderate session fits today.',
+  low: 'Gentle is enough today. Honor what your body is asking for.',
+};
