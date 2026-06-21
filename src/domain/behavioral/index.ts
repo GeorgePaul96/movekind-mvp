@@ -4,12 +4,14 @@ import { computeGapProfile } from './gaps';
 import { computeRhythm } from './rhythm';
 import { computeRecovery } from './recovery';
 import { detectWins } from './wins';
+import { computeFollowThrough } from './followThrough';
 
 export * from './types';
 export { computeGapProfile } from './gaps';
 export { computeRhythm } from './rhythm';
 export { computeRecovery } from './recovery';
 export { detectWins } from './wins';
+export { computeFollowThrough } from './followThrough';
 
 export function computeBehavioralProfile(
   sessions: Session[],
@@ -21,5 +23,6 @@ export function computeBehavioralProfile(
   const rhythm = computeRhythm(sessions, now);
   const recovery = computeRecovery(sessions, checkIns, ratings, gaps, rhythm);
   const wins = detectWins(sessions, gaps, rhythm, now);
-  return { gaps, rhythm, recovery, wins };
+  const followThrough = computeFollowThrough(sessions);
+  return { gaps, rhythm, recovery, wins, followThrough };
 }
