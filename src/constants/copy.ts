@@ -47,3 +47,18 @@ export const RE_ENTRY_READINESS: Record<'high' | 'medium' | 'low', string> = {
   medium: 'Meet yourself where you are — a moderate session fits today.',
   low: 'Gentle is enough today. Honor what your body is asking for.',
 };
+
+export const NUDGE_COPY: Record<RecoverySignal, string> = {
+  thriving: "Your rhythm is strong. A session's here whenever you want it.",
+  stable: "A few kind minutes of movement are here when you're ready.",
+  returning: "Good to see you back. Whenever you're ready, we'll meet you where you are.",
+  burnout_risk: 'Rest counts too. If you move today, keep it gentle and short.',
+  spiral: "No pressure at all — even opening the app counts. We're here.",
+  collapse: "Whenever you're ready, the smallest step is enough. We'll meet you there.",
+};
+
+const NUDGE_DEFAULT = "Check in when you're ready to compose today's session.";
+
+export function nudgeBodyFor(signal: RecoverySignal | null): string {
+  return signal ? NUDGE_COPY[signal] : NUDGE_DEFAULT;
+}
