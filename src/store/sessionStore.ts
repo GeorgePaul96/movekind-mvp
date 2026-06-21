@@ -393,10 +393,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       telemetry.capture('session_completed', { sessionId: session.id, ratingDelta });
 
-      // Schedule state-aware notification for tomorrow
+      // Schedule adaptive nudge based on behavioral profile
       try {
-        const { scheduleStateAwareNotification } = await import('@/services/notifications');
-        await scheduleStateAwareNotification(session.state, true);
+        const { fetchBehavioralProfile } = await import('@/hooks/useBehavioralProfile');
+        const { scheduleAdaptiveNudge } = await import('@/services/notifications');
+        const p = await fetchBehavioralProfile();
+        await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
       } catch (nErr) {
         console.warn('Could not schedule notification on completeSession:', nErr);
       }
@@ -429,10 +431,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       telemetry.capture('session_abandoned', { sessionId: session.id, blockIndex: get().activeBlockIndex });
 
-      // Schedule state-aware notification for tomorrow (not completed)
+      // Schedule adaptive nudge based on behavioral profile
       try {
-        const { scheduleStateAwareNotification } = await import('@/services/notifications');
-        await scheduleStateAwareNotification(session.state, false);
+        const { fetchBehavioralProfile } = await import('@/hooks/useBehavioralProfile');
+        const { scheduleAdaptiveNudge } = await import('@/services/notifications');
+        const p = await fetchBehavioralProfile();
+        await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
       } catch (nErr) {
         console.warn('Could not schedule notification on abandonSession:', nErr);
       }
