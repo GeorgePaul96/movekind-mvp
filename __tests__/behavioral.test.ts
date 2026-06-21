@@ -5,6 +5,7 @@ import { computeRhythm } from '../src/domain/behavioral/rhythm';
 import { computeRecovery } from '../src/domain/behavioral/recovery';
 import { detectWins } from '../src/domain/behavioral/wins';
 import { computeBehavioralProfile } from '../src/domain/behavioral';
+import { computeFollowThrough } from '../src/domain/behavioral/followThrough';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-06-18T12:00:00.000Z');
@@ -194,8 +195,51 @@ describe('detectWins', () => {
   });
 });
 
+describe('computeFollowThrough', () => {
+  test('no terminal sessions → no history', () => {
+    const ft = computeFollowThrough([]);
+    expect(ft.hasHistory).toBe(false);
+    expect(ft.total).toBe(0);
+    expect(ft.completionRate).toBe(0);
+    expect(ft.trend).toBe('insufficient_data');
+    expect(ft.observation).toBeNull();
+  });
+
+  test('counts only terminal sessions and computes the rate', () => {
+    const sessions = [
+      session({ created_at: daysAgo(20), status: 'completed' }),
+      session({ created_at: daysAgo(16), status: 'completed' }),
+      session({ created_at: daysAgo(12), status: 'completed' }),
+      session({ created_at: daysAgo(8), status: 'completed' }),
+      session({ created_at: daysAgo(4), status: 'abandoned' }),
+      session({ created_at: daysAgo(2), status: 'generated' }), // non-terminal → ignored
+    ];
+    const ft = computeFollowThrough(sessions);
+    expect(ft.completed).toBe(4);
+    expect(ft.abandoned).toBe(1);
+    expect(ft.total).toBe(5);
+    expect(ft.completionRate).toBe(0.8);
+    expect(ft.hasHistory).toBe(true);
+    expect(ft.observation).toContain('80%');
+  });
+
+  test('improving completion over time → building trend', () => {
+    const sessions = [
+      session({ created_at: daysAgo(30), status: 'abandoned' }),
+      session({ created_at: daysAgo(28), status: 'abandoned' }),
+      session({ created_at: daysAgo(26), status: 'abandoned' }),
+      session({ created_at: daysAgo(6), status: 'completed' }),
+      session({ created_at: daysAgo(4), status: 'completed' }),
+      session({ created_at: daysAgo(2), status: 'completed' }),
+    ];
+    const ft = computeFollowThrough(sessions);
+    expect(ft.trend).toBe('building');
+    expect(ft.observation).toContain('climbing');
+  });
+});
+
 describe('computeBehavioralProfile', () => {
-  test('assembles all four sub-profiles', () => {
+  test('assembles all five sub-profiles', () => {
     const sessions = [1, 8, 15, 22].map((d) => session({ created_at: daysAgo(d) }));
     const profile = computeBehavioralProfile(sessions, [checkIn()], [rating()], NOW);
     expect(profile).toHaveProperty('gaps');
@@ -203,6 +247,7 @@ describe('computeBehavioralProfile', () => {
     expect(profile).toHaveProperty('recovery');
     expect(Array.isArray(profile.wins)).toBe(true);
     expect(profile.wins.length).toBeLessThanOrEqual(3);
+    expect(profile).toHaveProperty('followThrough');
   });
 
   test('empty inputs never throw and report no history', () => {
@@ -210,6 +255,7 @@ describe('computeBehavioralProfile', () => {
     expect(profile.gaps.hasHistory).toBe(false);
     expect(profile.recovery.signal).toBe('returning');
     expect(profile.wins).toEqual([]);
+    expect(profile.followThrough.hasHistory).toBe(false);
   });
 });
 

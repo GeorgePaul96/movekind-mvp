@@ -37,9 +37,20 @@ export interface SelfEfficacyWin {
   observation: string;
 }
 
+export interface FollowThrough {
+  completed: number;
+  abandoned: number;
+  total: number;
+  completionRate: number;
+  hasHistory: boolean;
+  trend: 'building' | 'steady' | 'wavering' | 'insufficient_data';
+  observation: string | null;
+}
+
 export interface BehavioralProfile {
   gaps: GapProfile;
   rhythm: RhythmStability;
   recovery: RecoveryState;
   wins: SelfEfficacyWin[];
+  followThrough: FollowThrough;
 }
