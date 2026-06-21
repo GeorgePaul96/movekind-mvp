@@ -239,7 +239,7 @@ describe('computeFollowThrough', () => {
 });
 
 describe('computeBehavioralProfile', () => {
-  test('assembles all four sub-profiles', () => {
+  test('assembles all five sub-profiles', () => {
     const sessions = [1, 8, 15, 22].map((d) => session({ created_at: daysAgo(d) }));
     const profile = computeBehavioralProfile(sessions, [checkIn()], [rating()], NOW);
     expect(profile).toHaveProperty('gaps');
