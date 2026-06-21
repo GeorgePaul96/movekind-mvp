@@ -15,6 +15,7 @@ import { SessionComplete } from '@/components/SessionComplete';
 import { Paywall } from '@/components/Paywall';
 import { BehavioralBanner } from '@/components/BehavioralBanner';
 import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
+import { scheduleAdaptiveNudge } from '@/services/notifications';
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
@@ -33,6 +34,12 @@ export default function HomeScreen() {
   useEffect(() => {
     loadStatsAndHistory();
   }, [loadStatsAndHistory]);
+
+  useEffect(() => {
+    if (behavioralProfile) {
+      scheduleAdaptiveNudge(behavioralProfile.recovery.signal);
+    }
+  }, [behavioralProfile]);
 
   const renderContent = () => {
     if (paywallVisible) {
