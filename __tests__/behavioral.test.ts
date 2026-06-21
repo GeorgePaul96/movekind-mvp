@@ -32,7 +32,7 @@ function gapProfile(o: Partial<GapProfile> = {}): GapProfile {
   return { hasHistory: true, lastGapDays: 2, avgGapDays: 3, gapHistory: [3, 3], trend: 'stable', observation: null, ...o };
 }
 function rhythmProfile(o: Partial<RhythmStability> = {}): RhythmStability {
-  return { weeklyVariance: 0, avgWeeklySessions: 2, trajectory: 'stable', observation: null, ...o };
+  return { weeklyVariance: 0, avgWeeklySessions: 2, weeklyCounts: [], trajectory: 'stable', observation: null, ...o };
 }
 
 describe('computeGapProfile', () => {
@@ -89,6 +89,12 @@ describe('computeRhythm', () => {
     const sessions = [1, 20, 22].map((d) => session({ created_at: daysAgo(d) }));
     const r = computeRhythm(sessions, NOW);
     expect(r.trajectory).toBe('rebuilding');
+  });
+
+  test('exposes weeklyCounts series (oldest → newest)', () => {
+    expect(computeRhythm([], NOW).weeklyCounts).toEqual([]);
+    const sessions = [1, 3, 8, 10, 15, 17, 22, 24].map((d) => session({ created_at: daysAgo(d) }));
+    expect(computeRhythm(sessions, NOW).weeklyCounts).toEqual([2, 2, 2, 2]);
   });
 });
 

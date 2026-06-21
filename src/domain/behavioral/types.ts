@@ -10,6 +10,7 @@ export interface GapProfile {
 export interface RhythmStability {
   weeklyVariance: number;
   avgWeeklySessions: number;
+  weeklyCounts: number[];
   trajectory: 'stabilizing' | 'stable' | 'fragmenting' | 'rebuilding' | 'insufficient_data';
   observation: string | null;
 }
