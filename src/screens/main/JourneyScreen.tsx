@@ -284,6 +284,34 @@ export default function JourneyScreen() {
             ))}
           </Card>
         ) : null}
+
+        {/* --- Self-Trust (3A-4) --- */}
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.sectionTitle}>Self-Trust</Text>
+          {profile && profile.followThrough.hasHistory ? (
+            <View>
+              <View style={styles.statsSummaryRow}>
+                <View style={styles.summaryBox}>
+                  <Text style={styles.summaryLabel}>Follow-Through</Text>
+                  <Text style={[styles.summaryValue, { color: colors.sageDark }]}>
+                    {Math.round(profile.followThrough.completionRate * 100)}%
+                  </Text>
+                </View>
+                <View style={styles.summaryBox}>
+                  <Text style={styles.summaryLabel}>Sessions Finished</Text>
+                  <Text style={styles.summaryValue}>
+                    {profile.followThrough.completed} / {profile.followThrough.total}
+                  </Text>
+                </View>
+              </View>
+              {profile.followThrough.observation ? (
+                <Text style={styles.insightLine}>{profile.followThrough.observation}</Text>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.sectionDesc}>Your follow-through shows here once you've finished a few sessions.</Text>
+          )}
+        </Card>
       </ScrollView>
     </Screen>
   );
