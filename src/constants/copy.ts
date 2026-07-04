@@ -48,6 +48,12 @@ export const RE_ENTRY_READINESS: Record<'high' | 'medium' | 'low', string> = {
   low: 'Gentle is enough today. Honor what your body is asking for.',
 };
 
+export const ERROR_FALLBACK = {
+  title: 'Something needed a pause',
+  body: "The app hit a snag — nothing you did. Your progress is safe, and a fresh start is one tap away.",
+  action: 'Start fresh',
+} as const;
+
 export const NUDGE_COPY: Record<RecoverySignal, string> = {
   thriving: "Your rhythm is strong. A session's here whenever you want it.",
   stable: "A few kind minutes of movement are here when you're ready.",

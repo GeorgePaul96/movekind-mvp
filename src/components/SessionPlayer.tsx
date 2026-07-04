@@ -100,10 +100,10 @@ export function SessionPlayer() {
           <Text style={styles.categoryTag}>{exercise.category}</Text>
         </View>
 
-        <Text style={styles.exerciseName}>{exercise.name}</Text>
+        <Text style={styles.exerciseName} accessibilityRole="header">{exercise.name}</Text>
 
         {/* Static illustration placeholder - styled box representing SVG */}
-        <View style={styles.illustrationBox}>
+        <View style={styles.illustrationBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
           <Text style={styles.illustrationIcon}>
             {exercise.category === 'regulate' ? '🌸' :
              exercise.category === 'mobilize' ? '🌱' :
@@ -113,7 +113,12 @@ export function SessionPlayer() {
           <Text style={styles.illustrationText}>[Static illustration: {exercise.illustration_ref}]</Text>
         </View>
 
-        <Text style={styles.timer}>{formatDuration(timeLeft)}</Text>
+        <Text
+          style={styles.timer}
+          accessibilityLabel={`${Math.floor(timeLeft / 60)} minutes ${timeLeft % 60} seconds remaining`}
+        >
+          {formatDuration(timeLeft)}
+        </Text>
 
         <View style={styles.cuesContainer}>
           <Text style={styles.cuesTitle}>Coaching Cues:</Text>
@@ -123,19 +128,31 @@ export function SessionPlayer() {
         </View>
 
         <View style={styles.controlsRow}>
-          <Pressable 
-            style={[styles.controlBtn, isPaused ? styles.resumeBtn : styles.pauseBtn]} 
+          <Pressable
+            style={[styles.controlBtn, isPaused ? styles.resumeBtn : styles.pauseBtn]}
             onPress={() => setIsPaused(!isPaused)}
+            accessibilityRole="button"
+            accessibilityLabel={isPaused ? 'Resume exercise' : 'Pause exercise'}
           >
             <Text style={styles.controlBtnText}>{isPaused ? '▶ Resume' : '⏸ Pause'}</Text>
           </Pressable>
 
-          <Pressable style={[styles.controlBtn, styles.skipBtn]} onPress={handleSkip}>
+          <Pressable
+            style={[styles.controlBtn, styles.skipBtn]}
+            onPress={handleSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Skip this exercise"
+          >
             <Text style={[styles.controlBtnText, { color: colors.muted }]}>⏭ Skip</Text>
           </Pressable>
         </View>
 
-        <Pressable style={styles.abandonBtn} onPress={abandonSession}>
+        <Pressable
+          style={styles.abandonBtn}
+          onPress={abandonSession}
+          accessibilityRole="button"
+          accessibilityLabel="Quit session"
+        >
           <Text style={styles.abandonText}>Quit Session</Text>
         </Pressable>
       </Card>

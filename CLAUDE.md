@@ -39,6 +39,12 @@ Verify changes with `npm run typecheck` and `npm test`.
 | Every Supabase query, grouped by caller | [API_MAP.md](API_MAP.md) |
 | Setup, testing, "how do I add an exercise / wire Stripe" | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
 | Product framing, env vars, build | [README.md](README.md) |
+| What's next — phases, priorities, guardrails | [ROADMAP.md](ROADMAP.md) |
+
+> **Planning authority:** [ROADMAP.md](ROADMAP.md) is the **only** current plan. The specs and
+> plans under `docs/superpowers/**` and `.superpowers/**` are **historical archives** of already
+> -shipped work (Phases 1–3A) — never treat them as pending work or current requirements. When a
+> document there conflicts with ROADMAP.md, ROADMAP.md wins. Update ROADMAP.md as phases complete.
 
 ## Core concepts (memorize these)
 

@@ -84,8 +84,8 @@ export function SessionComplete() {
     return (
       <View style={styles.container}>
         <Card style={styles.card}>
-          <Text style={styles.winEmoji}>{winDetails.emoji}</Text>
-          <Text style={styles.winTitle}>{winDetails.title}</Text>
+          <Text style={styles.winEmoji} importantForAccessibility="no" accessibilityElementsHidden>{winDetails.emoji}</Text>
+          <Text style={styles.winTitle} accessibilityRole="header">{winDetails.title}</Text>
           <Text style={styles.winDesc}>{winDetails.desc}</Text>
 
           <View style={styles.noStreakNotice}>
@@ -99,7 +99,12 @@ export function SessionComplete() {
           {loading ? (
             <ActivityIndicator size="small" color={colors.sage} />
           ) : (
-            <Pressable style={styles.finishBtn} onPress={handleFinish}>
+            <Pressable
+              style={styles.finishBtn}
+              onPress={handleFinish}
+              accessibilityRole="button"
+              accessibilityLabel="Go to dashboard"
+            >
               <Text style={styles.finishBtnText}>Go to Dashboard</Text>
             </Pressable>
           )}
@@ -111,8 +116,8 @@ export function SessionComplete() {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <Text style={styles.congratsEmoji}>🎉</Text>
-        <Text style={styles.title}>Session Complete!</Text>
+        <Text style={styles.congratsEmoji} importantForAccessibility="no" accessibilityElementsHidden>🎉</Text>
+        <Text style={styles.title} accessibilityRole="header">Session Complete!</Text>
         <Text style={styles.subtitle}>You completed today's adaptive routine.</Text>
 
         <View style={styles.separator} />
@@ -127,6 +132,9 @@ export function SessionComplete() {
               <Pressable
                 key={opt.value}
                 onPress={() => setDelta(opt.value)}
+                accessibilityRole="button"
+                accessibilityLabel={`Capacity feels: ${opt.label}`}
+                accessibilityState={{ selected }}
                 style={[
                   styles.ratingBtn,
                   selected && { backgroundColor: opt.color, borderColor: opt.color },
@@ -145,6 +153,7 @@ export function SessionComplete() {
         <TextInput
           value={notes}
           onChangeText={setNotes}
+          accessibilityLabel="Session notes, optional"
           placeholder="Any stiffness, relief, or insights?"
           placeholderTextColor={colors.hint}
           multiline
@@ -154,7 +163,12 @@ export function SessionComplete() {
 
         <View style={{ height: 24 }} />
 
-        <Pressable style={styles.finishBtn} onPress={handleSubmitRating}>
+        <Pressable
+          style={styles.finishBtn}
+          onPress={handleSubmitRating}
+          accessibilityRole="button"
+          accessibilityLabel="Log capacity rating"
+        >
           <Text style={styles.finishBtnText}>Log Capacity Delta</Text>
         </Pressable>
       </Card>

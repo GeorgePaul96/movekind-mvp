@@ -35,7 +35,7 @@ interface SessionState {
 
 const ENGINE_VERSION = 'v2.3';
 
-function mapEnergyToState(score: number): UserState {
+export function mapEnergyToState(score: number): UserState {
   if (score === 1) return 'overloaded';
   if (score <= 3) return 'recovering';
   if (score === 4) return 'regulated';
@@ -395,7 +395,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       // Schedule adaptive nudge based on behavioral profile
       try {
-        const { fetchBehavioralProfile } = await import('@/hooks/useBehavioralProfile');
+        const { fetchBehavioralProfile } = await import('@/services/behavioralProfile');
         const { scheduleAdaptiveNudge } = await import('@/services/notifications');
         const p = await fetchBehavioralProfile();
         await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
@@ -433,7 +433,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       // Schedule adaptive nudge based on behavioral profile
       try {
-        const { fetchBehavioralProfile } = await import('@/hooks/useBehavioralProfile');
+        const { fetchBehavioralProfile } = await import('@/services/behavioralProfile');
         const { scheduleAdaptiveNudge } = await import('@/services/notifications');
         const p = await fetchBehavioralProfile();
         await scheduleAdaptiveNudge(p?.recovery.signal ?? null);

@@ -43,17 +43,28 @@ export function CheckInFlow() {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <Text style={styles.title}>Daily Check-In</Text>
+        <Text style={styles.title} accessibilityRole="header">Daily Check-In</Text>
         <Text style={styles.subtitle}>How is your energy level right now?</Text>
 
         <View style={styles.scaleRow}>
-          <Text style={{ fontSize: 24 }}>🔋</Text>
-          <Text style={[styles.stateText, { color: activeState.color }]}>
+          <Text style={{ fontSize: 24 }} importantForAccessibility="no" accessibilityElementsHidden>🔋</Text>
+          <Text
+            style={[styles.stateText, { color: activeState.color }]}
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`Energy: ${activeState.label}, ${energy} out of 5`}
+          >
             {activeState.label} ({energy}/5)
           </Text>
         </View>
 
-        <Slider min={1} max={5} value={energy} onChange={setEnergy} color={activeState.color} />
+        <Slider
+          min={1}
+          max={5}
+          value={energy}
+          onChange={setEnergy}
+          color={activeState.color}
+          accessibilityLabel="Energy level"
+        />
 
         <Text style={styles.stateDesc}>{activeState.desc}</Text>
 
@@ -65,6 +76,9 @@ export function CheckInFlow() {
               <Pressable
                 key={s}
                 onPress={() => setSleep(s)}
+                accessibilityRole="button"
+                accessibilityLabel={`Sleep quality: ${s}`}
+                accessibilityState={{ selected }}
                 style={[
                   styles.sleepBtn,
                   selected && { backgroundColor: activeState.color, borderColor: activeState.color },
@@ -83,13 +97,25 @@ export function CheckInFlow() {
         {loading ? (
           <ActivityIndicator size="small" color={colors.sage} />
         ) : (
-          <Pressable style={[styles.actionBtn, { backgroundColor: activeState.color }]} onPress={handleGenerate}>
+          <Pressable
+            style={[styles.actionBtn, { backgroundColor: activeState.color }]}
+            onPress={handleGenerate}
+            accessibilityRole="button"
+            accessibilityLabel="Compose today's session"
+          >
             <Text style={styles.actionBtnText}>Compose Today's Session</Text>
           </Pressable>
         )}
       </Card>
 
-      <Pressable style={styles.safeHarborBtn} onPress={handleSafeHarbor} disabled={loading}>
+      <Pressable
+        style={styles.safeHarborBtn}
+        onPress={handleSafeHarbor}
+        disabled={loading}
+        accessibilityRole="button"
+        accessibilityLabel="Skip check-in and start a 5 minute Safe Harbor recovery session"
+        accessibilityState={{ disabled: loading }}
+      >
         <Text style={styles.safeHarborText}>
           Too tired to check in? Bypass to a 5-min Safe Harbor recovery
         </Text>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 
 interface Props {
@@ -8,28 +9,42 @@ interface Props {
 }
 
 export function Toast({ message, onHide }: Props) {
+  const reducedMotion = useReducedMotion();
   const translateY = useRef(new Animated.Value(-80)).current;
 
   useEffect(() => {
     if (!message) return;
-    Animated.spring(translateY, {
-      toValue: 0,
-      useNativeDriver: true,
-      bounciness: 8,
-    }).start();
-    const t = setTimeout(() => {
-      Animated.timing(translateY, {
-        toValue: -80,
-        duration: 250,
+    if (reducedMotion) {
+      translateY.setValue(0);
+    } else {
+      Animated.spring(translateY, {
+        toValue: 0,
         useNativeDriver: true,
-      }).start(() => onHide());
+        bounciness: 8,
+      }).start();
+    }
+    const t = setTimeout(() => {
+      if (reducedMotion) {
+        translateY.setValue(-80);
+        onHide();
+      } else {
+        Animated.timing(translateY, {
+          toValue: -80,
+          duration: 250,
+          useNativeDriver: true,
+        }).start(() => onHide());
+      }
     }, 2200);
     return () => clearTimeout(t);
-  }, [message, translateY, onHide]);
+  }, [message, translateY, onHide, reducedMotion]);
 
   if (!message) return null;
   return (
-    <Animated.View style={[styles.wrap, { transform: [{ translateY }] }]}>
+    <Animated.View
+      style={[styles.wrap, { transform: [{ translateY }] }]}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="alert"
+    >
       <Text style={styles.text}>{message}</Text>
     </Animated.View>
   );

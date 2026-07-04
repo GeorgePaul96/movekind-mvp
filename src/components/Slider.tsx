@@ -16,6 +16,7 @@ interface Props {
   value: number;
   onChange: (v: number) => void;
   color?: string;
+  accessibilityLabel?: string;
 }
 
 /**
@@ -28,6 +29,7 @@ export function Slider({
   value,
   onChange,
   color = colors.sage,
+  accessibilityLabel,
 }: Props) {
   const [width, setWidth] = React.useState(0);
 
@@ -65,6 +67,15 @@ export function Slider({
       style={styles.wrap}
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       {...responder.panHandlers}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityValue={{ min, max, now: value }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(e) => {
+        const delta = e.nativeEvent.actionName === 'increment' ? step : -step;
+        onChangeRef.current(clamp(value + delta, min, max));
+      }}
     >
       <View style={styles.track} pointerEvents="none" />
       <View
