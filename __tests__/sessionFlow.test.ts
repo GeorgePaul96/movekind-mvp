@@ -95,6 +95,12 @@ jest.mock('../src/services/notifications', () => ({
   initNotifications: jest.fn(async () => {}),
 }));
 
+// Return null → composer falls back to baseline composition, keeping this
+// flow test focused on orchestration rather than the recovery heuristics.
+jest.mock('../src/services/behavioralProfile', () => ({
+  fetchBehavioralProfile: jest.fn(async () => null),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );

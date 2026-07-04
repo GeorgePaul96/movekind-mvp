@@ -8,7 +8,7 @@
 
 **Done (Phases 1–3A):**
 - Core adaptive loop: check-in → capacity state → composed session → guided player →
-  post-rating → server-side per-exercise stats (`ENGINE_VERSION v2.3`).
+  post-rating → server-side per-exercise stats (`ENGINE_VERSION v3.0`).
 - Auth, onboarding, Supabase (Postgres + RLS + stats trigger), design system with
   explicit color contracts, Movement Rhythm (the streak replacement).
 - Phase 3A Behavioral Intelligence: pure engine in `src/domain/behavioral/`
@@ -46,19 +46,21 @@ boundary catches a thrown render; ✅ store tests green.
 offline check-in composition; proactive network detection (`expo-network`) if reactive
 failure-handling proves insufficient in the field.
 
-## Phase 4 — Deeper Personalization
+## Phase 4 — Deeper Personalization *(in progress)*
 
 **Theme: the behavioral profile should change what the composer does, not just what the Journey screen says.**
 
-| Item | Notes |
-|---|---|
-| Composer v3 | Feed `BehavioralProfile` signals (recovery debt, follow-through, gap profile) into composition: shorter sessions after long gaps, gentler re-entry blocks, favor exercises with high post-rating affinity. Pure function stays pure — profile comes in as an argument. Bump `ENGINE_VERSION` to `v3.0`; extend `composer.test.ts` first (TDD). |
-| Intention at check-in | The deferred 3A feature. Optional one-line intention captured at check-in, reflected back at session end. Needs schema (`check_ins` column or new table) — sync `supabase/schema.sql` + `src/types/index.ts` + `DATABASE.md`. |
-| Session player feel | Smoother block transitions and cue pacing using Reanimated/Gesture Handler patterns from the Software Mansion skill; honor reduced-motion from 3B. |
-| Voice & cue quality | Audit `expo-speech` cue copy per capacity state (an `overloaded` user needs fewer, softer words); per-state speech rate. |
+| Item | Status | Notes |
+|---|---|---|
+| Composer v3 | ✅ done (2026-07-04) | `composeSession` takes an optional `profile`; `reEntryModeFor()` derives gentle / normal / energized from `recovery.reEntryReadiness`, `recovery.signal` (collapse/spiral/burnout_risk), a ≥14-day gap, or wavering follow-through (<50% completion). Gentle scales durations ×0.7 and drops the longest high-intensity block (never below 2); energized lengthens high-intensity blocks ×1.15. Pure — profile is an argument. Wired into `sessionStore.checkIn` (fetched via `fetchBehavioralProfile`, null-safe/offline-safe). `ENGINE_VERSION` bumped to `v3.0`. 8 new TDD tests. Post-rating affinity was already handled via `userStats` weighting. |
+| Voice & cue quality | ✅ done (2026-07-04) | `src/domain/sessions/voice.ts` `speechParamsForState()` — slower/softer rate + fewer spoken cues for overloaded/recovering (cues stay fully visible on screen); wired into `SessionPlayer`. Pure + tested. |
+| Intention at check-in | ⬜ deferred | Optional one-line intention captured at check-in, reflected back at session end. Needs schema (`check_ins` column or new table) — sync `supabase/schema.sql` + `src/types/index.ts` + `DATABASE.md`. Deferred: DB change can't be verified in this environment without a live Supabase. |
+| Session player feel | ⬜ deferred | Smoother block transitions and cue pacing using Reanimated/Gesture Handler patterns from the Software Mansion skill; honor reduced-motion from 3B. Deferred: needs a device/simulator to tune feel. |
 
-**Exit criteria:** two users with identical energy scores but different histories get
-visibly different sessions; composer tests cover every new signal.
+**Exit criteria:** ✅ two users with identical energy scores but different histories get
+visibly different sessions (covered by `composer.test.ts` "exit criterion" test);
+✅ composer tests cover every new signal. Remaining Phase 4 items (intention, player feel)
+do not gate the exit criteria and are carried forward.
 
 ## Phase 5 — Sustainability (monetization + measurement)
 

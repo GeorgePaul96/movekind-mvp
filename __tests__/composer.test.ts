@@ -1,5 +1,6 @@
 import { composeSession, ComposerInput } from '../src/domain/sessions/composer';
 import type { Exercise, UserExerciseStats } from '../src/types';
+import type { BehavioralProfile } from '../src/domain/behavioral/types';
 
 // Mock Exercise Database
 const mockExercises: Exercise[] = [
@@ -75,5 +76,159 @@ describe('Session Composer', () => {
     
     // Strength block (index 1) should be 'Push-up' (id: 6) due to high rating delta
     expect(session[1]!.exercise.id).toBe('6');
+  });
+});
+
+// --- Composer v3: behavioral-profile-aware composition -----------------------
+
+function makeProfile(overrides: {
+  reEntryReadiness?: BehavioralProfile['recovery']['reEntryReadiness'];
+  signal?: BehavioralProfile['recovery']['signal'];
+  lastGapDays?: number;
+  hasGapHistory?: boolean;
+  completionRate?: number;
+  hasFollowThrough?: boolean;
+}): BehavioralProfile {
+  return {
+    gaps: {
+      hasHistory: overrides.hasGapHistory ?? false,
+      lastGapDays: overrides.lastGapDays ?? 2,
+      avgGapDays: 3,
+      gapHistory: [],
+      trend: 'stable',
+      observation: null,
+    },
+    rhythm: {
+      weeklyVariance: 0,
+      avgWeeklySessions: 3,
+      weeklyCounts: [],
+      trajectory: 'stable',
+      observation: null,
+    },
+    recovery: {
+      signal: overrides.signal ?? 'stable',
+      isMotivationalCollapse: false,
+      isAvoidanceSpiral: false,
+      isBurnoutRisk: false,
+      reEntryReadiness: overrides.reEntryReadiness ?? 'medium',
+    },
+    wins: [],
+    followThrough: {
+      completed: 5,
+      abandoned: 0,
+      total: 5,
+      completionRate: overrides.completionRate ?? 1.0,
+      hasHistory: overrides.hasFollowThrough ?? false,
+      trend: 'steady',
+      observation: null,
+    },
+  };
+}
+
+function totalDuration(session: { target_duration: number }[]): number {
+  return session.reduce((sum, b) => sum + b.target_duration, 0);
+}
+
+describe('Session Composer v3 (behavioral profile)', () => {
+  const base: ComposerInput = {
+    state: 'regulated',
+    exercises: mockExercises,
+    recentExerciseIds: [],
+  };
+
+  test('no profile leaves composition identical to baseline', () => {
+    const withUndefined = composeSession({ ...base });
+    const normalProfile = composeSession({ ...base, profile: makeProfile({}) });
+    // A neutral profile (medium readiness, stable) must not change the session.
+    expect(withUndefined.map((b) => b.exercise.category)).toEqual([
+      'mobilize',
+      'strengthen',
+      'move',
+      'downshift',
+    ]);
+    expect(normalProfile.map((b) => b.exercise.category)).toEqual(
+      withUndefined.map((b) => b.exercise.category),
+    );
+    expect(totalDuration(normalProfile)).toBe(totalDuration(withUndefined));
+  });
+
+  test('low re-entry readiness produces a shorter, gentler session', () => {
+    const normal = composeSession({ ...base });
+    const gentle = composeSession({
+      ...base,
+      profile: makeProfile({ reEntryReadiness: 'low' }),
+    });
+
+    expect(gentle.length).toBeLessThan(normal.length);
+    expect(totalDuration(gentle)).toBeLessThan(totalDuration(normal));
+    // A high-intensity block is dropped during gentle re-entry.
+    const gentleHigh = gentle.filter((b) =>
+      ['strengthen', 'move'].includes(b.exercise.category),
+    );
+    const normalHigh = normal.filter((b) =>
+      ['strengthen', 'move'].includes(b.exercise.category),
+    );
+    expect(gentleHigh.length).toBeLessThan(normalHigh.length);
+  });
+
+  test('a long gap since last session triggers gentle re-entry', () => {
+    const normal = composeSession({ ...base });
+    const afterGap = composeSession({
+      ...base,
+      profile: makeProfile({ hasGapHistory: true, lastGapDays: 21 }),
+    });
+    expect(totalDuration(afterGap)).toBeLessThan(totalDuration(normal));
+  });
+
+  test('burnout-risk signal triggers gentle re-entry even at medium readiness', () => {
+    const gentle = composeSession({
+      ...base,
+      profile: makeProfile({ signal: 'burnout_risk' }),
+    });
+    const normal = composeSession({ ...base });
+    expect(totalDuration(gentle)).toBeLessThan(totalDuration(normal));
+  });
+
+  test('wavering follow-through (low completion) triggers gentle re-entry', () => {
+    const gentle = composeSession({
+      ...base,
+      profile: makeProfile({ hasFollowThrough: true, completionRate: 0.3 }),
+    });
+    const normal = composeSession({ ...base });
+    expect(totalDuration(gentle)).toBeLessThan(totalDuration(normal));
+  });
+
+  test('thriving + high readiness lengthens the high-intensity work', () => {
+    const normal = composeSession({ ...base });
+    const energized = composeSession({
+      ...base,
+      profile: makeProfile({ reEntryReadiness: 'high', signal: 'thriving' }),
+    });
+    expect(energized.length).toBe(normal.length); // no blocks dropped
+    expect(totalDuration(energized)).toBeGreaterThan(totalDuration(normal));
+  });
+
+  test('same energy score, different histories → visibly different sessions (exit criterion)', () => {
+    const tired = composeSession({
+      ...base,
+      profile: makeProfile({ reEntryReadiness: 'low', signal: 'burnout_risk' }),
+    });
+    const thriving = composeSession({
+      ...base,
+      profile: makeProfile({ reEntryReadiness: 'high', signal: 'thriving' }),
+    });
+    expect(totalDuration(tired)).not.toBe(totalDuration(thriving));
+    expect(tired.length).not.toBe(thriving.length);
+  });
+
+  test('gentle re-entry never collapses below two blocks', () => {
+    // Overloaded has only one high-intensity-free short sequence already.
+    const gentleOverloaded = composeSession({
+      state: 'overloaded',
+      exercises: mockExercises,
+      recentExerciseIds: [],
+      profile: makeProfile({ reEntryReadiness: 'low' }),
+    });
+    expect(gentleOverloaded.length).toBeGreaterThanOrEqual(2);
   });
 });

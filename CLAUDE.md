@@ -54,7 +54,7 @@ Verify changes with `npm run typecheck` and `npm test`.
   takes state + exercise library + recency + stats and returns blocks. **No I/O, no React,
   no Supabase.** It is the only unit-tested business logic. Keep it pure; test changes via
   [__tests__/composer.test.ts](__tests__/composer.test.ts).
-- **`ENGINE_VERSION`** (currently `v2.3`) is stamped on every check-in and session. Bump it
+- **`ENGINE_VERSION`** (currently `v3.0`) is stamped on every check-in and session. Bump it
   when composition logic changes.
 - **Exercise categories:** `regulate · mobilize · strengthen · move · downshift`. Each state
   maps to a fixed category sequence with target durations (see the composer).

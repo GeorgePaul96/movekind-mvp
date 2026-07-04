@@ -5,6 +5,7 @@ import { Card } from './Card';
 import { colors } from '@/constants/colors';
 import { useSessionStore } from '@/store/sessionStore';
 import { formatDuration } from '@/utils/format';
+import { speechParamsForState } from '@/domain/sessions/voice';
 
 export function SessionPlayer() {
   const session = useSessionStore((s) => s.currentSession);
@@ -22,23 +23,25 @@ export function SessionPlayer() {
 
   // Trigger Speech cues on block change
   useEffect(() => {
-    if (!activeBlock) return;
-    
+    if (!activeBlock || !session) return;
+
     // Reset timer time left
     setTimeLeft(activeBlock.target_duration);
     setIsPaused(false);
 
-    // Speak details
+    // Speak details, tuned to the user's capacity state (gentler when depleted)
+    const voice = speechParamsForState(session.state);
     Speech.stop();
     Speech.speak(`Next exercise: ${activeBlock.exercise.name}.`, {
-      pitch: 1.0,
-      rate: 0.95,
+      pitch: voice.pitch,
+      rate: voice.rate,
     });
 
-    if (activeBlock.exercise.cues.length > 0) {
-      Speech.speak(`Cues: ${activeBlock.exercise.cues.join('. ')}`, {
-        pitch: 1.0,
-        rate: 0.95,
+    const spokenCues = activeBlock.exercise.cues.slice(0, voice.maxSpokenCues);
+    if (spokenCues.length > 0) {
+      Speech.speak(`Cues: ${spokenCues.join('. ')}`, {
+        pitch: voice.pitch,
+        rate: voice.rate,
       });
     }
 

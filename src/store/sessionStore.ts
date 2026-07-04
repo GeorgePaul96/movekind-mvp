@@ -3,6 +3,7 @@ import { supabase } from '@/services/supabase';
 import { telemetry } from '@/services/telemetry';
 import { friendlyErrorMessage, isNetworkError } from '@/services/network';
 import { enqueueRating } from '@/services/outbox';
+import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
 import type { CheckIn, Session, SessionBlock, Exercise, UserState, UserExerciseStats } from '@/types';
 
@@ -35,7 +36,7 @@ interface SessionState {
   getFreeSessionsCount: () => Promise<number>;
 }
 
-const ENGINE_VERSION = 'v2.3';
+const ENGINE_VERSION = 'v3.0';
 
 export function mapEnergyToState(score: number): UserState {
   if (score === 1) return 'overloaded';
@@ -172,6 +173,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       const recentExerciseIds = (recentBlocks || []).map((b) => b.exercise_id);
 
+      // 3b. Fetch behavioral profile to personalize composition (Composer v3).
+      //     Returns null offline/on error — the composer then falls back to
+      //     baseline composition, so this never blocks a check-in.
+      const behavioralProfile = (await fetchBehavioralProfile()) ?? undefined;
+
       // 4. Compose session
       const state = mapEnergyToState(energyScore);
       const composed = composeSession({
@@ -179,6 +185,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         exercises,
         recentExerciseIds,
         userStats: get().userStats,
+        profile: behavioralProfile,
       });
 
       // 5. Create Session
@@ -405,7 +412,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       // Schedule adaptive nudge based on behavioral profile (best-effort)
       try {
-        const { fetchBehavioralProfile } = await import('@/services/behavioralProfile');
         const { scheduleAdaptiveNudge } = await import('@/services/notifications');
         const p = await fetchBehavioralProfile();
         await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
