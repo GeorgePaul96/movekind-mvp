@@ -152,9 +152,9 @@ export default function JourneyScreen() {
         <Header tag="Capacity Journey" title="Your State Journey" />
 
         <View style={styles.gardenCard}>
-          <Text style={{ fontSize: 32 }}>🌿</Text>
+          <Text style={{ fontSize: 32 }} importantForAccessibility="no" accessibilityElementsHidden>🌿</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.gardenTitle}>Momentum Garden</Text>
+            <Text style={styles.gardenTitle} accessibilityRole="header">Momentum Garden</Text>
             <Text style={styles.gardenDesc}>
               {totalSessions === 0 
                 ? 'Check in and complete your first session to plant your garden.' 
@@ -164,14 +164,19 @@ export default function JourneyScreen() {
         </View>
 
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Nervous System States Distribution</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Nervous System States Distribution</Text>
           <Text style={styles.sectionDesc}>Percentage of days spent in each readiness capacity state:</Text>
           
           <View style={styles.barContainer}>
             {stateStats.map((stat) => (
-              <View key={stat.label} style={styles.barRow}>
+              <View
+                key={stat.label}
+                style={styles.barRow}
+                accessible
+                accessibilityLabel={`${stat.label}: ${stat.percentage} percent, ${stat.count} ${stat.count === 1 ? 'day' : 'days'}`}
+              >
                 <Text style={styles.barLabel}>{stat.label}</Text>
-                <View style={styles.barTrackBg}>
+                <View style={styles.barTrackBg} importantForAccessibility="no-hide-descendants">
                   <View style={[styles.barTrack, { width: `${stat.percentage}%`, backgroundColor: stat.color }]} />
                 </View>
                 <Text style={styles.barValue}>{stat.percentage}%</Text>
@@ -181,7 +186,7 @@ export default function JourneyScreen() {
         </Card>
 
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Personal Playbook</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Personal Playbook</Text>
           {isPlaybookUnlocked ? (
             <View>
               <View style={styles.statsSummaryRow}>
@@ -227,7 +232,7 @@ export default function JourneyScreen() {
         </Card>
         {/* --- Behavioral Insights (Spec B) --- */}
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Rhythm Over Time</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Rhythm Over Time</Text>
           {profile && profile.rhythm.weeklyCounts.length > 0 ? (
             <View>
               <Text style={styles.sectionDesc}>Sessions per week as you return:</Text>
@@ -247,7 +252,7 @@ export default function JourneyScreen() {
         </Card>
 
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Return Rhythm</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Return Rhythm</Text>
           {profile && profile.gaps.gapHistory.length > 0 ? (
             <View>
               <Text style={styles.sectionDesc}>Days between your recent sessions:</Text>
@@ -267,7 +272,7 @@ export default function JourneyScreen() {
 
         {profile ? (
           <Card style={{ marginBottom: 12 }}>
-            <Text style={styles.sectionTitle}>Where You Are Now</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">Where You Are Now</Text>
             <Text style={styles.recoveryMessage}>{BEHAVIORAL_FALLBACK[profile.recovery.signal].message}</Text>
             <Text style={styles.insightLine}>{RE_ENTRY_READINESS[profile.recovery.reEntryReadiness]}</Text>
           </Card>
@@ -275,10 +280,10 @@ export default function JourneyScreen() {
 
         {profile && profile.wins.length > 0 ? (
           <Card style={{ marginBottom: 12 }}>
-            <Text style={styles.sectionTitle}>Recent Wins</Text>
+            <Text style={styles.sectionTitle} accessibilityRole="header">Recent Wins</Text>
             {profile.wins.map((w, i) => (
               <View key={i} style={styles.winRow}>
-                <Text style={{ fontSize: 16 }}>🌱</Text>
+                <Text style={{ fontSize: 16 }} importantForAccessibility="no" accessibilityElementsHidden>🌱</Text>
                 <Text style={styles.winText}>{w.observation}</Text>
               </View>
             ))}
@@ -287,7 +292,7 @@ export default function JourneyScreen() {
 
         {/* --- Self-Trust (3A-4) --- */}
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Self-Trust</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Self-Trust</Text>
           {profile && profile.followThrough.hasHistory ? (
             <View>
               <View style={styles.statsSummaryRow}>

@@ -12,7 +12,7 @@ export function Header({ tag, title, subtitle }: Props) {
   return (
     <View style={{ marginBottom: 16 }}>
       {tag ? <Text style={styles.tag}>{tag}</Text> : null}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title} accessibilityRole="header">{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );

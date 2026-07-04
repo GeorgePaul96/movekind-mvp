@@ -44,7 +44,7 @@ export default function SignInScreen({ navigation }: Props) {
         <View style={styles.container}>
           <View>
             <Text style={styles.tag}>Welcome back</Text>
-            <Text style={styles.title}>Move kindly,{'\n'}with intention</Text>
+            <Text style={styles.title} accessibilityRole="header">Move kindly,{'\n'}with intention</Text>
           </View>
 
           <View style={{ gap: 12, marginTop: 24 }}>
@@ -53,6 +53,7 @@ export default function SignInScreen({ navigation }: Props) {
               <TextInput
                 value={email}
                 onChangeText={setEmail}
+                accessibilityLabel="Email"
                 placeholder="you@example.com"
                 placeholderTextColor={colors.hint}
                 autoCapitalize="none"
@@ -65,13 +66,14 @@ export default function SignInScreen({ navigation }: Props) {
               <TextInput
                 value={password}
                 onChangeText={setPassword}
+                accessibilityLabel="Password"
                 placeholder="Your password"
                 placeholderTextColor={colors.hint}
                 secureTextEntry
                 style={styles.input}
               />
             </View>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
 
             <Button label="Sign in" onPress={onSubmit} loading={loading} />
             <Button

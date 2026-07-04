@@ -66,6 +66,7 @@ export default function ProfileScreen() {
         <TextInput
           value={name}
           onChangeText={setName}
+          accessibilityLabel="Name"
           placeholder="Your name"
           placeholderTextColor={colors.hint}
           style={styles.input}

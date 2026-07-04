@@ -49,7 +49,7 @@ export default function SignUpScreen({ navigation }: Props) {
         <View style={styles.container}>
           <View>
             <Text style={styles.tag}>Welcome to MoveKind</Text>
-            <Text style={styles.title}>Let’s begin{'\n'}gently</Text>
+            <Text style={styles.title} accessibilityRole="header">Let’s begin{'\n'}gently</Text>
           </View>
 
           <View style={{ gap: 12, marginTop: 24 }}>
@@ -58,6 +58,7 @@ export default function SignUpScreen({ navigation }: Props) {
               <TextInput
                 value={name}
                 onChangeText={setName}
+                accessibilityLabel="Your name"
                 placeholder="What should we call you?"
                 placeholderTextColor={colors.hint}
                 style={styles.input}
@@ -68,6 +69,7 @@ export default function SignUpScreen({ navigation }: Props) {
               <TextInput
                 value={email}
                 onChangeText={setEmail}
+                accessibilityLabel="Email"
                 placeholder="you@example.com"
                 placeholderTextColor={colors.hint}
                 autoCapitalize="none"
@@ -80,13 +82,14 @@ export default function SignUpScreen({ navigation }: Props) {
               <TextInput
                 value={password}
                 onChangeText={setPassword}
+                accessibilityLabel="Password, at least 6 characters"
                 placeholder="At least 6 characters"
                 placeholderTextColor={colors.hint}
                 secureTextEntry
                 style={styles.input}
               />
             </View>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
 
             <Button label="Create account" onPress={onSubmit} loading={loading} />
             <Button

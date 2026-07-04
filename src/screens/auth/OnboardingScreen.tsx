@@ -112,7 +112,7 @@ export default function OnboardingScreen() {
         {step === 0 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>MoveKind Philosophy</Text>
-            <Text style={styles.title}>How do you want movement to feel in your life?</Text>
+            <Text style={styles.title} accessibilityRole="header">How do you want movement to feel in your life?</Text>
             <Text style={styles.subtitle}>Let’s build a gentle relationship with physical activity.</Text>
             
             <View style={styles.optionsWrap}>
@@ -122,6 +122,9 @@ export default function OnboardingScreen() {
                   <Pressable
                     key={opt.value}
                     onPress={() => setMovementFeel(opt.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={`${opt.label}. ${opt.desc}`}
                     style={[styles.card, selected && styles.cardSelected]}
                   >
                     <Text style={[styles.cardLabel, selected && styles.textSelected]}>{opt.label}</Text>
@@ -137,7 +140,7 @@ export default function OnboardingScreen() {
         {step === 1 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Your Past Struggles</Text>
-            <Text style={styles.title}>What usually makes fitness apps hard to stick with?</Text>
+            <Text style={styles.title} accessibilityRole="header">What usually makes fitness apps hard to stick with?</Text>
             <Text style={styles.subtitle}>We understand that old-school guilt tracking is exhausting.</Text>
 
             <View style={styles.optionsWrap}>
@@ -147,6 +150,9 @@ export default function OnboardingScreen() {
                   <Pressable
                     key={opt.value}
                     onPress={() => setAppFatigueReason(opt.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={`${opt.label}. ${opt.desc}`}
                     style={[styles.card, selected && styles.cardSelected]}
                   >
                     <Text style={[styles.cardLabel, selected && styles.textSelected]}>{opt.label}</Text>
@@ -162,7 +168,7 @@ export default function OnboardingScreen() {
         {step === 2 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Your Companion</Text>
-            <Text style={styles.title}>What types of movement feel approachable right now?</Text>
+            <Text style={styles.title} accessibilityRole="header">What types of movement feel approachable right now?</Text>
             <Text style={styles.subtitle}>Every bit of mindful activity counts, even simple stretching.</Text>
 
             <View style={styles.gridWrap}>
@@ -172,9 +178,12 @@ export default function OnboardingScreen() {
                   <Pressable
                     key={opt.value}
                     onPress={() => toggleMovement(opt.value)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={opt.label}
                     style={[styles.gridCard, selected && styles.gridCardSelected]}
                   >
-                    <Text style={styles.gridEmoji}>{opt.emoji}</Text>
+                    <Text style={styles.gridEmoji} importantForAccessibility="no" accessibilityElementsHidden>{opt.emoji}</Text>
                     <Text style={[styles.gridLabel, selected && styles.textSelected]}>{opt.label}</Text>
                   </Pressable>
                 );
@@ -187,19 +196,19 @@ export default function OnboardingScreen() {
         {step === 3 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Self Awareness</Text>
-            <Text style={styles.title}>How is your energy level usually throughout the week?</Text>
+            <Text style={styles.title} accessibilityRole="header">How is your energy level usually throughout the week?</Text>
             <Text style={styles.subtitle}>We will calibrate your targets to align comfortably with your energy.</Text>
 
             <View style={styles.sliderSection}>
               <View style={styles.energyIndicator}>
-                <Text style={styles.energyEmoji}>
+                <Text style={styles.energyEmoji} importantForAccessibility="no" accessibilityElementsHidden>
                   {averageEnergy <= 3 ? '💤' : averageEnergy <= 6 ? '🍃' : '🔋'}
                 </Text>
-                <Text style={styles.energyLabel}>
-                  {averageEnergy <= 3 
-                    ? 'Gently Restorative' 
-                    : averageEnergy <= 6 
-                      ? 'Steady Pace' 
+                <Text style={styles.energyLabel} accessibilityLiveRegion="polite">
+                  {averageEnergy <= 3
+                    ? 'Gently Restorative'
+                    : averageEnergy <= 6
+                      ? 'Steady Pace'
                       : 'High Vitality'}
                 </Text>
                 <Text style={styles.energyValue}>{averageEnergy} / 10</Text>
@@ -212,6 +221,7 @@ export default function OnboardingScreen() {
                 value={averageEnergy}
                 onChange={setAverageEnergy}
                 color={colors.sage}
+                accessibilityLabel="Typical weekly energy level"
               />
 
               <Text style={styles.sliderHint}>
@@ -224,7 +234,12 @@ export default function OnboardingScreen() {
         {/* Action controls */}
         <View style={styles.footer}>
           {step > 0 ? (
-            <Pressable onPress={handleBack} style={styles.backBtn}>
+            <Pressable
+              onPress={handleBack}
+              accessibilityRole="button"
+              accessibilityLabel="Go back to previous step"
+              style={styles.backBtn}
+            >
               <Text style={styles.backBtnText}>Back</Text>
             </Pressable>
           ) : (

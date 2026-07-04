@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from '@/services/supabase';
 import { telemetry } from '@/services/telemetry';
+import { friendlyErrorMessage, isNetworkError } from '@/services/network';
+import { enqueueRating } from '@/services/outbox';
 import { composeSession } from '@/domain/sessions/composer';
 import type { CheckIn, Session, SessionBlock, Exercise, UserState, UserExerciseStats } from '@/types';
 
@@ -230,7 +232,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       telemetry.capture('checkin_completed', { energyScore, sleepQuality, state });
       telemetry.capture('session_generated', { sessionId: session.id, state, blockCount: mappedBlocks.length });
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      set({ error: friendlyErrorMessage(err), loading: false });
       throw err;
     }
   },
@@ -301,7 +303,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       telemetry.capture('safe_harbor_bypass', { sessionId: session.id });
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      set({ error: friendlyErrorMessage(err), loading: false });
       throw err;
     }
   },
@@ -378,22 +380,30 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      // 1. Submit rating
-      await supabase.from('post_ratings').insert({
-        session_id: session.id,
-        rating_delta: ratingDelta,
-        notes,
-      });
-
-      // 2. Set session as completed
-      await supabase
-        .from('sessions')
-        .update({ status: 'completed' })
-        .eq('id', session.id);
+      // 1. Submit rating + mark complete. If the network is down, queue the
+      //    rating to the offline outbox and finish optimistically — the rating
+      //    replays on next launch, so the user is never blocked or blamed.
+      try {
+        await supabase.from('post_ratings').insert({
+          session_id: session.id,
+          rating_delta: ratingDelta,
+          notes,
+        });
+        await supabase
+          .from('sessions')
+          .update({ status: 'completed' })
+          .eq('id', session.id);
+      } catch (writeErr) {
+        if (isNetworkError(writeErr)) {
+          await enqueueRating({ sessionId: session.id, ratingDelta, notes });
+        } else {
+          throw writeErr;
+        }
+      }
 
       telemetry.capture('session_completed', { sessionId: session.id, ratingDelta });
 
-      // Schedule adaptive nudge based on behavioral profile
+      // Schedule adaptive nudge based on behavioral profile (best-effort)
       try {
         const { fetchBehavioralProfile } = await import('@/services/behavioralProfile');
         const { scheduleAdaptiveNudge } = await import('@/services/notifications');
@@ -403,8 +413,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         console.warn('Could not schedule notification on completeSession:', nErr);
       }
 
-      // 3. Reload stats to pull triggers updates from user_exercise_stats
-      await get().loadStatsAndHistory();
+      // Reload stats to pull trigger updates (best-effort; skipped when offline)
+      try {
+        await get().loadStatsAndHistory();
+      } catch (statsErr) {
+        console.warn('Could not reload stats on completeSession:', statsErr);
+      }
 
       set({
         currentSession: null,
@@ -413,7 +427,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         loading: false,
       });
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      set({ error: friendlyErrorMessage(err), loading: false });
       throw err;
     }
   },

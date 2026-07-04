@@ -84,9 +84,9 @@ export default function HomeScreen() {
     return (
       <View style={{ gap: 12 }}>
         <Card style={styles.doneCard}>
-          <Text style={{ fontSize: 32 }}>🌿</Text>
+          <Text style={{ fontSize: 32 }} importantForAccessibility="no" accessibilityElementsHidden>🌿</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.doneTitle}>All Set for Today</Text>
+            <Text style={styles.doneTitle} accessibilityRole="header">All Set for Today</Text>
             <Text style={styles.doneDesc}>
               You completed your daily attunement. Your capacity rating was successfully logged.
             </Text>
@@ -94,9 +94,9 @@ export default function HomeScreen() {
         </Card>
 
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle}>Today's Capacity Win</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">Today's Capacity Win</Text>
           <View style={styles.winRow}>
-            <Text style={{ fontSize: 22 }}>🌱</Text>
+            <Text style={{ fontSize: 22 }} importantForAccessibility="no" accessibilityElementsHidden>🌱</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.winTitle}>Body Attunement</Text>
               <Text style={styles.winSub}>

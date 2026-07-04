@@ -1,5 +1,9 @@
 import { mapEnergyToState, useSessionStore } from '../src/store/sessionStore';
 
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+
 jest.mock('../src/services/supabase', () => ({
   supabase: {
     auth: {

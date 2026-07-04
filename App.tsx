@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { initNotifications } from '@/services/notifications';
+import { syncPendingRatings } from '@/services/outbox';
 import { colors } from '@/constants/colors';
 
 export default function App() {
@@ -24,6 +25,8 @@ export default function App() {
           useSettingsStore.getState().hydrate(),
         ]);
         await initNotifications();
+        // Replay any ratings queued while offline (best-effort).
+        syncPendingRatings().catch((e) => console.warn('Outbox sync failed:', e));
       } catch (e) {
         console.warn('Bootstrapping error:', e);
       } finally {
