@@ -11,3 +11,6 @@ web-build/
 coverage/
 ios/
 android/
+
+# IDE
+.vscode/
