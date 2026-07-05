@@ -24,6 +24,9 @@ export interface Exercise {
   cues: string[];
   illustration_ref: string;
   created_at: string;
+  // Premium exercise packs (Phase 5). Absent/false = free base library.
+  // DB column + seeding deferred; until then every exercise reads as free.
+  is_premium?: boolean;
 }
 
 export interface Session {

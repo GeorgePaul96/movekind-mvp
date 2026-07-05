@@ -5,6 +5,7 @@ import { friendlyErrorMessage, isNetworkError } from '@/services/network';
 import { enqueueRating } from '@/services/outbox';
 import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
+import { visibleExercises } from '@/domain/premium/entitlements';
 import type { CheckIn, Session, SessionBlock, Exercise, UserState, UserExerciseStats } from '@/types';
 
 interface ComposedBlockWithExercise {
@@ -23,8 +24,10 @@ interface SessionState {
   loading: boolean;
   error: string | null;
   paywallVisible: boolean;
+  paywallDismissedThisSession: boolean;
 
   setPaywallVisible: (visible: boolean) => void;
+  dismissPaywall: () => void;
   checkIn: (energyScore: number, sleepQuality: CheckIn['sleep_quality']) => Promise<void>;
   safeHarborBypass: () => Promise<void>;
   startSession: () => Promise<void>;
@@ -52,7 +55,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   activeBlockIndex: 0,
   userStats: [],
   paywallVisible: false,
+  paywallDismissedThisSession: false,
   setPaywallVisible: (visible) => set({ paywallVisible: visible }),
+  // One-tap, pressure-free dismissal. The paywall won't auto-reappear again this
+  // session (anti-guilt); a fresh app launch resets the flag.
+  dismissPaywall: () => set({ paywallVisible: false, paywallDismissedThisSession: true }),
   loading: false,
   error: null,
 
@@ -138,10 +145,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         .eq('id', user.id)
         .single();
 
-      if (profile && !profile.is_premium) {
+      const isPremium = Boolean(profile?.is_premium);
+      if (!isPremium) {
         const freeCount = await get().getFreeSessionsCount();
         if (freeCount >= 5) {
-          set({ paywallVisible: true, loading: false });
+          // Gate still holds, but only surface the paywall if the user hasn't
+          // already waved it away this session — never nag.
+          set({
+            paywallVisible: !get().paywallDismissedThisSession,
+            loading: false,
+          });
           return;
         }
       }
@@ -159,9 +172,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
       if (ciErr) throw ciErr;
 
-      // 2. Fetch all exercises
-      const { data: exercises } = await supabase.from('exercises').select('*');
-      if (!exercises || exercises.length === 0) throw new Error('No exercises found in library');
+      // 2. Fetch exercises the user is entitled to (free users skip premium packs)
+      const { data: allExercises } = await supabase.from('exercises').select('*');
+      if (!allExercises || allExercises.length === 0) throw new Error('No exercises found in library');
+      const exercises = visibleExercises(allExercises, isPremium);
 
       // 3. Fetch recent exercise history (last 10 completed exercise IDs to prevent repetition)
       const { data: recentBlocks } = await supabase

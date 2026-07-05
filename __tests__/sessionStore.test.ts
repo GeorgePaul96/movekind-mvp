@@ -45,6 +45,14 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().paywallVisible).toBe(false);
   });
 
+  it('dismissPaywall hides it and marks it dismissed for the session', () => {
+    useSessionStore.setState({ paywallVisible: true, paywallDismissedThisSession: false });
+    useSessionStore.getState().dismissPaywall();
+    const s = useSessionStore.getState();
+    expect(s.paywallVisible).toBe(false);
+    expect(s.paywallDismissedThisSession).toBe(true);
+  });
+
   it('checkIn rejects when unauthenticated', async () => {
     await expect(useSessionStore.getState().checkIn(3, 'fair')).rejects.toThrow(
       'Unauthenticated',

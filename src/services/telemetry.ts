@@ -1,4 +1,5 @@
 import PostHog from 'posthog-react-native';
+import { sanitizeProperties } from '@/services/telemetryPrivacy';
 
 const posthogApiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY || '';
 const posthogHost = process.env.EXPO_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
@@ -8,26 +9,26 @@ export const posthog = posthogApiKey
   : null;
 
 /**
- * Standard Telemetry wrapper for cohort and event tracking.
+ * Telemetry wrapper enforcing the privacy-first contract (see telemetryPrivacy).
+ * Anonymous by default (no PII on identify); body-data props stripped on capture.
  */
 export const telemetry = {
-  identify: (userId: string, email?: string, name?: string) => {
+  // Associates events with an anonymous, stable user id only. Email/name are
+  // deliberately NOT sent — analytics needs a cohort key, not an identity.
+  identify: (userId: string, _email?: string, _name?: string) => {
     if (posthog) {
-      const props: Record<string, any> = {};
-      if (email) props.email = email;
-      if (name) props.name = name;
-      
-      posthog.identify(userId, props);
+      posthog.identify(userId);
     } else {
-      console.log('[Telemetry MOCK] Identify:', userId, { email, name });
+      console.log('[Telemetry MOCK] Identify (anonymous):', userId);
     }
   },
 
   capture: (event: string, properties?: Record<string, any>) => {
+    const safe = sanitizeProperties(properties);
     if (posthog) {
-      posthog.capture(event, properties);
+      posthog.capture(event, safe);
     } else {
-      console.log('[Telemetry MOCK] Event:', event, properties);
+      console.log('[Telemetry MOCK] Event:', event, safe);
     }
   },
 

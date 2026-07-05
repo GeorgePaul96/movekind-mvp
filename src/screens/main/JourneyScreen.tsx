@@ -34,6 +34,7 @@ export default function JourneyScreen() {
   const [playbook, setPlaybook] = useState<PlaybookItem[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
   const [avgDelta, setAvgDelta] = useState(0.0);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -61,6 +62,13 @@ export default function JourneyScreen() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('status', 'completed');
+
+      // 3b. Premium entitlement (gates the extended history/trend cards)
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .maybeSingle();
 
       // 4. Fetch average rating delta
       const { data: ratings } = await supabase
@@ -120,6 +128,7 @@ export default function JourneyScreen() {
       setPlaybook(mappedPlaybook);
       setTotalSessions(count || 0);
       setAvgDelta(meanDelta);
+      setIsPremium(Boolean(profileRow?.is_premium));
       setLoading(false);
     };
 
@@ -230,45 +239,58 @@ export default function JourneyScreen() {
             </View>
           )}
         </Card>
-        {/* --- Behavioral Insights (Spec B) --- */}
-        <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">Rhythm Over Time</Text>
-          {profile && profile.rhythm.weeklyCounts.length > 0 ? (
-            <View>
-              <Text style={styles.sectionDesc}>Sessions per week as you return:</Text>
-              <BarChart
-                data={profile.rhythm.weeklyCounts.map((v, i) => ({ label: `W${i + 1}`, value: v }))}
-                color={colors.sageMid}
-                highlightColor={colors.sage}
-                unit="sessions / week"
-              />
-              {profile.rhythm.observation ? (
-                <Text style={styles.insightLine}>{profile.rhythm.observation}</Text>
-              ) : null}
-            </View>
-          ) : (
-            <Text style={styles.sectionDesc}>Your weekly rhythm will appear here as you return.</Text>
-          )}
-        </Card>
+        {/* --- Behavioral Insights (Spec B) — extended history is premium --- */}
+        {isPremium ? (
+          <>
+            <Card style={{ marginBottom: 12 }}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Rhythm Over Time</Text>
+              {profile && profile.rhythm.weeklyCounts.length > 0 ? (
+                <View>
+                  <Text style={styles.sectionDesc}>Sessions per week as you return:</Text>
+                  <BarChart
+                    data={profile.rhythm.weeklyCounts.map((v, i) => ({ label: `W${i + 1}`, value: v }))}
+                    color={colors.sageMid}
+                    highlightColor={colors.sage}
+                    unit="sessions / week"
+                  />
+                  {profile.rhythm.observation ? (
+                    <Text style={styles.insightLine}>{profile.rhythm.observation}</Text>
+                  ) : null}
+                </View>
+              ) : (
+                <Text style={styles.sectionDesc}>Your weekly rhythm will appear here as you return.</Text>
+              )}
+            </Card>
 
-        <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">Return Rhythm</Text>
-          {profile && profile.gaps.gapHistory.length > 0 ? (
-            <View>
-              <Text style={styles.sectionDesc}>Days between your recent sessions:</Text>
-              <BarChart
-                data={profile.gaps.gapHistory.map((v, i) => ({ label: `${i + 1}`, value: v }))}
-                color={colors.sky}
-                unit="days between sessions"
-              />
-              {profile.gaps.observation ? (
-                <Text style={styles.insightLine}>{profile.gaps.observation}</Text>
-              ) : null}
-            </View>
-          ) : (
-            <Text style={styles.sectionDesc}>We'll show the rhythm of your returns here.</Text>
-          )}
-        </Card>
+            <Card style={{ marginBottom: 12 }}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Return Rhythm</Text>
+              {profile && profile.gaps.gapHistory.length > 0 ? (
+                <View>
+                  <Text style={styles.sectionDesc}>Days between your recent sessions:</Text>
+                  <BarChart
+                    data={profile.gaps.gapHistory.map((v, i) => ({ label: `${i + 1}`, value: v }))}
+                    color={colors.sky}
+                    unit="days between sessions"
+                  />
+                  {profile.gaps.observation ? (
+                    <Text style={styles.insightLine}>{profile.gaps.observation}</Text>
+                  ) : null}
+                </View>
+              ) : (
+                <Text style={styles.sectionDesc}>We'll show the rhythm of your returns here.</Text>
+              )}
+            </Card>
+          </>
+        ) : (
+          <Card style={{ marginBottom: 12 }}>
+            <Text style={styles.sectionTitle} accessibilityRole="header">Your Full Journey</Text>
+            <Text style={styles.sectionDesc}>
+              Rhythm-over-time and return-rhythm trends are part of Premium's
+              extended history. Your check-ins, sessions, and recovery insights
+              stay free — this just adds the long-term view whenever you're ready.
+            </Text>
+          </Card>
+        )}
 
         {profile ? (
           <Card style={{ marginBottom: 12 }}>

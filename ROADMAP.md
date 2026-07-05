@@ -62,16 +62,25 @@ visibly different sessions (covered by `composer.test.ts` "exit criterion" test)
 ✅ composer tests cover every new signal. Remaining Phase 4 items (intention, player feel)
 do not gate the exit criteria and are carried forward.
 
-## Phase 5 — Sustainability (monetization + measurement)
+## Phase 5 — Sustainability (monetization + measurement) *(in progress)*
 
 **Theme: revenue and analytics, without ever importing guilt mechanics.**
 
-| Item | Notes |
-|---|---|
-| Define premium | Decide the tier before wiring payments. Candidates: extended insights history, more exercise packs, voice options. **Never** paywall the core check-in → session loop or any recovery feature. |
-| Wire Stripe | Replace the `startCheckout` stub (stripe plugin installed); server-side subscription state in Supabase with RLS; restore-purchases flow. |
-| Activate PostHog | Turn on telemetry (posthog plugin installed) with a privacy-first contract: anonymous by default, no body-data events, measure *completion & return rhythm*, never *absence*. Feature flags for composer experiments. |
-| Paywall UX | `Paywall.tsx` exists — pressure-free copy review; a "not now" that is one tap and never re-asks within the same session. |
+**Premium tier decided (2026-07-04):** premium gates **extended insights & history** and
+**additional exercise packs**. The core check-in → session loop, all recovery features, and
+voice/cue quality stay free — permanently. Encoded in `src/domain/premium/entitlements.ts`.
+
+| Item | Status | Notes |
+|---|---|---|
+| Define premium | ✅ done (2026-07-04) | `src/domain/premium/entitlements.ts` (pure, tested): `PREMIUM_FEATURES` = `extended_insights` + `exercise_packs`; `hasAccess()`, `visibleExercises()` (free users skip `is_premium` exercises), `insightsWindowDays()` (free = 30d, premium = ∞). `Exercise.is_premium?` added to the type. |
+| Wire gates | ✅ done (2026-07-04) | `checkIn` composes only from `visibleExercises(...)`; JourneyScreen gates the Rhythm-Over-Time / Return-Rhythm trend cards behind premium (free users see a calm "Your Full Journey" unlock card; recovery + distribution stay free). |
+| Paywall UX | ✅ done (2026-07-04) | Session-scoped one-tap dismissal: `dismissPaywall()` + `paywallDismissedThisSession` in the store; `checkIn` never re-pops the paywall after dismissal (gate still holds), resets on app launch. Copy rewritten to the real tier (removed the incorrect "text-to-speech" pitch — voice is free); a11y roles added. |
+| Activate PostHog | 🟡 contract shipped (2026-07-04) | Privacy-first contract enforced in code: `src/services/telemetryPrivacy.ts` `sanitizeProperties()` strips body-data (energy/sleep/rating/notes) + PII from every event; `identify()` is anonymous (no email/name). **Remaining:** set `EXPO_PUBLIC_POSTHOG_API_KEY` to actually emit; feature flags for composer experiments. Needs the key + authorized PostHog connector. |
+| Wire Stripe | ⬜ deferred | `startCheckout` still a stub; Paywall keeps the beta `is_premium=true` self-upgrade for testing. Real wiring needs live Stripe keys, a Supabase Edge Function + webhook to flip `profiles.is_premium`, RLS, and a restore-purchases flow — none verifiable in this environment; the Stripe MCP connector also isn't authorized here. See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md). |
+
+**Exit criteria:** ✅ a real purchase completes in test mode — *deferred with Stripe wiring*;
+🟡 telemetry funnels — contract ready, needs the API key to emit; ✅ premium gating works
+end-to-end today via `profiles.is_premium` (entitlements + paywall dismissal tested).
 
 **Exit criteria:** a real purchase completes in test mode; telemetry dashboard shows
 session completion and return-rhythm funnels; flags can gate composer v3 variants.

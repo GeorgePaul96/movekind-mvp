@@ -10,6 +10,7 @@ import { startCheckout } from '@/services/premium';
 export function Paywall() {
   const user = useAuthStore((s) => s.user);
   const setPaywallVisible = useSessionStore((s) => s.setPaywallVisible);
+  const dismissPaywall = useSessionStore((s) => s.dismissPaywall);
   const loadStatsAndHistory = useSessionStore((s) => s.loadStatsAndHistory);
 
   const [loading, setLoading] = useState(true);
@@ -113,11 +114,11 @@ export function Paywall() {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <Text style={styles.lockIcon}>🌿</Text>
-        <Text style={styles.title}>Unlock MoveKind Premium</Text>
-        
+        <Text style={styles.lockIcon} importantForAccessibility="no" accessibilityElementsHidden>🌿</Text>
+        <Text style={styles.title} accessibilityRole="header">Unlock MoveKind Premium</Text>
+
         <View style={styles.insightBox}>
-          <Text style={styles.insightEmoji}>📊</Text>
+          <Text style={styles.insightEmoji} importantForAccessibility="no" accessibilityElementsHidden>📊</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.insightTitle}>Nervous System Learning Complete</Text>
             <Text style={styles.insightText}>
@@ -130,15 +131,28 @@ export function Paywall() {
         </View>
 
         <Text style={styles.pitchText}>
-          Upgrade to Premium to continue receiving state-adaptive composed sessions, custom text-to-speech coaching, and complete State Journey tracking.
+          Premium unlocks your complete State Journey — full history, long-term
+          capacity trends, and your whole Personal Playbook — plus extra exercise
+          packs. Your daily check-in, sessions, recovery, and voice coaching stay
+          free, always.
         </Text>
 
-        <Pressable style={styles.upgradeBtn} onPress={handleCheckout}>
+        <Pressable
+          style={styles.upgradeBtn}
+          onPress={handleCheckout}
+          accessibilityRole="button"
+          accessibilityLabel="Start Premium trial, 12 dollars 99 cents per month"
+        >
           <Text style={styles.upgradeBtnText}>Start Premium Trial ($12.99/mo)</Text>
         </Pressable>
 
-        <Pressable style={styles.backBtn} onPress={() => setPaywallVisible(false)}>
-          <Text style={styles.backBtnText}>Maybe Later</Text>
+        <Pressable
+          style={styles.backBtn}
+          onPress={dismissPaywall}
+          accessibilityRole="button"
+          accessibilityLabel="Not now"
+        >
+          <Text style={styles.backBtnText}>Maybe later</Text>
         </Pressable>
       </Card>
     </View>
