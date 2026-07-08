@@ -269,16 +269,16 @@ const styles = StyleSheet.create({
   controlBtnText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.onPrimary,
   },
   pauseBtn: {
-    backgroundColor: colors.sage,
+    backgroundColor: colors.primary,
   },
   resumeBtn: {
-    backgroundColor: colors.warm,
+    backgroundColor: colors.warmAccent,
   },
   skipBtn: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceSecondary,
     borderColor: colors.border,
     borderWidth: StyleSheet.hairlineWidth,
   },

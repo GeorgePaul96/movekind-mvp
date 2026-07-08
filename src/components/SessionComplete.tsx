@@ -5,11 +5,12 @@ import { colors } from '@/constants/colors';
 import { useSessionStore } from '@/store/sessionStore';
 import { supabase } from '@/services/supabase';
 
+// Selected background colors — all WCAG-AA against the white label.
 const RATING_OPTIONS = [
-  { value: -1, emoji: '🔴', label: 'Worse', color: '#E87A7A' },
-  { value: 0, emoji: '😐', label: 'Same', color: colors.hint },
-  { value: 1, emoji: '🌱', label: 'Better', color: colors.sage },
-  { value: 2, emoji: '✨', label: 'Much Better', color: colors.warm },
+  { value: -1, emoji: '🔴', label: 'Worse', color: colors.error },
+  { value: 0, emoji: '😐', label: 'Same', color: colors.textSecondary },
+  { value: 1, emoji: '🌱', label: 'Better', color: colors.primary },
+  { value: 2, emoji: '✨', label: 'Much Better', color: colors.warmAccent },
 ];
 
 export function SessionComplete() {
@@ -141,7 +142,7 @@ export function SessionComplete() {
                 ]}
               >
                 <Text style={styles.ratingEmoji}>{opt.emoji}</Text>
-                <Text style={[styles.ratingLabel, selected && { color: '#fff' }]}>
+                <Text style={[styles.ratingLabel, selected && { color: colors.onPrimary }]}>
                   {opt.label}
                 </Text>
               </Pressable>
@@ -285,13 +286,13 @@ const styles = StyleSheet.create({
   },
   finishBtn: {
     width: '100%',
-    backgroundColor: colors.sage,
+    backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 24,
     alignItems: 'center',
   },
   finishBtnText: {
-    color: '#fff',
+    color: colors.onPrimary,
     fontSize: 14,
     fontWeight: '700',
   },

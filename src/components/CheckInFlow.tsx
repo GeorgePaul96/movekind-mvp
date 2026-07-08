@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, ActivityIndicator } from 'react-native';
 import { Card } from './Card';
 import { Slider } from './Slider';
-import { colors } from '@/constants/colors';
+import { colors, stateColors } from '@/constants/colors';
 import { useSessionStore } from '@/store/sessionStore';
 import type { CheckIn } from '@/types';
 
+// `color` is the accessible accent (safe with white text); `tint` fills the slider.
 const STATE_DETAILS = [
-  { label: 'Overloaded', color: colors.sky, desc: 'Low capacity. Slow active recovery and somatic decompression recommended.' },
-  { label: 'Recovering', color: colors.sage, desc: 'Gently rebuilding. Mobilizing stretches and light dynamic movements suggested.' },
-  { label: 'Recovering', color: colors.sage, desc: 'Gently rebuilding. Mobilizing stretches and light dynamic movements suggested.' },
-  { label: 'Regulated', color: colors.warm, desc: 'Stable capacity. Steady strength training and standard physical conditioning.' },
-  { label: 'Activated', color: '#D08070', desc: 'Peak capacity. Higher-intensity movements and progressive bodyweight challenge.' },
+  { label: 'Overloaded', color: stateColors.overloaded.accent, tint: stateColors.overloaded.tint, desc: 'Low capacity. Slow active recovery and somatic decompression recommended.' },
+  { label: 'Recovering', color: stateColors.recovering.accent, tint: stateColors.recovering.tint, desc: 'Gently rebuilding. Mobilizing stretches and light dynamic movements suggested.' },
+  { label: 'Recovering', color: stateColors.recovering.accent, tint: stateColors.recovering.tint, desc: 'Gently rebuilding. Mobilizing stretches and light dynamic movements suggested.' },
+  { label: 'Regulated', color: stateColors.regulated.accent, tint: stateColors.regulated.tint, desc: 'Stable capacity. Steady strength training and standard physical conditioning.' },
+  { label: 'Activated', color: stateColors.activated.accent, tint: stateColors.activated.tint, desc: 'Peak capacity. Higher-intensity movements and progressive bodyweight challenge.' },
 ];
 
 export function CheckInFlow() {
@@ -62,7 +63,7 @@ export function CheckInFlow() {
           max={5}
           value={energy}
           onChange={setEnergy}
-          color={activeState.color}
+          color={activeState.tint}
           accessibilityLabel="Energy level"
         />
 
@@ -84,7 +85,7 @@ export function CheckInFlow() {
                   selected && { backgroundColor: activeState.color, borderColor: activeState.color },
                 ]}
               >
-                <Text style={[styles.sleepText, selected && { color: '#fff' }]}>
+                <Text style={[styles.sleepText, selected && { color: colors.onPrimary }]}>
                   {s === 'good' ? '✨ Good' : s === 'fair' ? '😐 Fair' : '😴 Poor'}
                 </Text>
               </Pressable>
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     alignItems: 'center',
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceSecondary,
   },
   sleepText: {
     fontSize: 12,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   actionBtnText: {
-    color: '#fff',
+    color: colors.onPrimary,
     fontSize: 14,
     fontWeight: '700',
   },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
-import { colors } from '@/constants/colors';
+import { colors, elevation } from '@/constants/colors';
 
 interface Props {
   children: React.ReactNode;
@@ -18,5 +18,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 16,
     padding: 16,
+    ...elevation.card,
   },
 });

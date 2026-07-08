@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ActivityIndicator, ScrollView } from 'react-nat
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
-import { colors } from '@/constants/colors';
+import { colors, stateColors } from '@/constants/colors';
 import { supabase } from '@/services/supabase';
 import { useAuthStore } from '@/store/authStore';
 import type { UserState } from '@/types';
@@ -103,10 +103,10 @@ export default function JourneyScreen() {
       const totalCheckins = (checkIns || []).length || 1;
       
       const statsList: StateStats[] = [
-        { label: 'Overloaded', count: counts.overloaded, percentage: Math.round((counts.overloaded / totalCheckins) * 100), color: colors.sky },
-        { label: 'Recovering', count: counts.recovering, percentage: Math.round((counts.recovering / totalCheckins) * 100), color: colors.sage },
-        { label: 'Regulated', count: counts.regulated, percentage: Math.round((counts.regulated / totalCheckins) * 100), color: colors.warm },
-        { label: 'Activated', count: counts.activated, percentage: Math.round((counts.activated / totalCheckins) * 100), color: '#D08070' },
+        { label: 'Overloaded', count: counts.overloaded, percentage: Math.round((counts.overloaded / totalCheckins) * 100), color: stateColors.overloaded.accent },
+        { label: 'Recovering', count: counts.recovering, percentage: Math.round((counts.recovering / totalCheckins) * 100), color: stateColors.recovering.accent },
+        { label: 'Regulated', count: counts.regulated, percentage: Math.round((counts.regulated / totalCheckins) * 100), color: stateColors.regulated.accent },
+        { label: 'Activated', count: counts.activated, percentage: Math.round((counts.activated / totalCheckins) * 100), color: stateColors.activated.accent },
       ];
 
       // Process playbook items

@@ -21,14 +21,14 @@ export function Chip({ label, active, onPress }: Props) {
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceSecondary,
     borderColor: colors.border,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  active: { backgroundColor: colors.sage, borderColor: colors.sage },
-  text: { fontSize: 12, color: colors.muted, fontWeight: '500' },
-  activeText: { color: '#fff' },
+  active: { backgroundColor: colors.primary, borderColor: colors.primary },
+  text: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
+  activeText: { color: colors.onPrimary },
 });

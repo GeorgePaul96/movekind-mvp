@@ -65,9 +65,14 @@ Verify changes with `npm run typecheck` and `npm test`.
 
 - **Imports:** use the `@/` alias for `src/` (configured in `tsconfig.json` + `babel.config.js`).
 - **State:** Zustand stores in `src/store/`. Stores own async + Supabase calls; components stay thin.
-- **Styling:** NativeWind classes; **colors come from [src/constants/colors.ts](src/constants/colors.ts)** —
-  never hardcode hex. Note `sage` (`#7BAE8B`) vs `sageDark` (`#3A6B4A`) are distinct; pick the
-  one with adequate contrast for the surface.
+- **Styling:** NativeWind classes; **all color comes from semantic tokens in
+  [src/constants/colors.ts](src/constants/colors.ts)** — never hardcode hex. Use the semantic
+  names (`background`, `surface`, `surfaceSecondary`, `primary`/`primaryPressed`/`onPrimary`,
+  `textPrimary`/`textSecondary`/`textMuted`, `border`, `divider`, `success`/`warning`/`error`/`info`,
+  `shadow`) plus `elevation.card`/`elevation.raised`. For capacity-state color use
+  `stateColors[state]`: `.tint` for non-text fills (bars, slider), `.accent` for anything
+  bearing white text (all accents clear WCAG AA on white). Legacy names (`bg`, `ink`, `sage`, …)
+  are aliases to tokens — prefer the semantic names. Any white-on-color must clear 4.5:1.
 - **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts).
 - **Side effects** (Supabase, telemetry, notifications) live in `src/services/`, never in `domain/`.
 
