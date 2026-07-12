@@ -157,4 +157,14 @@ describe('session flow: check-in → session → rating', () => {
     expect(s.activeBlockIndex).toBe(0);
     expect(s.loading).toBe(false);
   });
+
+  it('captures a trimmed intention on the check-in', async () => {
+    await useSessionStore.getState().checkIn(4, 'good', '  move gently  ');
+    expect(useSessionStore.getState().currentCheckIn?.intention).toBe('move gently');
+  });
+
+  it('stores null when no intention is given', async () => {
+    await useSessionStore.getState().checkIn(4, 'good');
+    expect(useSessionStore.getState().currentCheckIn?.intention).toBeNull();
+  });
 });

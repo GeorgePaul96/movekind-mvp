@@ -28,7 +28,7 @@ interface SessionState {
 
   setPaywallVisible: (visible: boolean) => void;
   dismissPaywall: () => void;
-  checkIn: (energyScore: number, sleepQuality: CheckIn['sleep_quality']) => Promise<void>;
+  checkIn: (energyScore: number, sleepQuality: CheckIn['sleep_quality'], intention?: string | null) => Promise<void>;
   safeHarborBypass: () => Promise<void>;
   startSession: () => Promise<void>;
   completeBlock: (dbBlockId: string, actualDuration: number) => Promise<void>;
@@ -132,7 +132,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  checkIn: async (energyScore, sleepQuality) => {
+  checkIn: async (energyScore, sleepQuality, intention) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthenticated');
 
@@ -165,6 +165,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           user_id: user.id,
           energy_score: energyScore,
           sleep_quality: sleepQuality,
+          intention: intention?.trim() || null,
           engine_version: ENGINE_VERSION,
         })
         .select()

@@ -54,13 +54,13 @@ failure-handling proves insufficient in the field.
 |---|---|---|
 | Composer v3 | ✅ done (2026-07-04) | `composeSession` takes an optional `profile`; `reEntryModeFor()` derives gentle / normal / energized from `recovery.reEntryReadiness`, `recovery.signal` (collapse/spiral/burnout_risk), a ≥14-day gap, or wavering follow-through (<50% completion). Gentle scales durations ×0.7 and drops the longest high-intensity block (never below 2); energized lengthens high-intensity blocks ×1.15. Pure — profile is an argument. Wired into `sessionStore.checkIn` (fetched via `fetchBehavioralProfile`, null-safe/offline-safe). `ENGINE_VERSION` bumped to `v3.0`. 8 new TDD tests. Post-rating affinity was already handled via `userStats` weighting. |
 | Voice & cue quality | ✅ done (2026-07-04) | `src/domain/sessions/voice.ts` `speechParamsForState()` — slower/softer rate + fewer spoken cues for overloaded/recovering (cues stay fully visible on screen); wired into `SessionPlayer`. Pure + tested. |
-| Intention at check-in | ⬜ deferred | Optional one-line intention captured at check-in, reflected back at session end. Needs schema (`check_ins` column or new table) — sync `supabase/schema.sql` + `src/types/index.ts` + `DATABASE.md`. Deferred: DB change can't be verified in this environment without a live Supabase. |
+| Intention at check-in | ✅ done (2026-07-12) | Optional one-line intention (`INTENTION` copy) captured in `CheckInFlow`, persisted via `checkIn(energy, sleep, intention?)` to a new nullable `check_ins.intention` column, and reflected back on the `SessionComplete` screen. Schema + `CheckIn` type + `DATABASE.md` kept in sync; `schema.sql` includes an idempotent `add column if not exists` so the pending Supabase rebuild picks it up automatically. Composition is unaffected (intention is reflective, not compositional). 2 new store tests. |
 | Session player feel | ⬜ deferred | Smoother block transitions and cue pacing using Reanimated/Gesture Handler patterns from the Software Mansion skill; honor reduced-motion from 3B. Deferred: needs a device/simulator to tune feel. |
 
 **Exit criteria:** ✅ two users with identical energy scores but different histories get
 visibly different sessions (covered by `composer.test.ts` "exit criterion" test);
-✅ composer tests cover every new signal. Remaining Phase 4 items (intention, player feel)
-do not gate the exit criteria and are carried forward.
+✅ composer tests cover every new signal. Only **session player feel** remains in Phase 4
+(carried forward — needs a device/simulator to tune).
 
 ## Phase 5 — Sustainability (monetization + measurement) *(in progress)*
 

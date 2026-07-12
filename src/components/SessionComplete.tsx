@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { Card } from './Card';
 import { colors } from '@/constants/colors';
+import { INTENTION } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import { supabase } from '@/services/supabase';
 
@@ -15,8 +16,11 @@ const RATING_OPTIONS = [
 
 export function SessionComplete() {
   const session = useSessionStore((s) => s.currentSession);
+  const checkIn = useSessionStore((s) => s.currentCheckIn);
   const completeSession = useSessionStore((s) => s.completeSession);
   const loading = useSessionStore((s) => s.loading);
+
+  const intention = checkIn?.intention?.trim();
 
   const [delta, setDelta] = useState<number>(1);
   const [notes, setNotes] = useState('');
@@ -120,6 +124,13 @@ export function SessionComplete() {
         <Text style={styles.congratsEmoji} importantForAccessibility="no" accessibilityElementsHidden>🎉</Text>
         <Text style={styles.title} accessibilityRole="header">Session Complete!</Text>
         <Text style={styles.subtitle}>You completed today's adaptive routine.</Text>
+
+        {intention ? (
+          <View style={styles.intentionCard}>
+            <Text style={styles.intentionLabel}>{INTENTION.reflectionTitle}</Text>
+            <Text style={styles.intentionText}>“{intention}”</Text>
+          </View>
+        ) : null}
 
         <View style={styles.separator} />
 
@@ -225,10 +236,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 24,
   },
+  intentionCard: {
+    width: '100%',
+    backgroundColor: colors.primarySoft,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  intentionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: colors.secondaryText,
+    marginBottom: 4,
+  },
+  intentionText: {
+    fontSize: 15,
+    color: colors.textPrimary,
+    lineHeight: 21,
+    fontStyle: 'italic',
+  },
   separator: {
     width: '100%',
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.border,
+    marginTop: 20,
     marginBottom: 20,
   },
   sectionTitle: {

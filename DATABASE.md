@@ -12,7 +12,8 @@ Auto-created on signup by the `handle_new_user` trigger. RLS: select/insert/upda
 
 ### `check_ins`
 `id` · `user_id` → profiles · `energy_score` (int **1–5**, checked) · `sleep_quality`
-(`good|fair|poor|null`) · `engine_version` · `created_at`.
+(`good|fair|poor|null`) · `intention` (text, nullable — optional one-line intention set at
+check-in, reflected back at session end) · `engine_version` · `created_at`.
 Index: `(user_id, created_at desc)`. RLS: select/insert own.
 
 ### `exercises` (read-only library)

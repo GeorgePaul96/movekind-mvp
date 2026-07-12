@@ -12,6 +12,7 @@ export interface CheckIn {
   user_id: string;
   energy_score: number; // 1 to 5
   sleep_quality: 'good' | 'fair' | 'poor' | null;
+  intention: string | null; // optional one-line intention set at check-in
   engine_version: string;
   created_at: string;
 }

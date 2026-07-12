@@ -23,7 +23,7 @@ function session(overrides: Partial<Session> = {}): Session {
 function checkIn(overrides: Partial<CheckIn> = {}): CheckIn {
   return {
     id: uid(), user_id: 'u1', energy_score: 3, sleep_quality: 'fair',
-    engine_version: 'v2.3', created_at: daysAgo(0), ...overrides,
+    intention: null, engine_version: 'v2.3', created_at: daysAgo(0), ...overrides,
   };
 }
 function rating(overrides: Partial<PostRating> = {}): PostRating {

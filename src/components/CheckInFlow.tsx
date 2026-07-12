@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ActivityIndicator, TextInput } from 'react-native';
 import { Card } from './Card';
 import { Slider } from './Slider';
 import { colors, stateColors } from '@/constants/colors';
+import { INTENTION } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import type { CheckIn } from '@/types';
 
@@ -22,12 +23,13 @@ export function CheckInFlow() {
 
   const [energy, setEnergy] = useState(3);
   const [sleep, setSleep] = useState<CheckIn['sleep_quality']>('fair');
+  const [intention, setIntention] = useState('');
 
   const activeState = STATE_DETAILS[energy - 1]!;
 
   const handleGenerate = async () => {
     try {
-      await checkIn(energy, sleep);
+      await checkIn(energy, sleep, intention);
     } catch (err) {
       console.warn('Check-in error:', err);
     }
@@ -92,6 +94,19 @@ export function CheckInFlow() {
             );
           })}
         </View>
+
+        <Text style={[styles.subtitle, { marginTop: 24 }]}>{INTENTION.label}</Text>
+        <Text style={styles.intentionHint}>{INTENTION.hint}</Text>
+        <TextInput
+          value={intention}
+          onChangeText={setIntention}
+          accessibilityLabel="Intention for today, optional"
+          placeholder={INTENTION.placeholder}
+          placeholderTextColor={colors.textMuted}
+          maxLength={80}
+          returnKeyType="done"
+          style={styles.intentionInput}
+        />
 
         <View style={{ height: 24 }} />
 
@@ -185,6 +200,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.muted,
     textTransform: 'capitalize',
+  },
+  intentionHint: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: -6,
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  intentionInput: {
+    backgroundColor: colors.surfaceSecondary,
+    borderColor: colors.border,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: colors.textPrimary,
   },
   actionBtn: {
     paddingVertical: 14,

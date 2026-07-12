@@ -48,6 +48,13 @@ export const RE_ENTRY_READINESS: Record<'high' | 'medium' | 'low', string> = {
   low: 'Gentle is enough today. Honor what your body is asking for.',
 };
 
+export const INTENTION = {
+  label: 'One intention for today',
+  hint: 'Optional — a word or a line, just for you.',
+  placeholder: 'e.g. move gently, breathe, just show up',
+  reflectionTitle: 'Your intention today',
+} as const;
+
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',
   body: "The app hit a snag — nothing you did. Your progress is safe, and a fresh start is one tap away.",

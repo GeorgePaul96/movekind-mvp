@@ -55,9 +55,13 @@ create table if not exists public.check_ins (
   user_id uuid not null references public.profiles(id) on delete cascade,
   energy_score integer not null check (energy_score between 1 and 5),
   sleep_quality text check (sleep_quality in ('good', 'fair', 'poor')),
+  intention text,               -- optional one-line intention, reflected back at session end
   engine_version text not null,
   created_at timestamptz not null default now()
 );
+
+-- Backfill for projects created before the intention column existed.
+alter table public.check_ins add column if not exists intention text;
 
 create index if not exists idx_check_ins_user_created on public.check_ins(user_id, created_at desc);
 
