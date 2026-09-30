@@ -85,14 +85,14 @@ end-to-end today via `profiles.is_premium` (entitlements + paywall dismissal tes
 **Exit criteria:** a real purchase completes in test mode; telemetry dashboard shows
 session completion and return-rhythm funnels; flags can gate composer v3 variants.
 
-## Phase 6 — Ship & Scale
+## Phase 6 — Ship & Scale *(in progress)*
 
 **Theme: get it into strangers' hands.**
 
-| Item | Notes |
-|---|---|
-| EAS pipeline | Dev-client builds → internal distribution → TestFlight/Play internal testing (expo skill covers EAS Build/Submit/Update). |
-| OTA updates | EAS Update for JS-only fixes; adopt a channel strategy (production/preview). |
+| Item | Status | Notes |
+|---|---|---|
+| EAS pipeline | 🟡 config done (2026-09-30) | `eas.json` with four profiles — `development` (dev-client, internal, Android APK), `development-simulator` (iOS sim), `preview` (internal release), `production` (store, `autoIncrement`, AAB). `appVersionSource: "remote"` so EAS owns build numbers. `expo-dev-client` + `expo-updates` installed; `app.json` gained `scheme: "movekind"`, `runtimeVersion` (appVersion policy), `primaryColor`, and `ITSAppUsesNonExemptEncryption: false` (skips the export-compliance prompt on every submit). Store credentials gitignored. npm scripts: `build:dev:android`, `build:preview`, `build:prod`, `submit:prod`, `ota`. **Remaining (needs accounts, not code):** `eas init` to create the project + inject `extra.eas.projectId`; `eas env:create` to push `EXPO_PUBLIC_*` to the development/preview/production environments (they are NOT in git — `.env` is ignored, so cloud builds have no Supabase creds until this is done); fill the three `REPLACE_WITH_*` placeholders in `eas.json` `submit.production.ios`. |
+| OTA updates | 🟡 ready, not wired | `expo-updates` installed and `runtimeVersion` set; channels declared per build profile (development/preview/production). Needs `eas update:configure` (after `eas init`) to add `updates.url` — that requires the project ID. |
 | Beta program | 20–50 users; the behavioral engine needs real longitudinal data — 90-day windows are untested with real humans. |
 | Monitoring | Crash/error tracking (PostHog error tracking or Sentry); EAS Observe for build/update health. |
 | Store presence | Screenshots, privacy labels (health data!), App Store/Play listings that market calm, not transformation. |

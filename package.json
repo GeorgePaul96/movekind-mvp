@@ -10,7 +10,13 @@
     "web": "expo start --web",
     "test": "jest",
     "test:watch": "jest --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:dev:android": "eas build --profile development --platform android",
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "build:preview": "eas build --profile preview --platform all",
+    "build:prod": "eas build --profile production --platform all",
+    "submit:prod": "eas submit --profile production --platform all",
+    "ota": "eas update --branch production"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -20,10 +26,12 @@
     "@supabase/supabase-js": "^2.43.4",
     "expo": "~54.0.34",
     "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.21",
     "expo-linear-gradient": "~15.0.8",
     "expo-notifications": "~0.32.17",
     "expo-speech": "^56.0.3",
     "expo-status-bar": "~3.0.9",
+    "expo-updates": "~29.0.20",
     "nativewind": "^4.1.23",
     "posthog-react-native": "^4.46.32",
     "react": "19.1.0",
