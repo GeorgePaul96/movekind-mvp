@@ -15,6 +15,9 @@ android/
 # IDE
 .vscode/
 
+# Brainstorming companion mockups (local only)
+.superpowers/brainstorm/
+
 # EAS / store credentials — never commit these
 google-service-account.json
 *.p8

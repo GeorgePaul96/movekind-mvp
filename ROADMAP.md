@@ -85,6 +85,21 @@ end-to-end today via `profiles.is_premium` (entitlements + paywall dismissal tes
 **Exit criteria:** a real purchase completes in test mode; telemetry dashboard shows
 session completion and return-rhythm funnels; flags can gate composer v3 variants.
 
+## Redesign — Clarity & Return *(in progress, prioritized ahead of store launch)*
+
+**Why:** friend testing (2026-10-02) — buttons not visible, confusing, washed-out colors, and
+"no pressure" had become "no reason to come back". Launch marketing (Product Hunt / X /
+Instagram) didn't land. Five sub-projects, built in order:
+
+| # | Sub-project | Status | Notes |
+|---|---|---|---|
+| 1 | Visual clarity + one-tap check-in | 🟡 building | Sunrise palette, 3-variant Button, mood tiles, jargon purge, check-in/session split, week card. Spec: [docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md](docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md). |
+| 2 | Reason to return | ⬜ | Finch-style "something of yours that grows when you show up". Rest days count. |
+| 3 | Weekly analytics | ⬜ | This-week-vs-last beyond the week card. |
+| 4 | Honest custom workouts | ⬜ | Show the composer's reasoning per exercise ("picked because…"). |
+| 5 | Light social | ⬜ | Points / small circles. Needs friends + invites backend. |
+| — | Pricing | ⬜ blocked on Stripe | Pro $4.99/mo (~$29.99/yr). "Rough month? It's on us" honor-system free month. Consistency rewards are in-app, never cash. Rejected: "6 workouts/week → free month" (charges people for resting; inverted revenue; Pact/GymPact precedent). |
+
 ## Phase 6 — Ship & Scale *(in progress)*
 
 **Theme: get it into strangers' hands.**
@@ -110,8 +125,10 @@ without a store review.
 
 ## Guardrails (apply to every phase)
 
-1. **Anti-guilt is the product.** No streaks, no shame, no red badges, no "you missed X".
-   Rhythm > streaks; recovery is celebrated; rest is never punished.
+1. **Anti-guilt is the product — bent carefully, not dropped (2026-10-03).** No shame, no
+   red badges, no "you missed X". Points and gentle consistency signals are allowed, but
+   rest counts, missing a day never resets progress, money is never tied to performance,
+   and comparison is only to yourself or a small circle — never a public ranking.
 2. **The composer stays pure.** New signals enter as arguments; I/O stays in stores/services.
    Bump `ENGINE_VERSION` on any composition change; test via `composer.test.ts`.
 3. **Explicit color contract.** Every interactive state gets an explicit color; `sageDark`
