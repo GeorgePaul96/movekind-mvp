@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Pressable, Vibration, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Vibration, ActivityIndicator } from 'react-native';
 import * as Speech from 'expo-speech';
 import { Card } from './Card';
-import { colors } from '@/constants/colors';
+import { Button } from './Button';
+import { colors, stateColors } from '@/constants/colors';
+import { SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import { formatDuration } from '@/utils/format';
 import { speechParamsForState } from '@/domain/sessions/voice';
@@ -76,7 +78,7 @@ export function SessionPlayer() {
   if (!activeBlock || !session) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.sage} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -92,28 +94,27 @@ export function SessionPlayer() {
   };
 
   const exercise = activeBlock.exercise;
+  const mood = stateColors[session.state];
 
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.progressText}>
-            Block {activeIndex + 1} of {blocks.length}
+          <Text style={styles.progressText}>{SESSION_COPY.progress(activeIndex + 1, blocks.length)}</Text>
+          <Text style={[styles.categoryTag, { color: mood.ink, backgroundColor: mood.soft, borderColor: mood.ink }]}>
+            {exercise.category}
           </Text>
-          <Text style={styles.categoryTag}>{exercise.category}</Text>
         </View>
 
         <Text style={styles.exerciseName} accessibilityRole="header">{exercise.name}</Text>
 
-        {/* Static illustration placeholder - styled box representing SVG */}
-        <View style={styles.illustrationBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-          <Text style={styles.illustrationIcon}>
-            {exercise.category === 'regulate' ? '🌸' :
-             exercise.category === 'mobilize' ? '🌱' :
-             exercise.category === 'strengthen' ? '💪' :
-             exercise.category === 'move' ? '⚡' : '🌙'}
-          </Text>
-          <Text style={styles.illustrationText}>[Static illustration: {exercise.illustration_ref}]</Text>
+        {/* Mood-colored panel until real exercise illustrations land (separate roadmap item). */}
+        <View
+          style={[styles.visualBox, { backgroundColor: mood.soft, borderColor: mood.ink }]}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        >
+          <Text style={styles.visualIcon}>{CATEGORY_ICON[exercise.category] ?? '🌙'}</Text>
         </View>
 
         <Text
@@ -123,60 +124,50 @@ export function SessionPlayer() {
           {formatDuration(timeLeft)}
         </Text>
 
-        <View style={styles.cuesContainer}>
-          <Text style={styles.cuesTitle}>Coaching Cues:</Text>
-          {exercise.cues.map((cue, idx) => (
-            <Text key={idx} style={styles.cueText}>• {cue}</Text>
-          ))}
-        </View>
+        {exercise.cues.length > 0 && (
+          <View style={styles.cuesContainer}>
+            <Text style={styles.cuesTitle}>{SESSION_COPY.howTo}</Text>
+            {exercise.cues.map((cue, idx) => (
+              <Text key={idx} style={styles.cueText}>• {cue}</Text>
+            ))}
+          </View>
+        )}
 
-        <View style={styles.controlsRow}>
-          <Pressable
-            style={[styles.controlBtn, isPaused ? styles.resumeBtn : styles.pauseBtn]}
-            onPress={() => setIsPaused(!isPaused)}
-            accessibilityRole="button"
+        <View style={styles.controls}>
+          <Button
+            label={isPaused ? SESSION_COPY.resume : SESSION_COPY.pause}
             accessibilityLabel={isPaused ? 'Resume exercise' : 'Pause exercise'}
-          >
-            <Text style={styles.controlBtnText}>{isPaused ? '▶ Resume' : '⏸ Pause'}</Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.controlBtn, styles.skipBtn]}
-            onPress={handleSkip}
-            accessibilityRole="button"
+            onPress={() => setIsPaused(!isPaused)}
+          />
+          <Button
+            label={SESSION_COPY.skip}
+            variant="secondary"
             accessibilityLabel="Skip this exercise"
-          >
-            <Text style={[styles.controlBtnText, { color: colors.muted }]}>⏭ Skip</Text>
-          </Pressable>
+            onPress={handleSkip}
+          />
+          <Button
+            label={SESSION_COPY.endEarly}
+            variant="link"
+            accessibilityHint={SESSION_COPY.endEarlyHint}
+            onPress={abandonSession}
+          />
         </View>
-
-        <Pressable
-          style={styles.abandonBtn}
-          onPress={abandonSession}
-          accessibilityRole="button"
-          accessibilityLabel="Quit session"
-        >
-          <Text style={styles.abandonText}>Quit Session</Text>
-        </Pressable>
       </Card>
     </View>
   );
 }
 
+const CATEGORY_ICON: Record<string, string> = {
+  regulate: '🌸',
+  mobilize: '🌱',
+  strengthen: '💪',
+  move: '⚡',
+  downshift: '🌙',
+};
+
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 12,
-    flex: 1,
-  },
-  card: {
-    padding: 20,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 20,
-    alignItems: 'center',
-    flex: 1,
-  },
+  container: { paddingVertical: 12, flex: 1 },
+  card: { padding: 20, borderRadius: 20, alignItems: 'center', flex: 1 },
   header: {
     width: '100%',
     flexDirection: 'row',
@@ -184,117 +175,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.muted,
-  },
+  progressText: { fontSize: 14, fontWeight: '700', color: colors.textSecondary },
   categoryTag: {
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    color: colors.warmDark,
-    backgroundColor: colors.warmLight,
-    paddingHorizontal: 8,
+    textTransform: 'capitalize',
+    paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   exerciseName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.ink,
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
   },
-  illustrationBox: {
+  visualBox: {
     width: '100%',
-    height: 180,
-    backgroundColor: colors.bg,
+    height: 150,
     borderRadius: 16,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
-  illustrationIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  illustrationText: {
-    fontSize: 11,
-    color: colors.muted,
-    fontStyle: 'italic',
-  },
-  timer: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: colors.ink,
-    marginBottom: 20,
-  },
+  visualIcon: { fontSize: 56 },
+  timer: { fontSize: 52, fontWeight: '800', color: colors.textPrimary, marginBottom: 20 },
   cuesContainer: {
     width: '100%',
     alignItems: 'flex-start',
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceSecondary,
     padding: 16,
     borderRadius: 14,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  cuesTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 6,
-  },
-  cueText: {
-    fontSize: 13,
-    color: colors.ink,
-    lineHeight: 18,
-    marginTop: 2,
-  },
-  controlsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  controlBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  controlBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.onPrimary,
-  },
-  pauseBtn: {
-    backgroundColor: colors.primary,
-  },
-  resumeBtn: {
-    backgroundColor: colors.warmAccent,
-  },
-  skipBtn: {
-    backgroundColor: colors.surfaceSecondary,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  abandonBtn: {
-    marginTop: 20,
-    padding: 8,
-  },
-  abandonText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  cuesTitle: { fontSize: 14, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 },
+  cueText: { fontSize: 15, color: colors.textPrimary, lineHeight: 22, marginTop: 2 },
+  controls: { width: '100%', gap: 10 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

@@ -1,9 +1,19 @@
 import React from 'react';
-import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Card } from './Card';
-import { colors } from '@/constants/colors';
+import { Button } from './Button';
+import { colors, stateColors } from '@/constants/colors';
+import { MOOD_COPY, SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import { formatDuration } from '@/utils/format';
+
+const CATEGORY_ICON: Record<string, string> = {
+  regulate: '🌸',
+  mobilize: '🌱',
+  strengthen: '💪',
+  move: '⚡',
+  downshift: '🌙',
+};
 
 export function SessionOverview() {
   const session = useSessionStore((s) => s.currentSession);
@@ -14,24 +24,22 @@ export function SessionOverview() {
   if (!session) return null;
 
   const totalDuration = blocks.reduce((acc, curr) => acc + curr.target_duration, 0);
-
-  const stateContexts: Record<string, string> = {
-    overloaded: "Today's goal is to recover. Your body is overloaded, so we have focused entirely on parasympathetic nervous system release and somatic relaxation.",
-    recovering: "Today's goal is to mobilize. We are dynamic, gentle, and moving joints slowly to restore recovery momentum without exhausting you.",
-    regulated: "Today's goal is balance. A standard hybrid of joint preparation, progressive bodyweight strength, and low-friction conditioning.",
-    activated: "Today's goal is progress. You checked in with high energy, so we have channeled that capacity into a heavier strength block and conditioning flow.",
-  };
+  const mood = stateColors[session.state];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingVertical: 12 }}>
+    <View style={styles.container}>
       <Card style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.stateTag}>State: {session.state}</Text>
-          <Text style={styles.timeTag}>⏱️ {formatDuration(totalDuration)}</Text>
+          <Text style={[styles.stateTag, { color: mood.ink, backgroundColor: mood.soft, borderColor: mood.ink }]}>
+            {MOOD_COPY[session.state].emoji} {MOOD_COPY[session.state].label}
+          </Text>
+          <Text style={styles.timeTag} accessibilityLabel={`About ${formatDuration(totalDuration)}`}>
+            ⏱️ {formatDuration(totalDuration)}
+          </Text>
         </View>
 
-        <Text style={styles.title}>Your Composed Session</Text>
-        <Text style={styles.whyText}>{stateContexts[session.state] || 'Custom adaptive movement block composed.'}</Text>
+        <Text style={styles.title} accessibilityRole="header">{SESSION_COPY.overviewTitle}</Text>
+        <Text style={styles.whyText}>{SESSION_COPY.why[session.state]}</Text>
 
         <View style={styles.timeline}>
           {blocks.map((block, index) => {
@@ -39,15 +47,12 @@ export function SessionOverview() {
             return (
               <View key={block.dbBlockId} style={styles.timelineRow}>
                 <View style={styles.iconCol}>
-                  <Text style={styles.blockIcon}>
-                    {block.exercise.category === 'regulate' ? '🌸' :
-                     block.exercise.category === 'mobilize' ? '🌱' :
-                     block.exercise.category === 'strengthen' ? '💪' :
-                     block.exercise.category === 'move' ? '⚡' : '🌙'}
+                  <Text style={styles.blockIcon} importantForAccessibility="no" accessibilityElementsHidden>
+                    {CATEGORY_ICON[block.exercise.category] ?? '🌙'}
                   </Text>
                   {!isLast && <View style={styles.timelineLine} />}
                 </View>
-                
+
                 <View style={styles.contentCol}>
                   <Text style={styles.blockTitle}>{block.exercise.name}</Text>
                   <Text style={styles.blockSub}>
@@ -59,31 +64,23 @@ export function SessionOverview() {
           })}
         </View>
 
-        <View style={{ height: 24 }} />
-
-        <Pressable style={styles.startBtn} onPress={startSession}>
-          <Text style={styles.startBtnText}>Start Composed Session</Text>
-        </Pressable>
-
-        <Pressable style={styles.abandonBtn} onPress={abandonSession}>
-          <Text style={styles.abandonBtnText}>Discard & Start Over</Text>
-        </Pressable>
+        <View style={{ gap: 6, marginTop: 8 }}>
+          <Button label={SESSION_COPY.start} onPress={startSession} />
+          <Button
+            label={SESSION_COPY.discard}
+            variant="link"
+            accessibilityHint={SESSION_COPY.discardHint}
+            onPress={abandonSession}
+          />
+        </View>
       </Card>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  card: {
-    padding: 20,
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 20,
-  },
+  container: { paddingVertical: 12 },
+  card: { padding: 20, borderRadius: 20 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -91,92 +88,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   stateTag: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    color: colors.sageDark,
-    backgroundColor: colors.sageLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
-  timeTag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.muted,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.ink,
-    marginBottom: 8,
-  },
-  whyText: {
-    fontSize: 13,
-    color: colors.muted,
-    lineHeight: 18,
-    marginBottom: 24,
-  },
-  timeline: {
-    paddingLeft: 4,
-  },
-  timelineRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  iconCol: {
-    alignItems: 'center',
-  },
-  blockIcon: {
-    fontSize: 20,
-    zIndex: 1,
-  },
-  timelineLine: {
-    width: 2,
-    backgroundColor: colors.border,
-    flex: 1,
-    marginVertical: 4,
-  },
-  contentCol: {
-    flex: 1,
-    paddingBottom: 24,
-  },
-  blockTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.ink,
-  },
-  blockSub: {
-    fontSize: 12,
-    color: colors.muted,
-    marginTop: 2,
-    textTransform: 'capitalize',
-  },
-  startBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: 24,
-    alignItems: 'center',
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  startBtnText: {
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  abandonBtn: {
-    marginTop: 14,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  abandonBtnText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
+  timeTag: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
+  title: { fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 8 },
+  whyText: { fontSize: 15, color: colors.textSecondary, lineHeight: 21, marginBottom: 24 },
+  timeline: { paddingLeft: 4 },
+  timelineRow: { flexDirection: 'row', gap: 16 },
+  iconCol: { alignItems: 'center' },
+  blockIcon: { fontSize: 20, zIndex: 1 },
+  timelineLine: { width: 2, backgroundColor: colors.border, flex: 1, marginVertical: 4 },
+  contentCol: { flex: 1, paddingBottom: 20 },
+  blockTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  blockSub: { fontSize: 14, color: colors.textSecondary, marginTop: 2, textTransform: 'capitalize' },
 });

@@ -137,6 +137,49 @@ export const CHECKIN_COPY = {
   niceWeek: (name?: string | null) => (name ? `Nice to see you, ${name}.` : 'Nice to see you.'),
 } as const;
 
+export const SESSION_COPY = {
+  overviewTitle: "Today's session",
+  why: {
+    overloaded: 'Today is about recovering. Expect slow breathing and gentle release — nothing strenuous.',
+    recovering: 'Today is about loosening up. Slow, easy movement to get things going without wearing you out.',
+    regulated: 'A balanced day: joint prep, some bodyweight strength, and a calm finish.',
+    activated: "You've got energy today, so there's a fuller strength block and a proper wind-down.",
+  } as Record<UserState, string>,
+  start: 'Start session',
+  discard: 'Not this one — go back',
+  discardHint: 'Discards this session. Your check-in stays logged.',
+  progress: (n: number, total: number) => `${n} of ${total}`,
+  howTo: 'How to do it',
+  pause: '⏸ Pause',
+  resume: '▶ Resume',
+  skip: 'Skip this one',
+  endEarly: 'End session early',
+  endEarlyHint: "Stops here. What you've done still counts.",
+  completeTitle: 'Session done',
+  completeSub: 'Nice work. That counts.',
+  rateTitle: 'How do you feel now?',
+  rateDesc: 'Compared to before you started:',
+  ratings: [
+    { value: -1, label: '😣 Worse', spoken: 'Worse' },
+    { value: 0, label: '😐 Same', spoken: 'Same' },
+    { value: 1, label: '🌱 Better', spoken: 'Better' },
+    { value: 2, label: '✨ Much better', spoken: 'Much better' },
+  ],
+  notesTitle: 'Notes (optional)',
+  notesPlaceholder: 'Any stiffness, relief, or thoughts?',
+  saveRating: 'Save how I feel',
+  saveRatingA11y: 'Save how you feel now',
+  done: 'Done',
+  resilienceTitle: 'You showed up',
+  resilienceDesc: (moodLabel: string) =>
+    `You moved today even while feeling ${moodLabel.toLowerCase()}. That's real self-trust.`,
+  consistencyTitle: 'Steady week',
+  consistencyDesc: 'Three sessions this week, at your own pace. That momentum is yours.',
+  showedUpTitle: 'You showed up',
+  showedUpDesc: 'You checked in with yourself and moved in a way that fit today.',
+  noStreaks: '🌸 No streaks here. Rest days count, and nothing resets.',
+} as const;
+
 export function checkInPrompt(name?: string | null): string {
   return name ? `How's your energy, ${name}?` : "How's your energy?";
 }
