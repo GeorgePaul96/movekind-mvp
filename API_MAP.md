@@ -18,7 +18,10 @@ the one line that touches a table without reading whole files.
 | Method | Tables touched |
 |---|---|
 | `loadStatsAndHistory()` | SELECT `user_exercise_stats`; SELECT latest `check_ins` (today); SELECT active `sessions` (`generated\|started`); SELECT `session_blocks` (+ joined `exercises`) |
-| `checkIn(energy, sleep)` | SELECT `profiles.is_premium`; (quota) count `sessions`; INSERT `check_ins`; SELECT `exercises`; SELECT recent completed `session_blocks`; INSERT `sessions`; INSERT `session_blocks` |
+| `logCheckIn(mood)` | INSERT `check_ins` (energy from mood; sleep/intention null). If today's check-in already exists → delegates to `updateCheckIn`. **Never touches the paywall.** |
+| `updateCheckIn(patch)` | UPDATE `check_ins` (`sleep_quality` / `intention` / `energy_score`) `.eq('id', today's id)` |
+| `startTodaysSession()` | SELECT `profiles.is_premium`; (quota) count `sessions`; SELECT `exercises`; SELECT recent completed `session_blocks`; INSERT `sessions`; INSERT `session_blocks` |
+| `loadWeek()` | SELECT `check_ins(energy_score, created_at)` since last Monday−7d; SELECT completed `sessions(created_at, status, session_blocks(actual_duration))` since the same date |
 | `safeHarborBypass()` | SELECT `exercises`; INSERT `sessions` (check_in_id null); INSERT `session_blocks` |
 | `startSession()` | UPDATE `sessions.status='started'` |
 | `completeBlock(id, dur)` | UPDATE `session_blocks` status/actual_duration |

@@ -14,7 +14,9 @@ Auto-created on signup by the `handle_new_user` trigger. RLS: select/insert/upda
 `id` · `user_id` → profiles · `energy_score` (int **1–5**, checked) · `sleep_quality`
 (`good|fair|poor|null`) · `intention` (text, nullable — optional one-line intention set at
 check-in, reflected back at session end) · `engine_version` · `created_at`.
-Index: `(user_id, created_at desc)`. RLS: select/insert own.
+Index: `(user_id, created_at desc)`. RLS: select/insert/update own —
+`check_ins_update_own` lets a user update only their own rows (used to add sleep/note after a
+one-tap check-in, or to change today's mood; a day is one check-in).
 
 ### `exercises` (read-only library)
 `id` · `name` · `category` (`regulate|mobilize|strengthen|move|downshift`) ·

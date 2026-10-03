@@ -75,6 +75,11 @@ drop policy if exists "check_ins_insert_own" on public.check_ins;
 create policy "check_ins_insert_own" on public.check_ins
   for insert with check (auth.uid() = user_id);
 
+-- One-tap check-in: sleep/note are added after logging, and today's mood can be changed.
+drop policy if exists "check_ins_update_own" on public.check_ins;
+create policy "check_ins_update_own" on public.check_ins
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 -- =====================================================================
 -- exercises
 -- =====================================================================
