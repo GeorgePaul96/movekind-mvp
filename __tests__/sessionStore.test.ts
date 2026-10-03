@@ -53,10 +53,14 @@ describe('useSessionStore', () => {
     expect(s.paywallDismissedThisSession).toBe(true);
   });
 
-  it('checkIn rejects when unauthenticated', async () => {
-    await expect(useSessionStore.getState().checkIn(3, 'fair')).rejects.toThrow(
-      'Unauthenticated',
-    );
+  it('logCheckIn rejects when unauthenticated', async () => {
+    await expect(useSessionStore.getState().logCheckIn('regulated')).rejects.toThrow('Unauthenticated');
+  });
+
+  it('starts on the week view step with no week loaded', () => {
+    const s = useSessionStore.getState();
+    expect(s.homeStep).toBe('done');
+    expect(s.week).toBeNull();
   });
 
   it('safeHarborBypass rejects when unauthenticated', async () => {

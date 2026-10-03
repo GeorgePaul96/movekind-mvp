@@ -6,7 +6,8 @@ import { enqueueRating } from '@/services/outbox';
 import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
 import { visibleExercises } from '@/domain/premium/entitlements';
-import { mapEnergyToState } from '@/domain/checkin/moods';
+import { mapEnergyToState, moodToEnergy } from '@/domain/checkin/moods';
+import { compareWeeks, isSameLocalDay, weekBounds, type WeekComparison } from '@/domain/insights/weekCompare';
 export { mapEnergyToState } from '@/domain/checkin/moods';
 import type { CheckIn, Session, SessionBlock, Exercise, UserState, UserExerciseStats } from '@/types';
 
@@ -27,10 +28,22 @@ interface SessionState {
   error: string | null;
   paywallVisible: boolean;
   paywallDismissedThisSession: boolean;
+  /** Which non-session Home view to show: mood tiles, the just-logged panel, or the week. */
+  homeStep: 'pick' | 'logged' | 'done';
+  week: WeekComparison | null;
 
   setPaywallVisible: (visible: boolean) => void;
   dismissPaywall: () => void;
-  checkIn: (energyScore: number, sleepQuality: CheckIn['sleep_quality'], intention?: string | null) => Promise<void>;
+  logCheckIn: (mood: UserState) => Promise<void>;
+  updateCheckIn: (patch: {
+    sleep_quality?: CheckIn['sleep_quality'];
+    intention?: string | null;
+    energy_score?: number;
+  }) => Promise<void>;
+  startTodaysSession: () => Promise<void>;
+  dismissForToday: () => void;
+  changeTodaysCheckIn: () => void;
+  loadWeek: () => Promise<void>;
   safeHarborBypass: () => Promise<void>;
   startSession: () => Promise<void>;
   completeBlock: (dbBlockId: string, actualDuration: number) => Promise<void>;
@@ -51,7 +64,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   userStats: [],
   paywallVisible: false,
   paywallDismissedThisSession: false,
+  homeStep: 'done',
+  week: null,
   setPaywallVisible: (visible) => set({ paywallVisible: visible }),
+  dismissForToday: () => set({ homeStep: 'done' }),
+  changeTodaysCheckIn: () => set({ homeStep: 'pick' }),
   // One-tap, pressure-free dismissal. The paywall won't auto-reappear again this
   // session (anti-guilt); a fresh app launch resets the flag.
   dismissPaywall: () => set({ paywallVisible: false, paywallDismissedThisSession: true }),
@@ -127,9 +144,64 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  checkIn: async (energyScore, sleepQuality, intention) => {
+  logCheckIn: async (mood) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthenticated');
+
+    // Re-picking today's mood edits the existing row: a day is one check-in.
+    const existing = get().currentCheckIn;
+    if (existing && isSameLocalDay(new Date(existing.created_at), new Date())) {
+      await get().updateCheckIn({ energy_score: moodToEnergy(mood) });
+      set({ homeStep: 'logged' });
+      return;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      // Logging is the free, always-available core action — no paywall here, ever.
+      const { data: checkIn, error: ciErr } = await supabase
+        .from('check_ins')
+        .insert({
+          user_id: user.id,
+          energy_score: moodToEnergy(mood),
+          sleep_quality: null,
+          intention: null,
+          engine_version: ENGINE_VERSION,
+        })
+        .select()
+        .single();
+      if (ciErr) throw ciErr;
+
+      set({ currentCheckIn: checkIn, homeStep: 'logged', loading: false });
+      telemetry.capture('checkin_completed', { state: mood });
+    } catch (err) {
+      set({ error: friendlyErrorMessage(err), loading: false });
+      throw err;
+    }
+  },
+
+  updateCheckIn: async (patch) => {
+    const ci = get().currentCheckIn;
+    if (!ci) return;
+    const clean = { ...patch };
+    if ('intention' in clean) clean.intention = clean.intention?.trim() || null;
+
+    const { error } = await supabase
+      .from('check_ins')
+      .update(clean)
+      .eq('id', ci.id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    set({ currentCheckIn: { ...ci, ...clean } });
+  },
+
+  startTodaysSession: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthenticated');
+    const checkIn = get().currentCheckIn;
+    if (!checkIn) throw new Error('No check-in today');
 
     set({ loading: true, error: null });
     try {
@@ -153,21 +225,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           return;
         }
       }
-      // 1. Save check-in
-      const { data: checkIn, error: ciErr } = await supabase
-        .from('check_ins')
-        .insert({
-          user_id: user.id,
-          energy_score: energyScore,
-          sleep_quality: sleepQuality,
-          intention: intention?.trim() || null,
-          engine_version: ENGINE_VERSION,
-        })
-        .select()
-        .single();
-
-      if (ciErr) throw ciErr;
-
       // 2. Fetch exercises the user is entitled to (free users skip premium packs)
       const { data: allExercises } = await supabase.from('exercises').select('*');
       if (!allExercises || allExercises.length === 0) throw new Error('No exercises found in library');
@@ -189,7 +246,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       const behavioralProfile = (await fetchBehavioralProfile()) ?? undefined;
 
       // 4. Compose session
-      const state = mapEnergyToState(energyScore);
+      const state = mapEnergyToState(checkIn.energy_score);
       const composed = composeSession({
         state,
         exercises,
@@ -239,14 +296,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }));
 
       set({
-        currentCheckIn: checkIn,
         currentSession: session,
         composedBlocks: mappedBlocks,
         activeBlockIndex: 0,
         loading: false,
       });
 
-      telemetry.capture('checkin_completed', { energyScore, sleepQuality, state });
       telemetry.capture('session_generated', { sessionId: session.id, state, blockCount: mappedBlocks.length });
     } catch (err) {
       set({ error: friendlyErrorMessage(err), loading: false });
@@ -441,7 +496,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         composedBlocks: [],
         activeBlockIndex: 0,
         loading: false,
+        homeStep: 'done',
       });
+
+      // Refresh the week card the user lands on (best-effort; never throws).
+      await get().loadWeek();
     } catch (err) {
       set({ error: friendlyErrorMessage(err), loading: false });
       throw err;
@@ -479,6 +538,41 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       });
     } catch (err) {
       set({ error: (err as Error).message, loading: false });
+    }
+  },
+
+  loadWeek: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { lastStart } = weekBounds(new Date());
+      const since = lastStart.toISOString();
+
+      const { data: cis } = await supabase
+        .from('check_ins')
+        .select('energy_score, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', since);
+
+      const { data: sess } = await supabase
+        .from('sessions')
+        .select('created_at, status, session_blocks(actual_duration)')
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .gte('created_at', since);
+
+      const sessions = (sess || []).map((s: any) => ({
+        created_at: s.created_at,
+        status: s.status,
+        seconds: (s.session_blocks || []).reduce(
+          (sum: number, b: { actual_duration: number | null }) => sum + (b.actual_duration ?? 0),
+          0,
+        ),
+      }));
+
+      set({ week: compareWeeks(cis || [], sessions, new Date()) });
+    } catch (err) {
+      console.warn('Could not load week:', err);
     }
   },
 

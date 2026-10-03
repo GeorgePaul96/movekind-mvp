@@ -19,23 +19,30 @@ const mockExercises: Exercise[] = [
   { id: '10', name: 'Legs up Wall', category: 'downshift', base_difficulty: 1, cues: [], illustration_ref: '', created_at: '' },
 ];
 
+const mockCalls: { table: string; op: string; payload: any }[] = [];
+const mockConfig = { premium: true, completedCount: 0, failCheckInInsert: false };
+
 jest.mock('../src/services/supabase', () => {
   // Defined inside the factory so jest's hoisting rules are satisfied.
-  // `mockExercises` is allowed because it is `mock`-prefixed.
+  // `mock`-prefixed names (mockExercises, mockCalls, mockConfig) are allowed.
   const resolveResult = (state: any, single: boolean) => {
     const { table, op, payload } = state;
     switch (table) {
       case 'profiles':
-        return { data: { is_premium: true }, error: null };
+        return { data: { is_premium: mockConfig.premium }, error: null };
       case 'exercises':
         return { data: mockExercises, error: null };
       case 'check_ins':
-        return op === 'insert'
-          ? { data: { id: 'ci1', ...(payload || {}) }, error: null }
-          : { data: [], error: null };
+        if (op === 'insert') {
+          return mockConfig.failCheckInInsert
+            ? { data: null, error: new Error('network down') }
+            : { data: { id: 'ci1', created_at: new Date().toISOString(), ...(payload || {}) }, error: null };
+        }
+        if (op === 'update') return { data: { id: 'ci1', ...(payload || {}) }, error: null };
+        return { data: [], error: null };
       case 'sessions':
         if (op === 'insert') return { data: { id: 'sess1', ...(payload || {}) }, error: null };
-        return single ? { data: null, error: null } : { data: [], error: null };
+        return single ? { data: null, error: null } : { data: [], count: mockConfig.completedCount, error: null };
       case 'session_blocks':
         if (op === 'insert') {
           const rows = (payload || []).map((b: any, i: number) => ({
@@ -59,9 +66,20 @@ jest.mock('../src/services/supabase', () => {
   const makeBuilder = (table: string) => {
     const state: any = { table, op: 'select', payload: null };
     const builder: any = {
-      select: () => builder,
-      insert: (p: unknown) => { state.op = 'insert'; state.payload = p; return builder; },
-      update: (p: unknown) => { state.op = 'update'; state.payload = p; return builder; },
+      select: () => {
+        if (table === 'profiles') mockCalls.push({ table, op: 'select', payload: null });
+        return builder;
+      },
+      insert: (p: unknown) => {
+        state.op = 'insert'; state.payload = p;
+        mockCalls.push({ table, op: 'insert', payload: p });
+        return builder;
+      },
+      update: (p: unknown) => {
+        state.op = 'update'; state.payload = p;
+        mockCalls.push({ table, op: 'update', payload: p });
+        return builder;
+      },
       upsert: (p: unknown) => { state.op = 'upsert'; state.payload = p; return builder; },
       eq: () => builder,
       in: () => builder,
@@ -117,6 +135,8 @@ describe('session flow: check-in → session → rating', () => {
   afterAll(() => warnSpy.mockRestore());
 
   beforeEach(() => {
+    mockCalls.length = 0;
+    Object.assign(mockConfig, { premium: true, completedCount: 0, failCheckInInsert: false });
     useSessionStore.setState({
       currentCheckIn: null,
       currentSession: null,
@@ -126,45 +146,98 @@ describe('session flow: check-in → session → rating', () => {
       loading: false,
       error: null,
       paywallVisible: false,
+      paywallDismissedThisSession: false,
+      homeStep: 'done',
+      week: null,
     });
   });
 
-  it('composes a regulated session from a check-in', async () => {
-    await useSessionStore.getState().checkIn(4, 'good');
+  it('logs a one-tap check-in without composing or touching the paywall', async () => {
+    await useSessionStore.getState().logCheckIn('regulated');
     const s = useSessionStore.getState();
-
-    expect(s.error).toBeNull();
-    expect(s.currentCheckIn).toMatchObject({ id: 'ci1', energy_score: 4 });
-    expect(s.currentSession).toMatchObject({ id: 'sess1', state: 'regulated' });
-    // regulated → mobilize, strengthen, move, downshift
-    expect(s.composedBlocks).toHaveLength(4);
-    expect(s.composedBlocks.map((b) => b.exercise.category)).toEqual([
-      'mobilize',
-      'strengthen',
-      'move',
-      'downshift',
-    ]);
+    expect(s.currentCheckIn).toMatchObject({ id: 'ci1', energy_score: 4, sleep_quality: null, intention: null });
+    expect(s.homeStep).toBe('logged');
+    expect(s.currentSession).toBeNull();
+    expect(s.paywallVisible).toBe(false);
+    expect(mockCalls.some((c) => c.table === 'profiles')).toBe(false);
   });
 
-  it('completes the session and resets store state after rating', async () => {
-    await useSessionStore.getState().checkIn(4, 'good');
-    await useSessionStore.getState().completeSession(2, 'felt great');
+  it("composes today's session from the logged mood", async () => {
+    await useSessionStore.getState().logCheckIn('regulated');
+    await useSessionStore.getState().startTodaysSession();
+    const s = useSessionStore.getState();
+    expect(s.error).toBeNull();
+    expect(s.currentSession).toMatchObject({ id: 'sess1', state: 'regulated', check_in_id: 'ci1' });
+    // regulated → mobilize, strengthen, move, downshift
+    expect(s.composedBlocks.map((b) => b.exercise.category)).toEqual(['mobilize', 'strengthen', 'move', 'downshift']);
+  });
 
+  it('shows the paywall only when starting a session past the free limit', async () => {
+    mockConfig.premium = false;
+    mockConfig.completedCount = 5;
+    await useSessionStore.getState().logCheckIn('recovering');
+    expect(useSessionStore.getState().paywallVisible).toBe(false);
+    await useSessionStore.getState().startTodaysSession();
+    expect(useSessionStore.getState().paywallVisible).toBe(true);
+    expect(useSessionStore.getState().currentSession).toBeNull();
+  });
+
+  it('completes the session, resets state and returns Home to the week view', async () => {
+    await useSessionStore.getState().logCheckIn('regulated');
+    await useSessionStore.getState().startTodaysSession();
+    await useSessionStore.getState().completeSession(2, 'felt great');
     const s = useSessionStore.getState();
     expect(s.error).toBeNull();
     expect(s.currentSession).toBeNull();
     expect(s.composedBlocks).toEqual([]);
     expect(s.activeBlockIndex).toBe(0);
     expect(s.loading).toBe(false);
+    expect(s.homeStep).toBe('done');
   });
 
-  it('captures a trimmed intention on the check-in', async () => {
-    await useSessionStore.getState().checkIn(4, 'good', '  move gently  ');
-    expect(useSessionStore.getState().currentCheckIn?.intention).toBe('move gently');
+  it("adds sleep and a trimmed note to today's check-in", async () => {
+    await useSessionStore.getState().logCheckIn('overloaded');
+    await useSessionStore.getState().updateCheckIn({ sleep_quality: 'poor', intention: '  move gently  ' });
+    const ci = useSessionStore.getState().currentCheckIn;
+    expect(ci).toMatchObject({ sleep_quality: 'poor', intention: 'move gently' });
+    expect(mockCalls.filter((c) => c.table === 'check_ins' && c.op === 'update')).toHaveLength(1);
   });
 
-  it('stores null when no intention is given', async () => {
-    await useSessionStore.getState().checkIn(4, 'good');
+  it('stores null for a blank note', async () => {
+    await useSessionStore.getState().logCheckIn('overloaded');
+    await useSessionStore.getState().updateCheckIn({ intention: '   ' });
     expect(useSessionStore.getState().currentCheckIn?.intention).toBeNull();
+  });
+
+  it("changing today's mood updates the existing row instead of inserting", async () => {
+    await useSessionStore.getState().logCheckIn('overloaded');
+    useSessionStore.getState().changeTodaysCheckIn();
+    expect(useSessionStore.getState().homeStep).toBe('pick');
+    await useSessionStore.getState().logCheckIn('activated');
+    expect(mockCalls.filter((c) => c.table === 'check_ins' && c.op === 'insert')).toHaveLength(1);
+    expect(useSessionStore.getState().currentCheckIn?.energy_score).toBe(5);
+    expect(useSessionStore.getState().homeStep).toBe('logged');
+  });
+
+  it('keeps nothing and rethrows when the check-in cannot be saved', async () => {
+    mockConfig.failCheckInInsert = true;
+    await expect(useSessionStore.getState().logCheckIn('regulated')).rejects.toBeTruthy();
+    expect(useSessionStore.getState().currentCheckIn).toBeNull();
+    expect(useSessionStore.getState().homeStep).toBe('done');
+  });
+
+  it('dismissForToday moves Home to the week view', async () => {
+    await useSessionStore.getState().logCheckIn('recovering');
+    useSessionStore.getState().dismissForToday();
+    expect(useSessionStore.getState().homeStep).toBe('done');
+  });
+
+  it('loadWeek never throws and yields a comparison', async () => {
+    await useSessionStore.getState().loadWeek();
+    expect(useSessionStore.getState().week).toEqual({
+      thisWeek: { days: 0, minutes: 0 },
+      lastWeek: { days: 0, minutes: 0 },
+      daily: [null, null, null, null, null, null, null],
+    });
   });
 });

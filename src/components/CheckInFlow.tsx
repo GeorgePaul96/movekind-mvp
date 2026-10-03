@@ -5,6 +5,7 @@ import { Slider } from './Slider';
 import { colors, stateColors } from '@/constants/colors';
 import { INTENTION } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
+import { mapEnergyToState } from '@/domain/checkin/moods';
 import type { CheckIn } from '@/types';
 
 // `color` is the accessible accent (safe with white text); `tint` fills the slider.
@@ -17,7 +18,9 @@ const STATE_DETAILS = [
 ];
 
 export function CheckInFlow() {
-  const checkIn = useSessionStore((s) => s.checkIn);
+  const logCheckIn = useSessionStore((s) => s.logCheckIn);
+  const updateCheckIn = useSessionStore((s) => s.updateCheckIn);
+  const startTodaysSession = useSessionStore((s) => s.startTodaysSession);
   const safeHarbor = useSessionStore((s) => s.safeHarborBypass);
   const loading = useSessionStore((s) => s.loading);
 
@@ -29,7 +32,9 @@ export function CheckInFlow() {
 
   const handleGenerate = async () => {
     try {
-      await checkIn(energy, sleep, intention);
+      await logCheckIn(mapEnergyToState(energy));
+      await updateCheckIn({ sleep_quality: sleep, intention });
+      await startTodaysSession();
     } catch (err) {
       console.warn('Check-in error:', err);
     }
