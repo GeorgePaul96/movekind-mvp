@@ -93,7 +93,7 @@ Instagram) didn't land. Five sub-projects, built in order:
 
 | # | Sub-project | Status | Notes |
 |---|---|---|---|
-| 1 | Visual clarity + one-tap check-in | 🟡 building | Sunrise palette, 3-variant Button, mood tiles, jargon purge, check-in/session split, week card. Spec: [docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md](docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md). |
+| 1 | Visual clarity + one-tap check-in | ✅ built (2026-10-03, branch `redesign/visual-clarity`) | Sunrise palette (contrast-tested), 3-variant Button + MoodTile/Chip/WeekCard, all hand-rolled buttons and legacy color aliases removed, jargon purged, min font 13. `logCheckIn` (never paywalls) split from `startTodaysSession`; 4-state Home; this-week-vs-last card; `check_ins_update_own` RLS policy (**run it in Supabase before testing**). Paywall price now $4.99 and no fake "trial". 159 tests. Spec: [docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md](docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md). Follow-ups: real exercise illustrations (player shows a mood panel for now); offline check-in queue; re-test with the same friends. |
 | 2 | Reason to return | ⬜ | Finch-style "something of yours that grows when you show up". Rest days count. |
 | 3 | Weekly analytics | ⬜ | This-week-vs-last beyond the week card. |
 | 4 | Honest custom workouts | ⬜ | Show the composer's reasoning per exercise ("picked because…"). |

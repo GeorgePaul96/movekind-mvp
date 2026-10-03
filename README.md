@@ -105,13 +105,15 @@ movekind-mvp/
 │   └── schema.sql              # Tables, RLS, policies, exercise seed
 ├── src/
 │   ├── components/             # UI primitives + session UI
-│   │   ├── CheckInFlow.tsx
+│   │   ├── home/               # MoodPicker, LoggedPanel, WeekView
 │   │   ├── SessionOverview.tsx
 │   │   ├── SessionPlayer.tsx
 │   │   ├── SessionComplete.tsx
 │   │   └── Paywall.tsx
 │   ├── domain/
-│   │   └── sessions/composer.ts   # Pure session composer (unit-tested)
+│   │   ├── sessions/composer.ts   # Pure session composer (unit-tested)
+│   │   ├── checkin/moods.ts       # Mood tiles → energy → capacity state
+│   │   └── insights/weekCompare.ts # This week vs last
 │   ├── screens/
 │   │   ├── auth/               # Onboarding, Sign in, Sign up
 │   │   └── main/               # Home, Journey, Profile

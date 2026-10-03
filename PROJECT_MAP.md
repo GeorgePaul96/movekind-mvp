@@ -26,7 +26,7 @@
 | File | Owns |
 |---|---|
 | [authStore.ts](src/store/authStore.ts) | session/user, signIn/Up/Out, restoreSession |
-| [sessionStore.ts](src/store/sessionStore.ts) | check-in → compose → play → complete; free-quota gate; stats cache |
+| [sessionStore.ts](src/store/sessionStore.ts) | `logCheckIn` / `updateCheckIn` → `startTodaysSession` (free-quota gate) → play → complete; `homeStep`; `loadWeek`; stats cache |
 | [settingsStore.ts](src/store/settingsStore.ts) | notifications/motion/onboarding flags (AsyncStorage) |
 
 ## `src/services/` — side-effect wrappers
@@ -46,16 +46,20 @@
 |---|---|
 | [auth/OnboardingScreen.tsx](src/screens/auth/OnboardingScreen.tsx) | new-user onboarding (largest screen, 405 ln) |
 | [auth/SignInScreen.tsx](src/screens/auth/SignInScreen.tsx) / [SignUpScreen.tsx](src/screens/auth/SignUpScreen.tsx) | auth |
-| [main/HomeScreen.tsx](src/screens/main/HomeScreen.tsx) | check-in entry + active session host |
+| [main/HomeScreen.tsx](src/screens/main/HomeScreen.tsx) | 4-state home: active session → mood tiles → Logged panel → week view |
 | [main/JourneyScreen.tsx](src/screens/main/JourneyScreen.tsx) | history + charts |
 | [main/ProfileScreen.tsx](src/screens/main/ProfileScreen.tsx) | profile, premium, settings |
 
 ## `src/components/`
 
-Session UI: [CheckInFlow](src/components/CheckInFlow.tsx) · [SessionOverview](src/components/SessionOverview.tsx) ·
+Home: [home/MoodPicker](src/components/home/MoodPicker.tsx) (one-tap check-in) ·
+[home/LoggedPanel](src/components/home/LoggedPanel.tsx) (Start / Not now, optional sleep + note) ·
+[home/WeekView](src/components/home/WeekView.tsx) (this week vs last).
+Session UI: [SessionOverview](src/components/SessionOverview.tsx) ·
 [SessionPlayer](src/components/SessionPlayer.tsx) · [SessionComplete](src/components/SessionComplete.tsx) ·
 [Paywall](src/components/Paywall.tsx).
-Primitives: Button, Card, Chip, Header, Screen, SectionLabel, Slider, Toast, RatingRow, BarChart.
+Primitives: [Button](src/components/Button.tsx) (primary/secondary/link) · [MoodTile](src/components/MoodTile.tsx) ·
+[Chip](src/components/Chip.tsx) · [WeekCard](src/components/WeekCard.tsx) · Card, Header, Screen, Slider, BarChart.
 
 ## `src/navigation/`
 
@@ -68,7 +72,9 @@ Primitives: Button, Card, Chip, Header, Screen, SectionLabel, Slider, Toast, Rat
 | File | Purpose |
 |---|---|
 | [types/index.ts](src/types/index.ts) | **All shared domain types** (Profile, CheckIn, Exercise, Session, SessionBlock, PostRating, UserExerciseStats, UserState) |
-| [constants/colors.ts](src/constants/colors.ts) | color palette (single source of truth) |
+| [constants/colors.ts](src/constants/colors.ts) | "Sunrise" palette + `stateColors` (soft/ink/accent/tint); contrast-tested |
+| [domain/checkin/moods.ts](src/domain/checkin/moods.ts) | `MOODS`, `moodToEnergy`, `mapEnergyToState` (pure) |
+| [domain/insights/weekCompare.ts](src/domain/insights/weekCompare.ts) | `compareWeeks`, `weekBounds`, `isSameLocalDay` (pure) |
 | [constants/copy.ts](src/constants/copy.ts) | user-facing strings |
 | [hooks/useBootstrapData.ts](src/hooks/useBootstrapData.ts) · [hooks/useToast.ts](src/hooks/useToast.ts) | hooks |
 | [utils/date.ts](src/utils/date.ts) · [utils/format.ts](src/utils/format.ts) | helpers |

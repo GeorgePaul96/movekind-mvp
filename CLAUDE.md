@@ -49,7 +49,11 @@ Verify changes with `npm run typecheck` and `npm test`.
 ## Core concepts (memorize these)
 
 - **Four capacity states:** `overloaded · recovering · regulated · activated`. Derived
-  from `energy_score` (1–5) by `mapEnergyToState` in [sessionStore.ts](src/store/sessionStore.ts).
+  from `energy_score` (1–5) by `mapEnergyToState` in [moods.ts](src/domain/checkin/moods.ts)
+  (re-exported by the store). Users never see these names — they tap one of four mood tiles
+  ("Running on empty / A bit low / Steady / Buzzing", `MOOD_COPY`) → `moodToEnergy` (1/2/4/5).
+- **One-tap check-in.** `logCheckIn(mood)` only saves the check-in and **never** shows the
+  paywall; `startTodaysSession()` composes the session and is the only paywall path.
 - **Composer is pure & sacred.** [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts)
   takes state + exercise library + recency + stats and returns blocks. **No I/O, no React,
   no Supabase.** It is the only unit-tested business logic. Keep it pure; test changes via
@@ -69,10 +73,14 @@ Verify changes with `npm run typecheck` and `npm test`.
   [src/constants/colors.ts](src/constants/colors.ts)** — never hardcode hex. Use the semantic
   names (`background`, `surface`, `surfaceSecondary`, `primary`/`primaryPressed`/`onPrimary`,
   `textPrimary`/`textSecondary`/`textMuted`, `border`, `divider`, `success`/`warning`/`error`/`info`,
-  `shadow`) plus `elevation.card`/`elevation.raised`. For capacity-state color use
-  `stateColors[state]`: `.tint` for non-text fills (bars, slider), `.accent` for anything
-  bearing white text (all accents clear WCAG AA on white). Legacy names (`bg`, `ink`, `sage`, …)
-  are aliases to tokens — prefer the semantic names. Any white-on-color must clear 4.5:1.
+  `shadow`) plus `elevation.card`/`elevation.raised`. For mood color use
+  `stateColors[state]`: `.soft` tile/surface fill, `.ink` text + border on `.soft`, `.accent`
+  for fills bearing white text, `.tint` for bars/slider. Palette is "Sunrise" (warm cream).
+  **Contrast is enforced by [__tests__/colors.test.ts](__tests__/colors.test.ts)** (text ≥4.5:1,
+  UI/graphs ≥3:1) — add a pair there when you add a token.
+- **Buttons:** only `<Button>` with `variant="primary"` (solid), `"secondary"` (2px outline) or
+  `"link"` (underlined, 44pt target). Choice sets use `<Chip>`; mood picks use `<MoodTile>`.
+  No hand-rolled `Pressable` buttons. Minimum font size 13.
 - **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts).
 - **Side effects** (Supabase, telemetry, notifications) live in `src/services/`, never in `domain/`.
 

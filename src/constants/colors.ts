@@ -8,8 +8,7 @@
  * - Reference SEMANTIC tokens (`colors.primary`, `colors.textSecondary`, …), never raw hex.
  * - Text pairs clear WCAG AA 4.5:1; non-text UI/graph pairs clear 3:1.
  *   Enforced by __tests__/colors.test.ts — add new pairs there when you add tokens.
- * - Legacy keys (`bg`, `ink`, `sage`, …) are aliases kept only until every file has
- *   migrated; they are removed in the final redesign task.
+ * - Mood color comes from `stateColors[state]` (soft / ink / accent / tint), never ad hoc.
  */
 
 export const colors = {
@@ -41,28 +40,6 @@ export const colors = {
   warning: '#8A5A12',
   error: '#A8443A',
   info: '#2F6596',
-
-  // ---- Legacy aliases (removed in Task 11) -------------------------------
-  bg: '#FFF8EE',
-  ink: '#2B2A26',
-  muted: '#5A5548',
-  hint: '#6B6453',
-  sage: '#245C43',
-  sageDark: '#245C43',
-  sageMid: '#5A9C74',
-  sageLight: '#E3F0E8',
-  blush: '#D06A50',
-  blushLight: '#FAD5C8',
-  blushDark: '#8A3220',
-  blushAccent: '#A8443A',
-  sky: '#5F8FC0',
-  skyLight: '#DCEBFA',
-  skyDark: '#1F4E7A',
-  skyAccent: '#3C6E9C',
-  warm: '#B8862A',
-  warmLight: '#FBE7B8',
-  warmDark: '#6B4A0E',
-  warmAccent: '#8A5A12',
 } as const;
 
 export type ColorName = keyof typeof colors;
