@@ -6,6 +6,8 @@ import { enqueueRating } from '@/services/outbox';
 import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
 import { visibleExercises } from '@/domain/premium/entitlements';
+import { mapEnergyToState } from '@/domain/checkin/moods';
+export { mapEnergyToState } from '@/domain/checkin/moods';
 import type { CheckIn, Session, SessionBlock, Exercise, UserState, UserExerciseStats } from '@/types';
 
 interface ComposedBlockWithExercise {
@@ -40,13 +42,6 @@ interface SessionState {
 }
 
 const ENGINE_VERSION = 'v3.0';
-
-export function mapEnergyToState(score: number): UserState {
-  if (score === 1) return 'overloaded';
-  if (score <= 3) return 'recovering';
-  if (score === 4) return 'regulated';
-  return 'activated';
-}
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   currentCheckIn: null,

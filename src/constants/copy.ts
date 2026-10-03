@@ -1,4 +1,5 @@
 import type { RecoverySignal } from '@/domain/behavioral/types';
+import type { UserState } from '@/types';
 
 export const QUOTES = [
   'Rest is part of progress. Your body remembers consistency, not perfection.',
@@ -74,4 +75,68 @@ const NUDGE_DEFAULT = "Check in when you're ready to compose today's session.";
 
 export function nudgeBodyFor(signal: RecoverySignal | null): string {
   return signal ? NUDGE_COPY[signal] : NUDGE_DEFAULT;
+}
+
+export const MOOD_COPY: Record<
+  UserState,
+  { label: string; emoji: string; reassurance: string; sessionTitle: string; sessionFeel: string }
+> = {
+  overloaded: {
+    label: 'Running on empty',
+    emoji: '😮‍💨',
+    reassurance: "Running on empty. That's okay.",
+    sessionTitle: 'Your gentle reset',
+    sessionFeel: 'Slow breathing and easy release. Nothing strenuous.',
+  },
+  recovering: {
+    label: 'A bit low',
+    emoji: '🌱',
+    reassurance: 'A bit low today. Small is plenty.',
+    sessionTitle: 'Your easy session',
+    sessionFeel: 'Loosening stretches and light movement.',
+  },
+  regulated: {
+    label: 'Steady',
+    emoji: '🙂',
+    reassurance: 'Steady. A good day to move.',
+    sessionTitle: 'Your steady session',
+    sessionFeel: 'Mobility, some strength, and a calm finish.',
+  },
+  activated: {
+    label: 'Buzzing',
+    emoji: '⚡',
+    reassurance: "Buzzing. Let's use that energy well.",
+    sessionTitle: 'Your strong session',
+    sessionFeel: 'A fuller workout with a proper wind-down.',
+  },
+};
+
+export const SLEEP_COPY: Record<'poor' | 'fair' | 'good', string> = {
+  poor: '😴 Poor',
+  fair: '😐 Okay',
+  good: '✨ Great',
+};
+
+export const CHECKIN_COPY = {
+  logged: 'Logged ✓',
+  start: 'Start',
+  notNow: "Not now — I'm done for today",
+  sleepPrompt: 'Optional: how did you sleep?',
+  addNote: '+ Add a note for today',
+  notePlaceholder: 'e.g. move gently, breathe, just show up',
+  saveNote: 'Save note',
+  gentleReset: 'Too wiped to choose? Start a gentle reset',
+  saveFailed: "Couldn't save that — tap to try again.",
+  updateFailed: "Couldn't save that. Try again in a moment.",
+  changeToday: "Change today's check-in",
+  anotherSession: 'Do another short session',
+  weekTitle: 'This week vs last',
+  weekEmpty: 'Your week will appear here.',
+  checkIns: 'Check-ins',
+  minutes: 'Minutes moved',
+  niceWeek: (name?: string | null) => (name ? `Nice to see you, ${name}.` : 'Nice to see you.'),
+} as const;
+
+export function checkInPrompt(name?: string | null): string {
+  return name ? `How's your energy, ${name}?` : "How's your energy?";
 }
