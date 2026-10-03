@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
+import { PROFILE_COPY } from '@/constants/copy';
 import { useAuthStore } from '@/store/authStore';
 import { getProfile, updateProfile } from '@/services/profile';
 import { startCheckout } from '@/services/premium';
@@ -50,16 +51,13 @@ export default function ProfileScreen() {
     if (result) {
       Alert.alert('Premium', `Continue to: ${result.url}`);
     } else {
-      Alert.alert(
-        'Premium coming soon',
-        'Premium checkouts are gated. Configure RevenueCat to activate in Phase 3.'
-      );
+      Alert.alert(PROFILE_COPY.premiumComingSoonTitle, PROFILE_COPY.premiumComingSoonBody);
     }
   };
 
   return (
     <Screen>
-      <Header tag="Profile Settings" title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
+      <Header tag={PROFILE_COPY.tag} title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.label}>Name</Text>
@@ -68,7 +66,7 @@ export default function ProfileScreen() {
           onChangeText={setName}
           accessibilityLabel="Name"
           placeholder="Your name"
-          placeholderTextColor={colors.hint}
+          placeholderTextColor={colors.textMuted}
           style={styles.input}
         />
 
@@ -77,10 +75,9 @@ export default function ProfileScreen() {
       </Card>
 
       <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>MoveKind Premium</Text>
+        <Text style={styles.label}>{PROFILE_COPY.premiumTitle}</Text>
         <Text style={styles.premiumDesc}>
-          Personalized adaptive coaching, 5-session value trials, and state capacity trend lines.
-          {profile?.is_premium ? ' You are a premium member.' : ' Gated for validation.'}
+          {profile?.is_premium ? PROFILE_COPY.premiumActive : PROFILE_COPY.premiumDesc}
         </Text>
         <View style={{ height: 8 }} />
         <Button
@@ -102,23 +99,23 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceSecondary,
     borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: colors.ink,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
-  value: { fontSize: 14, color: colors.ink },
-  premiumDesc: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+  value: { fontSize: 15, color: colors.textPrimary },
+  premiumDesc: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
 });

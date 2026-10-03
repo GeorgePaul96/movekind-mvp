@@ -59,14 +59,14 @@ const styles = StyleSheet.create({
   col: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
   bar: { width: '100%', borderRadius: 6 },
   label: {
-    fontSize: 9,
-    color: colors.hint,
+    fontSize: 13,
+    color: colors.textMuted,
     textTransform: 'uppercase',
     marginTop: 4,
   },
   unit: {
-    fontSize: 10,
-    color: colors.hint,
+    fontSize: 13,
+    color: colors.textMuted,
     marginTop: 4,
     textAlign: 'right',
   },

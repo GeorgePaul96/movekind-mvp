@@ -71,7 +71,7 @@ export const NUDGE_COPY: Record<RecoverySignal, string> = {
   collapse: "Whenever you're ready, the smallest step is enough. We'll meet you there.",
 };
 
-const NUDGE_DEFAULT = "Check in when you're ready to compose today's session.";
+const NUDGE_DEFAULT = "How's your energy today? One tap is enough.";
 
 export function nudgeBodyFor(signal: RecoverySignal | null): string {
   return signal ? NUDGE_COPY[signal] : NUDGE_DEFAULT;
@@ -178,6 +178,28 @@ export const SESSION_COPY = {
   showedUpTitle: 'You showed up',
   showedUpDesc: 'You checked in with yourself and moved in a way that fit today.',
   noStreaks: '🌸 No streaks here. Rest days count, and nothing resets.',
+} as const;
+
+export const PAYWALL_COPY = {
+  title: 'MoveKind Premium',
+  learnedTitle: "What we've learned so far",
+  restored: (delta: string) => `In your first sessions you felt about ${delta} points better per session, on average.`,
+  bestCategory: (category: string) => `${category} sessions seem to help you most.`,
+  pitch:
+    'Premium unlocks your full Journey — all your history, long-term trends, and your Personal Playbook — plus extra exercise packs. Checking in, sessions, recovery and voice guidance stay free, always.',
+  upgrade: 'Get Premium — $4.99/month',
+  upgradeA11y: 'Get Premium, 4 dollars 99 cents per month',
+  later: 'Maybe later',
+} as const;
+
+export const PROFILE_COPY = {
+  tag: 'Profile',
+  premiumTitle: 'MoveKind Premium',
+  premiumDesc:
+    'Your full Journey history, long-term trends, and extra exercise packs. Checking in and sessions stay free, always.',
+  premiumActive: "You're a Premium member — thank you.",
+  premiumComingSoonTitle: 'Premium is coming soon',
+  premiumComingSoonBody: "We're putting the finishing touches on Premium. Everything you use today stays free.",
 } as const;
 
 export function checkInPrompt(name?: string | null): string {

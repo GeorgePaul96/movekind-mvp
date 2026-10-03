@@ -28,7 +28,7 @@ export function Slider({
   step = 1,
   value,
   onChange,
-  color = colors.sage,
+  color = colors.primary,
   accessibilityLabel,
 }: Props) {
   const [width, setWidth] = React.useState(0);

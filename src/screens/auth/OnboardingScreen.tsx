@@ -127,7 +127,7 @@ export default function OnboardingScreen() {
                     accessibilityLabel={`${opt.label}. ${opt.desc}`}
                     style={[styles.card, selected && styles.cardSelected]}
                   >
-                    <Text style={[styles.cardLabel, selected && styles.textSelected]}>{opt.label}</Text>
+                    <Text style={[styles.cardLabel, selected && styles.textSelected]}>{selected ? '✓ ' : ''}{opt.label}</Text>
                     <Text style={styles.cardDesc}>{opt.desc}</Text>
                   </Pressable>
                 );
@@ -155,7 +155,7 @@ export default function OnboardingScreen() {
                     accessibilityLabel={`${opt.label}. ${opt.desc}`}
                     style={[styles.card, selected && styles.cardSelected]}
                   >
-                    <Text style={[styles.cardLabel, selected && styles.textSelected]}>{opt.label}</Text>
+                    <Text style={[styles.cardLabel, selected && styles.textSelected]}>{selected ? '✓ ' : ''}{opt.label}</Text>
                     <Text style={styles.cardDesc}>{opt.desc}</Text>
                   </Pressable>
                 );
@@ -184,7 +184,7 @@ export default function OnboardingScreen() {
                     style={[styles.gridCard, selected && styles.gridCardSelected]}
                   >
                     <Text style={styles.gridEmoji} importantForAccessibility="no" accessibilityElementsHidden>{opt.emoji}</Text>
-                    <Text style={[styles.gridLabel, selected && styles.textSelected]}>{opt.label}</Text>
+                    <Text style={[styles.gridLabel, selected && styles.textSelected]}>{selected ? '✓ ' : ''}{opt.label}</Text>
                   </Pressable>
                 );
               })}
@@ -220,7 +220,7 @@ export default function OnboardingScreen() {
                 step={1}
                 value={averageEnergy}
                 onChange={setAverageEnergy}
-                color={colors.sage}
+                color={colors.primary}
                 accessibilityLabel="Typical weekly energy level"
               />
 
@@ -234,14 +234,12 @@ export default function OnboardingScreen() {
         {/* Action controls */}
         <View style={styles.footer}>
           {step > 0 ? (
-            <Pressable
-              onPress={handleBack}
-              accessibilityRole="button"
+            <Button
+              label="Back"
+              variant="link"
               accessibilityLabel="Go back to previous step"
-              style={styles.backBtn}
-            >
-              <Text style={styles.backBtnText}>Back</Text>
-            </Pressable>
+              onPress={handleBack}
+            />
           ) : (
             <View style={{ width: 60 }} />
           )}
@@ -269,7 +267,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
   },
   progressBarWrap: {
     height: 4,
@@ -278,7 +276,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: colors.sage,
+    backgroundColor: colors.primary,
   },
   container: {
     flex: 1,
@@ -291,8 +289,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   tag: {
-    fontSize: 11,
-    color: colors.sage,
+    fontSize: 13,
+    color: colors.primary,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
@@ -300,45 +298,47 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    color: colors.ink,
+    color: colors.textPrimary,
     fontWeight: '500',
     lineHeight: 32,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.muted,
+    color: colors.textSecondary,
     lineHeight: 20,
     marginBottom: 24,
   },
   optionsWrap: {
     gap: 12,
   },
+  // Choice cards: always outlined in primary (≥3:1 on the canvas) so they read as
+  // tappable; selection adds a thicker border, a tinted fill and a ✓ on the label.
   card: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.primary,
+    borderWidth: 1.5,
     borderRadius: 16,
     padding: 16,
   },
   cardSelected: {
-    borderColor: colors.sage,
-    borderWidth: 1.5,
-    backgroundColor: colors.sageLight,
+    borderWidth: 3,
+    padding: 14.5,
+    backgroundColor: colors.primarySoft,
   },
   cardLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   textSelected: {
-    color: colors.sageDark,
+    color: colors.primary,
   },
   cardDesc: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 14,
+    color: colors.textSecondary,
     marginTop: 4,
-    lineHeight: 16,
+    lineHeight: 20,
   },
   gridWrap: {
     flexDirection: 'row',
@@ -348,25 +348,25 @@ const styles = StyleSheet.create({
   gridCard: {
     width: '48%',
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.primary,
+    borderWidth: 1.5,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
     gap: 8,
   },
   gridCardSelected: {
-    borderColor: colors.sage,
-    borderWidth: 1.5,
-    backgroundColor: colors.sageLight,
+    borderWidth: 3,
+    paddingVertical: 16.5,
+    backgroundColor: colors.primarySoft,
   },
   gridEmoji: {
     fontSize: 24,
   },
   gridLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.ink,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
   sliderSection: {
     alignItems: 'stretch',
@@ -384,15 +384,15 @@ const styles = StyleSheet.create({
   energyLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   energyValue: {
     fontSize: 14,
-    color: colors.muted,
+    color: colors.textSecondary,
   },
   sliderHint: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
     marginTop: 10,
@@ -405,16 +405,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 16,
   },
-  backBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  backBtnText: {
-    fontSize: 14,
-    color: colors.muted,
-    fontWeight: '500',
-  },
   btnWrap: {
-    width: 140,
+    width: 160,
   },
 });

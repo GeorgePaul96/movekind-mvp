@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { Card } from '@/components/Card';
-import { colors } from '@/constants/colors';
+import { colors, stateColors } from '@/constants/colors';
 import { BEHAVIORAL_FALLBACK } from '@/constants/copy';
 import type { BehavioralProfile } from '@/domain/behavioral';
 
@@ -22,13 +22,13 @@ export function BehavioralBanner({ profile }: { profile: BehavioralProfile | nul
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.sageLight,
-    borderColor: colors.sageMid,
+    backgroundColor: colors.primarySoft,
+    borderColor: stateColors.recovering.tint,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
   },
-  message: { fontSize: 15, fontWeight: '600', color: colors.sageDark, lineHeight: 20 },
-  insight: { fontSize: 12, color: colors.muted, marginTop: 6, lineHeight: 16 },
+  message: { fontSize: 15, fontWeight: '600', color: colors.primary, lineHeight: 20 },
+  insight: { fontSize: 13, color: colors.textSecondary, marginTop: 6, lineHeight: 16 },
 });

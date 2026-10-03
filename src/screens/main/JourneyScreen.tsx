@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 import type { UserState } from '@/types';
 import { BarChart } from '@/components/BarChart';
 import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
-import { BEHAVIORAL_FALLBACK, RE_ENTRY_READINESS } from '@/constants/copy';
+import { BEHAVIORAL_FALLBACK, MOOD_COPY, RE_ENTRY_READINESS } from '@/constants/copy';
 
 interface StateStats {
   label: string;
@@ -103,10 +103,10 @@ export default function JourneyScreen() {
       const totalCheckins = (checkIns || []).length || 1;
       
       const statsList: StateStats[] = [
-        { label: 'Overloaded', count: counts.overloaded, percentage: Math.round((counts.overloaded / totalCheckins) * 100), color: stateColors.overloaded.accent },
-        { label: 'Recovering', count: counts.recovering, percentage: Math.round((counts.recovering / totalCheckins) * 100), color: stateColors.recovering.accent },
-        { label: 'Regulated', count: counts.regulated, percentage: Math.round((counts.regulated / totalCheckins) * 100), color: stateColors.regulated.accent },
-        { label: 'Activated', count: counts.activated, percentage: Math.round((counts.activated / totalCheckins) * 100), color: stateColors.activated.accent },
+        { label: MOOD_COPY.overloaded.label, count: counts.overloaded, percentage: Math.round((counts.overloaded / totalCheckins) * 100), color: stateColors.overloaded.accent },
+        { label: MOOD_COPY.recovering.label, count: counts.recovering, percentage: Math.round((counts.recovering / totalCheckins) * 100), color: stateColors.recovering.accent },
+        { label: MOOD_COPY.regulated.label, count: counts.regulated, percentage: Math.round((counts.regulated / totalCheckins) * 100), color: stateColors.regulated.accent },
+        { label: MOOD_COPY.activated.label, count: counts.activated, percentage: Math.round((counts.activated / totalCheckins) * 100), color: stateColors.activated.accent },
       ];
 
       // Process playbook items
@@ -147,9 +147,9 @@ export default function JourneyScreen() {
   if (loading) {
     return (
       <Screen>
-        <Header tag="Capacity Journey" title="Your State Journey" />
+        <Header tag="Journey" title="Your journey" />
         <View style={styles.loading}>
-          <ActivityIndicator size="large" color={colors.sage} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </Screen>
     );
@@ -158,7 +158,7 @@ export default function JourneyScreen() {
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
-        <Header tag="Capacity Journey" title="Your State Journey" />
+        <Header tag="Journey" title="Your journey" />
 
         <View style={styles.gardenCard}>
           <Text style={{ fontSize: 32 }} importantForAccessibility="no" accessibilityElementsHidden>🌿</Text>
@@ -173,8 +173,8 @@ export default function JourneyScreen() {
         </View>
 
         <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">Nervous System States Distribution</Text>
-          <Text style={styles.sectionDesc}>Percentage of days spent in each readiness capacity state:</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">How your days have felt</Text>
+          <Text style={styles.sectionDesc}>Share of check-in days at each energy level:</Text>
           
           <View style={styles.barContainer}>
             {stateStats.map((stat) => (
@@ -204,8 +204,8 @@ export default function JourneyScreen() {
                   <Text style={styles.summaryValue}>{totalSessions}</Text>
                 </View>
                 <View style={styles.summaryBox}>
-                  <Text style={styles.summaryLabel}>Avg. Energy Delta</Text>
-                  <Text style={[styles.summaryValue, { color: colors.sage }]}>
+                  <Text style={styles.summaryLabel}>Avg. lift per session</Text>
+                  <Text style={[styles.summaryValue, { color: colors.primary }]}>
                     +{avgDelta.toFixed(1)}
                   </Text>
                 </View>
@@ -249,8 +249,8 @@ export default function JourneyScreen() {
                   <Text style={styles.sectionDesc}>Sessions per week as you return:</Text>
                   <BarChart
                     data={profile.rhythm.weeklyCounts.map((v, i) => ({ label: `W${i + 1}`, value: v }))}
-                    color={colors.sageMid}
-                    highlightColor={colors.sage}
+                    color={stateColors.recovering.tint}
+                    highlightColor={colors.primary}
                     unit="sessions / week"
                   />
                   {profile.rhythm.observation ? (
@@ -269,7 +269,7 @@ export default function JourneyScreen() {
                   <Text style={styles.sectionDesc}>Days between your recent sessions:</Text>
                   <BarChart
                     data={profile.gaps.gapHistory.map((v, i) => ({ label: `${i + 1}`, value: v }))}
-                    color={colors.sky}
+                    color={stateColors.overloaded.tint}
                     unit="days between sessions"
                   />
                   {profile.gaps.observation ? (
@@ -320,7 +320,7 @@ export default function JourneyScreen() {
               <View style={styles.statsSummaryRow}>
                 <View style={styles.summaryBox}>
                   <Text style={styles.summaryLabel}>Follow-Through</Text>
-                  <Text style={[styles.summaryValue, { color: colors.sageDark }]}>
+                  <Text style={[styles.summaryValue, { color: colors.primary }]}>
                     {Math.round(profile.followThrough.completionRate * 100)}%
                   </Text>
                 </View>
@@ -351,8 +351,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   gardenCard: {
-    backgroundColor: colors.warmLight,
-    borderColor: colors.warm,
+    backgroundColor: stateColors.regulated.soft,
+    borderColor: stateColors.regulated.tint,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 16,
     padding: 14,
@@ -361,32 +361,32 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
-  gardenTitle: { fontSize: 18, fontWeight: '600', color: colors.warmDark },
-  gardenDesc: { fontSize: 12, color: colors.warmAccent, marginTop: 2, lineHeight: 16 },
+  gardenTitle: { fontSize: 18, fontWeight: '600', color: stateColors.regulated.ink },
+  gardenDesc: { fontSize: 13, color: stateColors.regulated.accent, marginTop: 2, lineHeight: 16 },
   sectionTitle: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     fontWeight: '700',
     letterSpacing: 0.6,
     marginBottom: 6,
   },
   sectionDesc: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     marginBottom: 12,
     lineHeight: 16,
   },
   insightLine: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     marginTop: 10,
     lineHeight: 16,
   },
   recoveryMessage: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.sageDark,
+    color: colors.primary,
     lineHeight: 20,
   },
   winRow: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   winText: {
     flex: 1,
     fontSize: 13,
-    color: colors.ink,
+    color: colors.textPrimary,
     lineHeight: 18,
   },
   barContainer: {
@@ -411,15 +411,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   barLabel: {
-    width: 80,
-    fontSize: 12,
-    color: colors.ink,
+    width: 112,
+    fontSize: 13,
+    color: colors.textPrimary,
     fontWeight: '500',
   },
   barTrackBg: {
     flex: 1,
     height: 10,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     borderRadius: 5,
     overflow: 'hidden',
   },
@@ -430,18 +430,18 @@ const styles = StyleSheet.create({
   barValue: {
     width: 32,
     textAlign: 'right',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.muted,
+    color: colors.textSecondary,
   },
   playbookNotice: {
     fontSize: 13,
-    color: colors.muted,
+    color: colors.textSecondary,
     lineHeight: 18,
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     borderRadius: 3,
     marginTop: 12,
     marginBottom: 6,
@@ -449,12 +449,12 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: colors.sage,
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   progressText: {
-    fontSize: 11,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     textAlign: 'right',
     fontWeight: '600',
   },
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   },
   summaryBox: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -473,21 +473,21 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   summaryLabel: {
-    fontSize: 10,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     fontWeight: '600',
   },
   summaryValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.ink,
+    color: colors.textPrimary,
     marginTop: 4,
   },
   playbookRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     padding: 10,
     borderRadius: 12,
     marginTop: 8,
@@ -497,23 +497,23 @@ const styles = StyleSheet.create({
   playbookRank: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.muted,
+    color: colors.textSecondary,
     width: 24,
   },
   playbookName: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.ink,
+    color: colors.textPrimary,
   },
   playbookCat: {
-    fontSize: 10,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     textTransform: 'capitalize',
     marginTop: 1,
   },
   playbookDelta: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.sage,
+    color: colors.primary,
   },
 });

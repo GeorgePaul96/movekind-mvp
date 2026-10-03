@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Alert } from 'react-native';
 import { Card } from './Card';
+import { Button } from './Button';
 import { colors } from '@/constants/colors';
+import { PAYWALL_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/services/supabase';
@@ -105,7 +107,7 @@ export function Paywall() {
     return (
       <View style={styles.container}>
         <Card style={styles.card}>
-          <ActivityIndicator size="large" color={colors.sage} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </Card>
       </View>
     );
@@ -115,45 +117,29 @@ export function Paywall() {
     <View style={styles.container}>
       <Card style={styles.card}>
         <Text style={styles.lockIcon} importantForAccessibility="no" accessibilityElementsHidden>🌿</Text>
-        <Text style={styles.title} accessibilityRole="header">Unlock MoveKind Premium</Text>
+        <Text style={styles.title} accessibilityRole="header">{PAYWALL_COPY.title}</Text>
 
         <View style={styles.insightBox}>
           <Text style={styles.insightEmoji} importantForAccessibility="no" accessibilityElementsHidden>📊</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.insightTitle}>Nervous System Learning Complete</Text>
-            <Text style={styles.insightText}>
-              In your first 5 sessions, you restored an average of <Text style={styles.bold}>+{avgDelta.toFixed(1)} energy points</Text> per workout.
-            </Text>
+            <Text style={styles.insightTitle}>{PAYWALL_COPY.learnedTitle}</Text>
+            <Text style={styles.insightText}>{PAYWALL_COPY.restored(`+${avgDelta.toFixed(1)}`)}</Text>
             <Text style={[styles.insightText, { marginTop: 6 }]}>
-              Our composer learned that <Text style={styles.bold}>{bestCategory} routines</Text> improve your capacity state more than other categories.
+              {PAYWALL_COPY.bestCategory(bestCategory.charAt(0).toUpperCase() + bestCategory.slice(1))}
             </Text>
           </View>
         </View>
 
-        <Text style={styles.pitchText}>
-          Premium unlocks your complete State Journey — full history, long-term
-          capacity trends, and your whole Personal Playbook — plus extra exercise
-          packs. Your daily check-in, sessions, recovery, and voice coaching stay
-          free, always.
-        </Text>
+        <Text style={styles.pitchText}>{PAYWALL_COPY.pitch}</Text>
 
-        <Pressable
-          style={styles.upgradeBtn}
-          onPress={handleCheckout}
-          accessibilityRole="button"
-          accessibilityLabel="Start Premium trial, 12 dollars 99 cents per month"
-        >
-          <Text style={styles.upgradeBtnText}>Start Premium Trial ($12.99/mo)</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.backBtn}
-          onPress={dismissPaywall}
-          accessibilityRole="button"
-          accessibilityLabel="Not now"
-        >
-          <Text style={styles.backBtnText}>Maybe later</Text>
-        </Pressable>
+        <View style={{ width: '100%', gap: 6 }}>
+          <Button
+            label={PAYWALL_COPY.upgrade}
+            accessibilityLabel={PAYWALL_COPY.upgradeA11y}
+            onPress={handleCheckout}
+          />
+          <Button label={PAYWALL_COPY.later} variant="link" onPress={dismissPaywall} />
+        </View>
       </Card>
     </View>
   );
@@ -178,16 +164,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.ink,
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 20,
   },
   insightBox: {
     flexDirection: 'row',
-    backgroundColor: colors.sageLight,
+    backgroundColor: colors.primarySoft,
     padding: 16,
     borderRadius: 16,
-    borderColor: colors.sage,
+    borderColor: colors.primary,
     borderWidth: StyleSheet.hairlineWidth,
     gap: 12,
     marginBottom: 20,
@@ -196,55 +182,22 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   insightTitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
-    color: colors.sageDark,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    color: colors.primary,
     marginBottom: 6,
   },
   insightText: {
-    fontSize: 13,
-    color: colors.sageDark,
-    lineHeight: 18,
-    opacity: 0.9,
-  },
-  bold: {
-    fontWeight: '700',
+    fontSize: 14,
+    color: colors.primary,
+    lineHeight: 20,
   },
   pitchText: {
-    fontSize: 13,
-    color: colors.muted,
+    fontSize: 15,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 24,
     paddingHorizontal: 8,
-  },
-  upgradeBtn: {
-    width: '100%',
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: 24,
-    alignItems: 'center',
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  upgradeBtnText: {
-    color: colors.onPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  backBtn: {
-    marginTop: 14,
-    padding: 8,
-  },
-  backBtnText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
   },
 });

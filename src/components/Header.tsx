@@ -20,22 +20,22 @@ export function Header({ tag, title, subtitle }: Props) {
 
 const styles = StyleSheet.create({
   tag: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    color: colors.sage,
+    color: colors.primary,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   title: {
     fontSize: 26,
-    color: colors.ink,
+    color: colors.textPrimary,
     lineHeight: 32,
     fontWeight: '500',
   },
   subtitle: {
     fontSize: 13,
-    color: colors.muted,
+    color: colors.textSecondary,
     marginTop: 4,
   },
 });

@@ -17,9 +17,9 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.sage,
-        tabBarInactiveTintColor: colors.hint,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: { fontSize: 13, fontWeight: '500' },
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,

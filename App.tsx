@@ -39,7 +39,7 @@ export default function App() {
   if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.sage} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -59,7 +59,7 @@ export default function App() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { colors, stateColors } from '@/constants/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '@/navigation/types';
@@ -60,7 +60,7 @@ export default function SignUpScreen({ navigation }: Props) {
                 onChangeText={setName}
                 accessibilityLabel="Your name"
                 placeholder="What should we call you?"
-                placeholderTextColor={colors.hint}
+                placeholderTextColor={colors.textMuted}
                 style={styles.input}
               />
             </View>
@@ -71,7 +71,7 @@ export default function SignUpScreen({ navigation }: Props) {
                 onChangeText={setEmail}
                 accessibilityLabel="Email"
                 placeholder="you@example.com"
-                placeholderTextColor={colors.hint}
+                placeholderTextColor={colors.textMuted}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 style={styles.input}
@@ -84,7 +84,7 @@ export default function SignUpScreen({ navigation }: Props) {
                 onChangeText={setPassword}
                 accessibilityLabel="Password, at least 6 characters"
                 placeholder="At least 6 characters"
-                placeholderTextColor={colors.hint}
+                placeholderTextColor={colors.textMuted}
                 secureTextEntry
                 style={styles.input}
               />
@@ -109,25 +109,25 @@ export default function SignUpScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, padding: 24, justifyContent: 'space-between' },
   tag: {
-    fontSize: 12,
-    color: colors.sage,
+    fontSize: 13,
+    color: colors.primary,
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   title: {
     fontSize: 28,
-    color: colors.ink,
+    color: colors.textPrimary,
     marginTop: 6,
     fontWeight: '500',
     lineHeight: 34,
   },
   label: {
-    fontSize: 12,
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
     fontWeight: '500',
     textTransform: 'uppercase',
     marginBottom: 6,
@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: colors.ink,
+    color: colors.textPrimary,
   },
-  error: { color: colors.blushAccent, fontSize: 13 },
-  footer: { textAlign: 'center', color: colors.muted, fontSize: 12 },
+  error: { color: stateColors.activated.accent, fontSize: 13 },
+  footer: { textAlign: 'center', color: colors.textSecondary, fontSize: 13 },
 });
