@@ -78,7 +78,7 @@ export default function SignInScreen({ navigation }: Props) {
             <Button label="Sign in" onPress={onSubmit} loading={loading} />
             <Button
               label="Create an account"
-              variant="ghost"
+              variant="link"
               onPress={() => navigation.navigate('SignUp')}
             />
           </View>

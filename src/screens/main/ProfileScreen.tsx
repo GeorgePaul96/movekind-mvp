@@ -85,7 +85,7 @@ export default function ProfileScreen() {
         <View style={{ height: 8 }} />
         <Button
           label={profile?.is_premium ? 'Manage premium' : 'Learn about premium'}
-          variant="sage-soft"
+          variant="secondary"
           onPress={onPremium}
         />
       </Card>
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
         <Text style={styles.value}>{user?.email}</Text>
       </Card>
 
-      <Button label="Sign out" variant="ghost" onPress={onSignOut} />
+      <Button label="Sign out" variant="link" onPress={onSignOut} />
     </Screen>
   );
 }

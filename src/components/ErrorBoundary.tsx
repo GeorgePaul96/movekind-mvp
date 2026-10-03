@@ -45,7 +45,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             {ERROR_FALLBACK.title}
           </Text>
           <Text style={styles.body}>{ERROR_FALLBACK.body}</Text>
-          <Button label={ERROR_FALLBACK.action} onPress={this.reset} variant="sage-soft" />
+          <Button label={ERROR_FALLBACK.action} onPress={this.reset} variant="secondary" />
         </View>
       </View>
     );
