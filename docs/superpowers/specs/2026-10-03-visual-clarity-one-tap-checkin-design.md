@@ -81,14 +81,16 @@ touched files migrate to semantic names. App splash/adaptive-icon background →
 Moods: `overloaded` "Running on empty" 😮‍💨 · `recovering` "A bit low" 🌱 · `regulated`
 "Steady" 🙂 · `activated` "Buzzing" ⚡. Prompt "How's your energy{, name}?". Logged:
 "Logged ✓" + per-mood reassurance (e.g. "Running on empty. That's okay."). Safe Harbor →
-"Too wiped to choose? Breathe for 2 min". Remove "attunement", "capacity rating",
+"Too wiped to choose? Start a gentle reset" (no minute count — the composer decides the
+length, and copy must never promise what the session won't do). The Logged card likewise
+describes the session's feel per mood, never an invented duration. Remove "attunement", "capacity rating",
 "nervous system capacity". All new user-facing strings live in `copy.ts`.
 
 ## 4. Domain (pure, tested)
 
 - `src/domain/checkin/moods.ts` — `MOODS` (ordered), `moodToEnergy`: overloaded 1,
-  recovering 2, regulated 4, activated 5. Round-trips through the existing
-  `mapEnergyToState`. **Composer untouched → no `ENGINE_VERSION` bump.**
+  recovering 2, regulated 4, activated 5. Round-trips through `mapEnergyToState`, which
+  moves here from the store (domain must not import the store; the store re-exports it). **Composer untouched → no `ENGINE_VERSION` bump.**
 - `src/domain/insights/weekCompare.ts` — `compareWeeks(checkIns, sessions, now)` →
   `{ thisWeek: {days, minutes}, lastWeek: {days, minutes}, daily: (UserState|null)[7] }`.
   Weeks are Monday–Sunday in local time; a day counts once; the day's mood is the latest
