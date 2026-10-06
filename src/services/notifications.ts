@@ -1,9 +1,25 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { nudgeBodyFor } from '@/constants/copy';
 import type { RecoverySignal } from '@/domain/behavioral/types';
 
-Notifications.setNotificationHandler({
+type NotificationsModule = typeof import('expo-notifications');
+
+/**
+ * Expo Go (SDK 53+) on Android throws as soon as `expo-notifications` is *imported*,
+ * which would crash the app at launch before any try/catch runs. So the module is
+ * required lazily and only where it works: dev builds, store builds, and iOS.
+ * Everywhere else every function below is a quiet no-op.
+ */
+const isExpoGoAndroid =
+  Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+const Notifications: NotificationsModule | null =
+  Platform.OS === 'web' || isExpoGoAndroid ? null : (require('expo-notifications') as NotificationsModule);
+
+export const notificationsAvailable = Notifications !== null;
+
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: false,
@@ -12,7 +28,7 @@ Notifications.setNotificationHandler({
 });
 
 export async function initNotifications(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (!Notifications) return;
   const settings = await Notifications.getPermissionsAsync();
   if (settings.status !== 'granted') {
     const ask = await Notifications.requestPermissionsAsync();
@@ -27,7 +43,7 @@ export async function initNotifications(): Promise<void> {
  * user's recovery signal. Cancels only its own daily-nudge entries (not others).
  */
 export async function scheduleAdaptiveNudge(signal: RecoverySignal | null): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (!Notifications) return;
 
   try {
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
@@ -55,7 +71,7 @@ export async function scheduleAdaptiveNudge(signal: RecoverySignal | null): Prom
 }
 
 export async function sendNow(body: string): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (!Notifications) return;
   try {
     await Notifications.scheduleNotificationAsync({
       content: { title: 'MoveKind', body },
