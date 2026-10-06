@@ -11,12 +11,9 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFF8EE"
-    },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.movekind.app",
@@ -40,6 +37,16 @@
         "expo-notifications",
         {
           "color": "#245C43"
+        }
+      ],
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "imageWidth": 200,
+          "backgroundColor": "#FFF8EE"
         }
       ]
     ]

@@ -13,7 +13,7 @@ future sessions personalize. No streaks, no guilt.
 
 ## Tech stack
 
-Expo SDK 54 · React Native 0.81 · React 19 · TypeScript (strict) · Supabase
+Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict) · Supabase
 (Postgres + Auth + RLS) · Zustand (state) · React Navigation 6 · NativeWind 4 (Tailwind) ·
 Victory Native (charts) · PostHog (optional analytics) · Jest + Testing Library.
 

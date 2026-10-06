@@ -11,7 +11,7 @@ cp .env.example .env       # fill EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABAS
 npx expo start
 ```
 
-Node version is pinned in `.nvmrc`. Requires the Expo SDK 54 toolchain (RN 0.81 / React 19).
+Node version is pinned in `.nvmrc`. Requires the Expo SDK 57 toolchain (RN 0.86 / React 19.2).
 
 ## Verification (run before claiming done)
 

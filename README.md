@@ -36,7 +36,7 @@ npx expo start
 
 Press `i` for iOS Simulator, `a` for an Android emulator, or scan the QR code with the Expo Go app.
 
-> Requires the Expo SDK 54 toolchain (React Native 0.81, React 19). Node version is pinned in `.nvmrc`.
+> Requires the Expo SDK 57 toolchain (React Native 0.86, React 19.2). Node version is pinned in `.nvmrc`.
 
 ## Supabase setup
 
