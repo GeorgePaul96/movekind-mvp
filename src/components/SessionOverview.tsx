@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { colors, stateColors } from '@/constants/colors';
 import { MOOD_COPY, SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
-import { formatDuration } from '@/utils/format';
+import { formatSecondsAsMinutes } from '@/utils/format';
 
 const CATEGORY_ICON: Record<string, string> = {
   regulate: '🌸',
@@ -33,8 +33,8 @@ export function SessionOverview() {
           <Text style={[styles.stateTag, { color: mood.ink, backgroundColor: mood.soft, borderColor: mood.ink }]}>
             {MOOD_COPY[session.state].emoji} {MOOD_COPY[session.state].label}
           </Text>
-          <Text style={styles.timeTag} accessibilityLabel={`About ${formatDuration(totalDuration)}`}>
-            ⏱️ {formatDuration(totalDuration)}
+          <Text style={styles.timeTag} accessibilityLabel={`About ${formatSecondsAsMinutes(totalDuration)}`}>
+            ⏱️ {formatSecondsAsMinutes(totalDuration)}
           </Text>
         </View>
 
@@ -56,7 +56,7 @@ export function SessionOverview() {
                 <View style={styles.contentCol}>
                   <Text style={styles.blockTitle}>{block.exercise.name}</Text>
                   <Text style={styles.blockSub}>
-                    {block.exercise.category} · {formatDuration(block.target_duration)}
+                    {block.exercise.category} · {formatSecondsAsMinutes(block.target_duration)}
                   </Text>
                 </View>
               </View>

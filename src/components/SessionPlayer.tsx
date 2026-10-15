@@ -6,7 +6,7 @@ import { Button } from './Button';
 import { colors, stateColors } from '@/constants/colors';
 import { SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
-import { formatDuration } from '@/utils/format';
+import { formatClock } from '@/utils/format';
 import { speechParamsForState } from '@/domain/sessions/voice';
 
 export function SessionPlayer() {
@@ -121,7 +121,7 @@ export function SessionPlayer() {
           style={styles.timer}
           accessibilityLabel={`${Math.floor(timeLeft / 60)} minutes ${timeLeft % 60} seconds remaining`}
         >
-          {formatDuration(timeLeft)}
+          {formatClock(timeLeft)}
         </Text>
 
         {exercise.cues.length > 0 && (
