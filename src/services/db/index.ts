@@ -7,7 +7,7 @@ import type {
   SessionBlock,
   UserExerciseStats,
 } from '@/types';
-import { EXERCISES, exerciseById } from '@/data/exercises';
+import { ACTIVE_EXERCISES, exerciseById } from '@/data/exercises';
 import { applyRating } from '@/domain/sessions/applyRating';
 import { createDoc, createTable } from './table';
 
@@ -151,7 +151,8 @@ export const db = {
   },
 
   exercises: {
-    all: (): Exercise[] => EXERCISES,
+    /** Only source-verified exercises — pending-review ones are never shown. */
+    all: (): Exercise[] => ACTIVE_EXERCISES,
   },
 
   /** Deletes everything this app stored, including the profile. */

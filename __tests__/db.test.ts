@@ -66,7 +66,7 @@ describe('local repository', () => {
   it('joins blocks to the exercise library and finds the active session', async () => {
     const s = await db.sessions.add({ check_in_id: null, state: 'regulated', engine_version: 'v3.0', status: 'generated' });
     const blocks = await db.blocks.addMany(s.id, [{ exercise_id: 'ex-regulate-1', block_order: 0, target_duration: 60 }]);
-    expect(blocks[0]?.exercise.name).toBe('Box Breathing');
+    expect(blocks[0]?.exercise.name).toBe('Slow belly breathing');
     expect((await db.sessions.latestActive())?.id).toBe(s.id);
   });
 
@@ -83,6 +83,12 @@ describe('local repository', () => {
     expect(stats).toEqual([
       expect.objectContaining({ exercise_id: 'ex-regulate-1', times_completed: 1, average_energy_delta: 2 }),
     ]);
+  });
+
+  it('only offers source-verified exercises to the session builder', async () => {
+    const ids = db.exercises.all().map((e) => e.id);
+    expect(ids).not.toContain('ex-downshift-2'); // pending physio review
+    expect(db.exercises.all().every((e) => e.review === 'sourced')).toBe(true);
   });
 
   it('eraseAll removes everything, including the profile', async () => {

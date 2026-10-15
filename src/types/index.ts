@@ -26,8 +26,13 @@ export interface Exercise {
   illustration_ref: string;
   created_at: string;
   // Premium exercise packs (Phase 5). Absent/false = free base library.
-  // DB column + seeding deferred; until then every exercise reads as free.
   is_premium?: boolean;
+  /** Authoritative page this exercise is based on (we cite it; instructions are our own words). */
+  source?: { name: string; url: string };
+  /** Source-stated reasons to skip or take care, shown in the player. */
+  cautions?: string[];
+  /** Only 'sourced' exercises are ever shown; 'pending_review' waits for a physiotherapist. */
+  review?: 'sourced' | 'pending_review';
 }
 
 export interface Session {
