@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Vibration, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Vibration, ActivityIndicator, Linking } from 'react-native';
 import * as Speech from 'expo-speech';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -38,6 +38,13 @@ export function SessionPlayer() {
       pitch: voice.pitch,
       rate: voice.rate,
     });
+
+    // Safety warnings are always spoken (never trimmed by maxSpokenCues): people
+    // following by voice may not be looking at the screen.
+    const cautions = activeBlock.exercise.cautions ?? [];
+    if (cautions.length > 0) {
+      Speech.speak(`Take care. ${cautions.join(' ')}`, { pitch: voice.pitch, rate: voice.rate });
+    }
 
     const spokenCues = activeBlock.exercise.cues.slice(0, voice.maxSpokenCues);
     if (spokenCues.length > 0) {
@@ -133,6 +140,30 @@ export function SessionPlayer() {
           </View>
         )}
 
+        {/* Source-stated "skip this if…" advice — shown before anyone starts moving. */}
+        {exercise.cautions && exercise.cautions.length > 0 && (
+          <View style={styles.cautionBox} accessibilityRole="alert">
+            <Text style={styles.cautionTitle}>⚠️ {SESSION_COPY.cautionsTitle}</Text>
+            {exercise.cautions.map((c, idx) => (
+              <Text key={idx} style={styles.cautionText}>{c}</Text>
+            ))}
+          </View>
+        )}
+
+        <Text style={styles.painReminder}>{SESSION_COPY.painReminder}</Text>
+
+        {exercise.source && (
+          <Button
+            label={SESSION_COPY.sourceLabel(exercise.source.name)}
+            variant="link"
+            size="sm"
+            accessibilityHint={SESSION_COPY.sourceHint}
+            onPress={() => {
+              Linking.openURL(exercise.source!.url).catch((e) => console.warn('Could not open source:', e));
+            }}
+          />
+        )}
+
         <View style={styles.controls}>
           <Button
             label={isPaused ? SESSION_COPY.resume : SESSION_COPY.pause}
@@ -214,6 +245,18 @@ const styles = StyleSheet.create({
   },
   cuesTitle: { fontSize: 14, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 },
   cueText: { fontSize: 15, color: colors.textPrimary, lineHeight: 22, marginTop: 2 },
+  cautionBox: {
+    width: '100%',
+    backgroundColor: stateColors.regulated.soft,
+    borderColor: stateColors.regulated.ink,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+  },
+  cautionTitle: { fontSize: 14, fontWeight: '800', color: stateColors.regulated.ink, marginBottom: 4 },
+  cautionText: { fontSize: 15, color: stateColors.regulated.ink, lineHeight: 21 },
+  painReminder: { width: '100%', fontSize: 14, color: colors.textSecondary, lineHeight: 20, marginBottom: 4 },
   controls: { width: '100%', gap: 10 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

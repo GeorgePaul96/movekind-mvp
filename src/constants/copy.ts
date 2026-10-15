@@ -149,6 +149,11 @@ export const SESSION_COPY = {
   discard: 'Not this one — go back',
   discardHint: 'Discards this session. Your check-in stays logged.',
   progress: (n: number, total: number) => `${n} of ${total}`,
+  /** NHS inform pain guide: keep discomfort at 5/10 or below; stop on new pain. */
+  painReminder: 'Keep any discomfort mild — 5 out of 10 at most. Stop if anything hurts or feels wrong.',
+  cautionsTitle: 'Take care',
+  sourceLabel: (name: string) => `Source: ${name}`,
+  sourceHint: 'Opens the page this exercise is based on',
   howTo: 'How to do it',
   pause: '⏸ Pause',
   resume: '▶ Resume',
