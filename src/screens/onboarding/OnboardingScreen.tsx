@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Pressable, Dimensions } from 'react-native';
+import { StyleSheet, Text, TextInput, View, Pressable, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
+import { ONBOARDING_COPY } from '@/constants/copy';
 import { Button } from '@/components/Button';
 import { Slider } from '@/components/Slider';
 import { useSettingsStore } from '@/store/settingsStore';
-import { useAuthStore } from '@/store/authStore';
-import { supabase } from '@/services/supabase';
+import { useProfileStore } from '@/store/profileStore';
 
 const { width } = Dimensions.get('window');
 
@@ -37,10 +37,11 @@ const APPROACHABLE_MOVEMENT = [
 ];
 
 export default function OnboardingScreen() {
-  const user = useAuthStore((s) => s.user);
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
+  const setName = useProfileStore((s) => s.setName);
 
   const [step, setStep] = useState(0);
+  const [name, setNameInput] = useState('');
   const [movementFeel, setMovementFeel] = useState('');
   const [appFatigueReason, setAppFatigueReason] = useState('');
   const [approachableMovements, setApproachableMovements] = useState<string[]>([]);
@@ -54,7 +55,7 @@ export default function OnboardingScreen() {
   };
 
   const handleNext = async () => {
-    if (step < 3) {
+    if (step < 4) {
       setStep((s) => s + 1);
     } else {
       setLoading(true);
@@ -66,28 +67,11 @@ export default function OnboardingScreen() {
       };
       
       try {
-        // Complete locally
+        // Everything stays on this phone: name on the profile, answers in settings.
+        await setName(name);
         await completeOnboarding(answers);
-
-        // Sync with Supabase (write to user metadata so it's backed up)
-        if (user) {
-          await supabase.auth.updateUser({
-            data: { onboarding: answers },
-          });
-
-          // Create standard supportive goal for this user based on their preferences
-          const defaultMinutes = movementFeel === 'gentle' ? 75 : 150;
-          const defaultSessions = averageEnergy < 4 ? 3 : 4;
-          
-          await supabase.from('goals').upsert({
-            user_id: user.id,
-            weekly_minutes_target: defaultMinutes,
-            weekly_sessions_target: defaultSessions,
-            focus: 'overall',
-          });
-        }
       } catch (err) {
-        console.warn('Could not sync onboarding preferences with Supabase', err);
+        console.warn('Could not save onboarding answers', err);
       } finally {
         setLoading(false);
       }
@@ -98,7 +82,7 @@ export default function OnboardingScreen() {
     if (step > 0) setStep((s) => s - 1);
   };
 
-  const progressPct = ((step + 1) / 4) * 100;
+  const progressPct = ((step + 1) / 5) * 100;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -108,8 +92,29 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.container}>
-        {/* Step 1: Movement Feel */}
+        {/* Step 0: Name (optional — no accounts, it only lives on this phone) */}
         {step === 0 && (
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
+            <Text style={styles.tag}>{ONBOARDING_COPY.nameTag}</Text>
+            <Text style={styles.title} accessibilityRole="header">{ONBOARDING_COPY.nameTitle}</Text>
+            <Text style={styles.subtitle}>{ONBOARDING_COPY.nameSubtitle}</Text>
+            <TextInput
+              value={name}
+              onChangeText={setNameInput}
+              accessibilityLabel={ONBOARDING_COPY.nameTitle}
+              placeholder={ONBOARDING_COPY.namePlaceholder}
+              placeholderTextColor={colors.textMuted}
+              maxLength={40}
+              autoCapitalize="words"
+              returnKeyType="next"
+              onSubmitEditing={() => setStep(1)}
+              style={styles.nameInput}
+            />
+          </Animated.View>
+        )}
+
+        {/* Step 1: Movement Feel */}
+        {step === 1 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>MoveKind Philosophy</Text>
             <Text style={styles.title} accessibilityRole="header">How do you want movement to feel in your life?</Text>
@@ -137,7 +142,7 @@ export default function OnboardingScreen() {
         )}
 
         {/* Step 2: Fitness App Fatigue */}
-        {step === 1 && (
+        {step === 2 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Your Past Struggles</Text>
             <Text style={styles.title} accessibilityRole="header">What usually makes fitness apps hard to stick with?</Text>
@@ -165,7 +170,7 @@ export default function OnboardingScreen() {
         )}
 
         {/* Step 3: Approachable Movements */}
-        {step === 2 && (
+        {step === 3 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Your Companion</Text>
             <Text style={styles.title} accessibilityRole="header">What types of movement feel approachable right now?</Text>
@@ -193,7 +198,7 @@ export default function OnboardingScreen() {
         )}
 
         {/* Step 4: Average Energy */}
-        {step === 3 && (
+        {step === 4 && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.slide}>
             <Text style={styles.tag}>Self Awareness</Text>
             <Text style={styles.title} accessibilityRole="header">How is your energy level usually throughout the week?</Text>
@@ -248,12 +253,12 @@ export default function OnboardingScreen() {
 
           <View style={styles.btnWrap}>
             <Button
-              label={step === 3 ? (loading ? 'Creating space…' : 'Begin gently') : 'Continue'}
+              label={step === 4 ? (loading ? 'Creating space…' : 'Begin gently') : 'Continue'}
               onPress={handleNext}
               disabled={
-                (step === 0 && !movementFeel) ||
-                (step === 1 && !appFatigueReason) ||
-                (step === 2 && approachableMovements.length === 0)
+                (step === 1 && !movementFeel) ||
+                (step === 2 && !appFatigueReason) ||
+                (step === 3 && approachableMovements.length === 0)
               }
               loading={loading}
             />
@@ -308,6 +313,16 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 20,
     marginBottom: 24,
+  },
+  nameInput: {
+    backgroundColor: colors.surface,
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 18,
+    color: colors.textPrimary,
   },
   optionsWrap: {
     gap: 12,

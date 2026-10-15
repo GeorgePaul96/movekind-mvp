@@ -6,7 +6,8 @@ import { Chip } from './Chip';
 import { colors, stateColors } from '@/constants/colors';
 import { INTENTION, MOOD_COPY, SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
-import { supabase } from '@/services/supabase';
+import { db } from '@/services/db';
+import { weekBounds } from '@/domain/insights/weekCompare';
 
 export function SessionComplete() {
   const session = useSessionStore((s) => s.currentSession);
@@ -29,19 +30,9 @@ export function SessionComplete() {
       // Check if session was completed in Overloaded or Recovering state
       const isResilient = session.state === 'overloaded' || session.state === 'recovering';
       
-      // Check sessions completed this week
-      const weekStart = new Date();
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
-      weekStart.setHours(0,0,0,0);
-
-      const { count } = await supabase
-        .from('sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user_id)
-        .eq('status', 'completed')
-        .gte('created_at', weekStart.toISOString());
-
-      const thisWeekCompletedCount = (count || 0) + 1; // Add this current session
+      // Sessions completed this week (Monday start, same as the week card)
+      const weekStart = weekBounds(new Date()).thisStart.toISOString();
+      const thisWeekCompletedCount = (await db.sessions.countCompleted(weekStart)) + 1; // + this one
 
       if (isResilient) {
         setWinDetails({

@@ -1,36 +1,26 @@
-import { supabase } from '@/services/supabase';
+import { db } from '@/services/db';
 import { computeBehavioralProfile, type BehavioralProfile } from '@/domain/behavioral';
-import type { Session, CheckIn, PostRating } from '@/types';
 
 const WINDOW_DAYS = 90;
 const MAX_ROWS = 200;
 
 /**
- * Fetches the user's recent history and computes a BehavioralProfile.
- * Returns null when unauthenticated or on error (callers fall back to a default).
+ * Reads the last 90 days of local history and computes a BehavioralProfile.
+ * Returns null on error (callers fall back to a default).
  * Lives in services (not hooks) so non-component callers (e.g. the session store) can use it.
  */
 export async function fetchBehavioralProfile(): Promise<BehavioralProfile | null> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
     const sinceIso = new Date(Date.now() - WINDOW_DAYS * 86_400_000).toISOString();
-    const [sessRes, ciRes, prRes] = await Promise.all([
-      supabase.from('sessions').select('*').eq('user_id', user.id)
-        .in('status', ['completed', 'abandoned']).gte('created_at', sinceIso)
-        .order('created_at', { ascending: false }).limit(MAX_ROWS),
-      supabase.from('check_ins').select('*').eq('user_id', user.id)
-        .gte('created_at', sinceIso).order('created_at', { ascending: false }).limit(MAX_ROWS),
-      // post_ratings has no user_id column; RLS scopes rows to the user's own sessions.
-      supabase.from('post_ratings').select('*')
-        .gte('created_at', sinceIso).order('created_at', { ascending: false }).limit(MAX_ROWS),
+    const [sessions, checkIns, ratings] = await Promise.all([
+      db.sessions.list({ since: sinceIso, statuses: ['completed', 'abandoned'] }),
+      db.checkIns.since(sinceIso),
+      db.ratings.list(sinceIso),
     ]);
-
     return computeBehavioralProfile(
-      (sessRes.data as Session[]) ?? [],
-      (ciRes.data as CheckIn[]) ?? [],
-      (prRes.data as PostRating[]) ?? [],
+      sessions.slice(0, MAX_ROWS),
+      checkIns.slice(0, MAX_ROWS),
+      ratings.slice(0, MAX_ROWS),
     );
   } catch {
     return null;

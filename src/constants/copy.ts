@@ -192,6 +192,13 @@ export const PAYWALL_COPY = {
   later: 'Maybe later',
 } as const;
 
+export const ONBOARDING_COPY = {
+  nameTag: 'Welcome to MoveKind',
+  nameTitle: 'What should we call you?',
+  nameSubtitle: 'Optional. It stays on this phone — there are no accounts.',
+  namePlaceholder: 'Your name',
+} as const;
+
 export const PROFILE_COPY = {
   tag: 'Profile',
   premiumTitle: 'MoveKind Premium',
@@ -200,6 +207,19 @@ export const PROFILE_COPY = {
   premiumActive: "You're a Premium member — thank you.",
   premiumComingSoonTitle: 'Premium is coming soon',
   premiumComingSoonBody: "We're putting the finishing touches on Premium. Everything you use today stays free.",
+  nameLabel: 'Name',
+  namePlaceholder: 'Your name',
+  savedTitle: 'Saved',
+  savedBody: 'Your name is updated.',
+  saveFailedTitle: 'Could not save',
+  dataTitle: 'Your data',
+  localNote:
+    "Everything you log stays on this phone. There's no account and nothing is sent to a server. Deleting the app deletes your data.",
+  eraseButton: 'Erase all my data',
+  eraseTitle: 'Erase all your data?',
+  eraseBody: 'This deletes every check-in, session and note on this phone. It cannot be undone.',
+  eraseConfirm: 'Erase everything',
+  cancel: 'Cancel',
 } as const;
 
 export function checkInPrompt(name?: string | null): string {

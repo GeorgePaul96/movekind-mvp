@@ -17,6 +17,8 @@ interface SettingsState {
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
   completeOnboarding: (answers: OnboardingAnswers) => Promise<void>;
+  /** Back to first-launch defaults (used by "Erase all my data"). */
+  reset: () => Promise<void>;
 }
 
 const KEY = '@movekind/settings';
@@ -74,6 +76,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   completeOnboarding: async (answers) => {
     set({ onboarded: true, onboardingAnswers: answers });
     await write({ ...get(), onboarded: true, onboardingAnswers: answers });
+  },
+
+  reset: async () => {
+    set(DEFAULTS);
+    await write(DEFAULTS);
   },
 }));
 

@@ -5,12 +5,14 @@ import { Button } from './Button';
 import { colors } from '@/constants/colors';
 import { PAYWALL_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
-import { useAuthStore } from '@/store/authStore';
-import { supabase } from '@/services/supabase';
+import { useProfileStore } from '@/store/profileStore';
+import { db } from '@/services/db';
+import { exerciseById } from '@/data/exercises';
 import { startCheckout } from '@/services/premium';
 
 export function Paywall() {
-  const user = useAuthStore((s) => s.user);
+  const profileId = useProfileStore((s) => s.profile?.id ?? '');
+  const setPremium = useProfileStore((s) => s.setPremium);
   const setPaywallVisible = useSessionStore((s) => s.setPaywallVisible);
   const dismissPaywall = useSessionStore((s) => s.dismissPaywall);
   const loadStatsAndHistory = useSessionStore((s) => s.loadStatsAndHistory);
@@ -20,52 +22,31 @@ export function Paywall() {
   const [bestCategory, setBestCategory] = useState('Mobilize');
 
   useEffect(() => {
-    if (!user) return;
-    
     const loadInsights = async () => {
-      // 1. Calculate average rating delta
-      const { data: ratingData } = await supabase
-        .from('post_ratings')
-        .select('rating_delta, sessions!inner(user_id)')
-        .eq('sessions.user_id', user.id);
-
-      if (ratingData && ratingData.length > 0) {
-        const sum = ratingData.reduce((acc, curr) => acc + curr.rating_delta, 0);
-        setAvgDelta(sum / ratingData.length);
+      // 1. Average rating delta across every rated session on this phone
+      const ratings = await db.ratings.list();
+      if (ratings.length > 0) {
+        setAvgDelta(ratings.reduce((acc, r) => acc + r.rating_delta, 0) / ratings.length);
       }
 
-      // 2. Fetch the user's best category
-      const { data: stats } = await supabase
-        .from('user_exercise_stats')
-        .select('average_energy_delta, exercise:exercises(category)')
-        .eq('user_id', user.id);
-
-      if (stats && stats.length > 0) {
-        const catAverages: Record<string, { sum: number; count: number }> = {};
-        
-        stats.forEach((s: any) => {
-          const cat = s.exercise.category;
-          const deltaVal = Number(s.average_energy_delta);
-          if (!catAverages[cat]) {
-            catAverages[cat] = { sum: 0, count: 0 };
-          }
-          catAverages[cat].sum += deltaVal;
-          catAverages[cat].count++;
-        });
-
-        let topCat = 'Mobilize';
-        let topAvg = -999;
-        
-        Object.keys(catAverages).forEach((cat) => {
-          const avg = catAverages[cat]!.sum / catAverages[cat]!.count;
-          if (avg > topAvg) {
-            topAvg = avg;
-            topCat = cat;
-          }
-        });
-
-        setBestCategory(topCat.charAt(0).toUpperCase() + topCat.slice(1));
+      // 2. The category whose exercises lift you most, from local per-exercise stats
+      const catAverages: Record<string, { sum: number; count: number }> = {};
+      for (const s of await db.stats.all()) {
+        const cat = exerciseById(s.exercise_id)?.category;
+        if (!cat) continue;
+        catAverages[cat] ??= { sum: 0, count: 0 };
+        catAverages[cat].sum += s.average_energy_delta;
+        catAverages[cat].count++;
       }
+      let topCat: string | null = null;
+      let topAvg = -Infinity;
+      for (const [cat, { sum, count }] of Object.entries(catAverages)) {
+        if (sum / count > topAvg) {
+          topAvg = sum / count;
+          topCat = cat;
+        }
+      }
+      if (topCat) setBestCategory(topCat.charAt(0).toUpperCase() + topCat.slice(1));
 
       setLoading(false);
     };
@@ -74,24 +55,17 @@ export function Paywall() {
       console.warn('Error loading paywall insights:', err);
       setLoading(false);
     });
-  }, [user]);
+  }, []);
 
   const handleCheckout = async () => {
-    if (!user) return;
-    
-    const result = await startCheckout(user.id);
+    const result = await startCheckout(profileId);
     if (result) {
       Alert.alert('Checkout Link', `Redirecting to premium portal: ${result.url}`);
     } else {
-      // For beta simulation, let the user simulate becoming premium!
-      // This is excellent for testing. We can update the profile row in Supabase to is_premium = true.
+      // Beta simulation until store billing is wired: flip the local premium flag.
       setLoading(true);
       try {
-        await supabase
-          .from('profiles')
-          .update({ is_premium: true })
-          .eq('id', user.id);
-        
+        await setPremium(true);
         Alert.alert('Beta Upgrade Success', 'You are now a Premium Member in the beta simulation!');
         setPaywallVisible(false);
         await loadStatsAndHistory();

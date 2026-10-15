@@ -1,5 +1,4 @@
 import './global.css';
-import 'react-native-url-polyfill/auto';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -7,26 +6,23 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RootNavigator from '@/navigation/RootNavigator';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { useAuthStore } from '@/store/authStore';
+import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { initNotifications } from '@/services/notifications';
-import { syncPendingRatings } from '@/services/outbox';
 import { colors } from '@/constants/colors';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
-  const restoreSession = useAuthStore((s) => s.restoreSession);
 
   useEffect(() => {
     async function prepare() {
       try {
+        // Local-first: everything loads from this phone — no network, no sign-in.
         await Promise.all([
-          restoreSession(),
           useSettingsStore.getState().hydrate(),
+          useProfileStore.getState().hydrate(),
         ]);
         await initNotifications();
-        // Replay any ratings queued while offline (best-effort).
-        syncPendingRatings().catch((e) => console.warn('Outbox sync failed:', e));
       } catch (e) {
         console.warn('Bootstrapping error:', e);
       } finally {
@@ -34,7 +30,7 @@ export default function App() {
       }
     }
     prepare();
-  }, [restoreSession]);
+  }, []);
 
   if (!isReady) {
     return (

@@ -4,14 +4,6 @@ import { render } from '@testing-library/react-native';
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
-jest.mock('../src/services/supabase', () => ({
-  supabase: {
-    auth: {
-      getUser: jest.fn(async () => ({ data: { user: null } })),
-      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
-    },
-  },
-}));
 jest.mock('../src/services/telemetry', () => ({ telemetry: { capture: jest.fn() } }));
 jest.mock('../src/services/notifications', () => ({ scheduleAdaptiveNudge: jest.fn() }));
 jest.mock('../src/hooks/useBehavioralProfile', () => ({ useBehavioralProfile: () => ({ profile: null }) }));
@@ -26,6 +18,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 import HomeScreen from '../src/screens/main/HomeScreen';
 import { useSessionStore } from '../src/store/sessionStore';
+import { useProfileStore } from '../src/store/profileStore';
 
 const noop = async () => {};
 const base = {
@@ -46,6 +39,18 @@ const todayCheckIn = {
 };
 
 describe('<HomeScreen /> states', () => {
+  beforeEach(() => {
+    useProfileStore.setState({
+      profile: { id: 'p1', name: 'Sam', is_premium: false, created_at: new Date().toISOString() },
+    });
+  });
+
+  it('greets you by the name saved on this phone', () => {
+    useSessionStore.setState({ ...base, homeStep: 'done' } as any);
+    const { getByText } = render(<HomeScreen />);
+    expect(getByText("How's your energy, Sam?")).toBeTruthy();
+  });
+
   it('no check-in today → the four mood tiles', () => {
     useSessionStore.setState({ ...base, homeStep: 'done' } as any);
     const { getByText } = render(<HomeScreen />);

@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { supabase } from '@/services/supabase';
+import { db, type BlockWithExercise } from '@/services/db';
 import { telemetry } from '@/services/telemetry';
-import { friendlyErrorMessage, isNetworkError } from '@/services/network';
-import { enqueueRating } from '@/services/outbox';
+import { friendlyErrorMessage } from '@/services/network';
 import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
 import { visibleExercises } from '@/domain/premium/entitlements';
@@ -56,6 +55,43 @@ interface SessionState {
 
 const ENGINE_VERSION = 'v3.0';
 
+const toComposed = (blocks: BlockWithExercise[]): ComposedBlockWithExercise[] =>
+  blocks.map((b) => ({
+    dbBlockId: b.id,
+    exercise: b.exercise,
+    target_duration: b.target_duration,
+    status: b.status,
+  }));
+
+const localMidnightIso = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+};
+
+/** Saves a composed session and its blocks; returns what the store needs to play it. */
+async function persistSession(
+  composed: { exercise: Exercise; target_duration: number }[],
+  input: Pick<Session, 'check_in_id' | 'state'>,
+) {
+  const session = await db.sessions.add({ ...input, engine_version: ENGINE_VERSION, status: 'generated' });
+  const blocks = await db.blocks.addMany(
+    session.id,
+    composed.map((c, idx) => ({ exercise_id: c.exercise.id, block_order: idx, target_duration: c.target_duration })),
+  );
+  return { session, composedBlocks: toComposed(blocks) };
+}
+
+async function scheduleNudgeFromProfile(context: string) {
+  try {
+    const { scheduleAdaptiveNudge } = await import('@/services/notifications');
+    const p = await fetchBehavioralProfile();
+    await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
+  } catch (err) {
+    console.warn(`Could not schedule notification on ${context}:`, err);
+  }
+}
+
 export const useSessionStore = create<SessionState>((set, get) => ({
   currentCheckIn: null,
   currentSession: null,
@@ -76,78 +112,28 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   error: null,
 
   loadStatsAndHistory: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     set({ loading: true, error: null });
     try {
-      // 1. Fetch user exercise stats
-      const { data: statsData } = await supabase
-        .from('user_exercise_stats')
-        .select('*')
-        .eq('user_id', user.id);
-
-      // 2. Fetch last completed check-in of today (if any)
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      const { data: checkInData } = await supabase
-        .from('check_ins')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('created_at', todayStart.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      // 3. Fetch current active session (if any in status generated/started)
-      const { data: sessionData } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('status', ['generated', 'started'])
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      let currentSession: Session | null = null;
-      let composedBlocks: ComposedBlockWithExercise[] = [];
-
-      if (sessionData && sessionData.length > 0) {
-        const activeSess = sessionData[0];
-        currentSession = activeSess;
-        
-        // Fetch session blocks
-        const { data: blocksData } = await supabase
-          .from('session_blocks')
-          .select('*, exercise:exercises(*)')
-          .eq('session_id', activeSess.id)
-          .order('block_order', { ascending: true });
-
-        if (blocksData) {
-          composedBlocks = blocksData.map((b: any) => ({
-            dbBlockId: b.id,
-            exercise: b.exercise,
-            target_duration: b.target_duration,
-            status: b.status,
-          }));
-        }
-      }
+      const [userStats, todays, active] = await Promise.all([
+        db.stats.all(),
+        db.checkIns.since(localMidnightIso()),
+        db.sessions.latestActive(),
+      ]);
+      const composedBlocks = active ? toComposed(await db.blocks.forSession(active.id)) : [];
 
       set({
-        userStats: statsData || [],
-        currentCheckIn: checkInData && checkInData.length > 0 ? checkInData[0] : null,
-        currentSession,
+        userStats,
+        currentCheckIn: todays[0] ?? null,
+        currentSession: active,
         composedBlocks,
         loading: false,
       });
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      set({ error: friendlyErrorMessage(err), loading: false });
     }
   },
 
   logCheckIn: async (mood) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Unauthenticated');
-
     // Re-picking today's mood edits the existing row: a day is one check-in.
     const existing = get().currentCheckIn;
     if (existing && isSameLocalDay(new Date(existing.created_at), new Date())) {
@@ -159,19 +145,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       // Logging is the free, always-available core action — no paywall here, ever.
-      const { data: checkIn, error: ciErr } = await supabase
-        .from('check_ins')
-        .insert({
-          user_id: user.id,
-          energy_score: moodToEnergy(mood),
-          sleep_quality: null,
-          intention: null,
-          engine_version: ENGINE_VERSION,
-        })
-        .select()
-        .single();
-      if (ciErr) throw ciErr;
-
+      const checkIn = await db.checkIns.add({
+        energy_score: moodToEnergy(mood),
+        sleep_quality: null,
+        intention: null,
+        engine_version: ENGINE_VERSION,
+      });
       set({ currentCheckIn: checkIn, homeStep: 'logged', loading: false });
       telemetry.capture('checkin_completed', { state: mood });
     } catch (err) {
@@ -186,66 +165,32 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const clean = { ...patch };
     if ('intention' in clean) clean.intention = clean.intention?.trim() || null;
 
-    const { error } = await supabase
-      .from('check_ins')
-      .update(clean)
-      .eq('id', ci.id)
-      .select()
-      .single();
-    if (error) throw error;
-
+    await db.checkIns.update(ci.id, clean);
     set({ currentCheckIn: { ...ci, ...clean } });
   },
 
   startTodaysSession: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Unauthenticated');
     const checkIn = get().currentCheckIn;
     if (!checkIn) throw new Error('No check-in today');
 
     set({ loading: true, error: null });
     try {
-      // Check for Premium status and Free Session Count limit
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', user.id)
-        .single();
-
-      const isPremium = Boolean(profile?.is_premium);
+      const isPremium = (await db.profile.get()).is_premium;
       if (!isPremium) {
         const freeCount = await get().getFreeSessionsCount();
         if (freeCount >= 5) {
           // Gate still holds, but only surface the paywall if the user hasn't
           // already waved it away this session — never nag.
-          set({
-            paywallVisible: !get().paywallDismissedThisSession,
-            loading: false,
-          });
+          set({ paywallVisible: !get().paywallDismissedThisSession, loading: false });
           return;
         }
       }
-      // 2. Fetch exercises the user is entitled to (free users skip premium packs)
-      const { data: allExercises } = await supabase.from('exercises').select('*');
-      if (!allExercises || allExercises.length === 0) throw new Error('No exercises found in library');
-      const exercises = visibleExercises(allExercises, isPremium);
 
-      // 3. Fetch recent exercise history (last 10 completed exercise IDs to prevent repetition)
-      const { data: recentBlocks } = await supabase
-        .from('session_blocks')
-        .select('exercise_id')
-        .eq('status', 'completed')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      const recentExerciseIds = (recentBlocks || []).map((b) => b.exercise_id);
-
-      // 3b. Fetch behavioral profile to personalize composition (Composer v3).
-      //     Returns null offline/on error — the composer then falls back to
-      //     baseline composition, so this never blocks a check-in.
+      const exercises = visibleExercises(db.exercises.all(), isPremium);
+      const recentExerciseIds = await db.blocks.recentCompletedExerciseIds(10);
+      // Behavioral profile personalizes composition (Composer v3); null → baseline.
       const behavioralProfile = (await fetchBehavioralProfile()) ?? undefined;
 
-      // 4. Compose session
       const state = mapEnergyToState(checkIn.energy_score);
       const composed = composeSession({
         state,
@@ -255,54 +200,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         profile: behavioralProfile,
       });
 
-      // 5. Create Session
-      const { data: session, error: sErr } = await supabase
-        .from('sessions')
-        .insert({
-          user_id: user.id,
-          check_in_id: checkIn.id,
-          state,
-          engine_version: ENGINE_VERSION,
-          status: 'generated',
-        })
-        .select()
-        .single();
+      const { session, composedBlocks } = await persistSession(composed, { check_in_id: checkIn.id, state });
+      set({ currentSession: session, composedBlocks, activeBlockIndex: 0, loading: false });
 
-      if (sErr) throw sErr;
-
-      // 6. Insert blocks
-      const blocksToInsert = composed.map((c, idx) => ({
-        session_id: session.id,
-        exercise_id: c.exercise.id,
-        block_order: idx,
-        target_duration: c.target_duration,
-        status: 'pending',
-      }));
-
-      const { data: insertedBlocks, error: bErr } = await supabase
-        .from('session_blocks')
-        .insert(blocksToInsert)
-        .select('*, exercise:exercises(*)');
-
-      if (bErr) throw bErr;
-
-      const mappedBlocks = (insertedBlocks || [])
-        .sort((a, b) => a.block_order - b.block_order)
-        .map((b: any) => ({
-          dbBlockId: b.id,
-          exercise: b.exercise,
-          target_duration: b.target_duration,
-          status: b.status,
-        }));
-
-      set({
-        currentSession: session,
-        composedBlocks: mappedBlocks,
-        activeBlockIndex: 0,
-        loading: false,
-      });
-
-      telemetry.capture('session_generated', { sessionId: session.id, state, blockCount: mappedBlocks.length });
+      telemetry.capture('session_generated', { sessionId: session.id, state, blockCount: composedBlocks.length });
     } catch (err) {
       set({ error: friendlyErrorMessage(err), loading: false });
       throw err;
@@ -310,68 +211,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   safeHarborBypass: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Unauthenticated');
-
     set({ loading: true, error: null });
     try {
-      const { data: exercises } = await supabase.from('exercises').select('*');
-      if (!exercises || exercises.length === 0) throw new Error('No exercises found in library');
-
-      // Safe Harbor always composes a short overloaded (recovery) session
+      // The gentle reset always composes a short overloaded (recovery) session, no check-in.
       const state = 'overloaded';
-      const composed = composeSession({
-        state,
-        exercises,
-        recentExerciseIds: [],
-      });
-
-      // Create session without check_in_id
-      const { data: session, error: sErr } = await supabase
-        .from('sessions')
-        .insert({
-          user_id: user.id,
-          check_in_id: null,
-          state,
-          engine_version: ENGINE_VERSION,
-          status: 'generated',
-        })
-        .select()
-        .single();
-
-      if (sErr) throw sErr;
-
-      const blocksToInsert = composed.map((c, idx) => ({
-        session_id: session.id,
-        exercise_id: c.exercise.id,
-        block_order: idx,
-        target_duration: c.target_duration,
-        status: 'pending',
-      }));
-
-      const { data: insertedBlocks, error: bErr } = await supabase
-        .from('session_blocks')
-        .insert(blocksToInsert)
-        .select('*, exercise:exercises(*)');
-
-      if (bErr) throw bErr;
-
-      const mappedBlocks = (insertedBlocks || [])
-        .sort((a, b) => a.block_order - b.block_order)
-        .map((b: any) => ({
-          dbBlockId: b.id,
-          exercise: b.exercise,
-          target_duration: b.target_duration,
-          status: b.status,
-        }));
-
-      set({
-        currentCheckIn: null,
-        currentSession: session,
-        composedBlocks: mappedBlocks,
-        activeBlockIndex: 0,
-        loading: false,
-      });
+      const composed = composeSession({ state, exercises: db.exercises.all(), recentExerciseIds: [] });
+      const { session, composedBlocks } = await persistSession(composed, { check_in_id: null, state });
+      set({ currentCheckIn: null, currentSession: session, composedBlocks, activeBlockIndex: 0, loading: false });
 
       telemetry.capture('safe_harbor_bypass', { sessionId: session.id });
     } catch (err) {
@@ -383,17 +229,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   startSession: async () => {
     const session = get().currentSession;
     if (!session) return;
-
     try {
-      await supabase
-        .from('sessions')
-        .update({ status: 'started' })
-        .eq('id', session.id);
-
+      await db.sessions.update(session.id, { status: 'started' });
       set((s) => ({
         currentSession: s.currentSession ? { ...s.currentSession, status: 'started' } : null,
       }));
-
       telemetry.capture('session_started', { sessionId: session.id, state: session.state });
     } catch (err) {
       console.warn('Could not start session:', err);
@@ -403,20 +243,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   completeBlock: async (dbBlockId, actualDuration) => {
     const { composedBlocks, activeBlockIndex } = get();
     try {
-      await supabase
-        .from('session_blocks')
-        .update({ status: 'completed', actual_duration: actualDuration })
-        .eq('id', dbBlockId);
-
-      const updatedBlocks = composedBlocks.map((b) =>
-        b.dbBlockId === dbBlockId ? { ...b, status: 'completed' as const } : b
-      );
-
+      await db.blocks.update(dbBlockId, { status: 'completed', actual_duration: actualDuration });
       set({
-        composedBlocks: updatedBlocks,
+        composedBlocks: composedBlocks.map((b) =>
+          b.dbBlockId === dbBlockId ? { ...b, status: 'completed' as const } : b,
+        ),
         activeBlockIndex: activeBlockIndex + 1,
       });
-
       telemetry.capture('block_completed', { dbBlockId, actualDuration });
     } catch (err) {
       console.warn('Could not complete block:', err);
@@ -426,20 +259,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   skipBlock: async (dbBlockId) => {
     const { composedBlocks, activeBlockIndex } = get();
     try {
-      await supabase
-        .from('session_blocks')
-        .update({ status: 'skipped' })
-        .eq('id', dbBlockId);
-
-      const updatedBlocks = composedBlocks.map((b) =>
-        b.dbBlockId === dbBlockId ? { ...b, status: 'skipped' as const } : b
-      );
-
+      await db.blocks.update(dbBlockId, { status: 'skipped' });
       set({
-        composedBlocks: updatedBlocks,
+        composedBlocks: composedBlocks.map((b) =>
+          b.dbBlockId === dbBlockId ? { ...b, status: 'skipped' as const } : b,
+        ),
         activeBlockIndex: activeBlockIndex + 1,
       });
-
       telemetry.capture('block_skipped', { dbBlockId });
     } catch (err) {
       console.warn('Could not skip block:', err);
@@ -452,45 +278,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      // 1. Submit rating + mark complete. If the network is down, queue the
-      //    rating to the offline outbox and finish optimistically — the rating
-      //    replays on next launch, so the user is never blocked or blamed.
-      try {
-        await supabase.from('post_ratings').insert({
-          session_id: session.id,
-          rating_delta: ratingDelta,
-          notes,
-        });
-        await supabase
-          .from('sessions')
-          .update({ status: 'completed' })
-          .eq('id', session.id);
-      } catch (writeErr) {
-        if (isNetworkError(writeErr)) {
-          await enqueueRating({ sessionId: session.id, ratingDelta, notes });
-        } else {
-          throw writeErr;
-        }
-      }
-
+      // The rating also updates per-exercise stats (see db.ratings.add / applyRating).
+      await db.ratings.add({ session_id: session.id, rating_delta: ratingDelta, notes });
+      await db.sessions.update(session.id, { status: 'completed' });
       telemetry.capture('session_completed', { sessionId: session.id, ratingDelta });
 
-      // Schedule adaptive nudge based on behavioral profile (best-effort)
-      try {
-        const { scheduleAdaptiveNudge } = await import('@/services/notifications');
-        const p = await fetchBehavioralProfile();
-        await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
-      } catch (nErr) {
-        console.warn('Could not schedule notification on completeSession:', nErr);
-      }
+      await scheduleNudgeFromProfile('completeSession');
 
-      // Reload stats to pull trigger updates (best-effort; skipped when offline)
-      try {
-        await get().loadStatsAndHistory();
-      } catch (statsErr) {
-        console.warn('Could not reload stats on completeSession:', statsErr);
-      }
-
+      set({ userStats: await db.stats.all() });
       set({
         currentSession: null,
         composedBlocks: [],
@@ -499,7 +294,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         homeStep: 'done',
       });
 
-      // Refresh the week card the user lands on (best-effort; never throws).
+      // Refresh the week card the user lands on (never throws).
       await get().loadWeek();
     } catch (err) {
       set({ error: friendlyErrorMessage(err), loading: false });
@@ -513,79 +308,35 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      await supabase
-        .from('sessions')
-        .update({ status: 'abandoned' })
-        .eq('id', session.id);
-
+      await db.sessions.update(session.id, { status: 'abandoned' });
       telemetry.capture('session_abandoned', { sessionId: session.id, blockIndex: get().activeBlockIndex });
 
-      // Schedule adaptive nudge based on behavioral profile
-      try {
-        const { fetchBehavioralProfile } = await import('@/services/behavioralProfile');
-        const { scheduleAdaptiveNudge } = await import('@/services/notifications');
-        const p = await fetchBehavioralProfile();
-        await scheduleAdaptiveNudge(p?.recovery.signal ?? null);
-      } catch (nErr) {
-        console.warn('Could not schedule notification on abandonSession:', nErr);
-      }
+      await scheduleNudgeFromProfile('abandonSession');
 
-      set({
-        currentSession: null,
-        composedBlocks: [],
-        activeBlockIndex: 0,
-        loading: false,
-      });
+      set({ currentSession: null, composedBlocks: [], activeBlockIndex: 0, loading: false });
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      set({ error: friendlyErrorMessage(err), loading: false });
     }
   },
 
   loadWeek: async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { lastStart } = weekBounds(new Date());
-      const since = lastStart.toISOString();
-
-      const { data: cis } = await supabase
-        .from('check_ins')
-        .select('energy_score, created_at')
-        .eq('user_id', user.id)
-        .gte('created_at', since);
-
-      const { data: sess } = await supabase
-        .from('sessions')
-        .select('created_at, status, session_blocks(actual_duration)')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
-        .gte('created_at', since);
-
-      const sessions = (sess || []).map((s: any) => ({
+      const since = weekBounds(new Date()).lastStart.toISOString();
+      const [checkIns, completed, seconds] = await Promise.all([
+        db.checkIns.since(since),
+        db.sessions.list({ since, statuses: ['completed'] }),
+        db.blocks.secondsBySession(),
+      ]);
+      const sessions = completed.map((s) => ({
         created_at: s.created_at,
         status: s.status,
-        seconds: (s.session_blocks || []).reduce(
-          (sum: number, b: { actual_duration: number | null }) => sum + (b.actual_duration ?? 0),
-          0,
-        ),
+        seconds: seconds[s.id] ?? 0,
       }));
-
-      set({ week: compareWeeks(cis || [], sessions, new Date()) });
+      set({ week: compareWeeks(checkIns, sessions, new Date()) });
     } catch (err) {
       console.warn('Could not load week:', err);
     }
   },
 
-  getFreeSessionsCount: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return 0;
-
-    const { count } = await supabase
-      .from('sessions')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('status', 'completed');
-
-    return count || 0;
-  },
+  getFreeSessionsCount: () => db.sessions.countCompleted(),
 }));

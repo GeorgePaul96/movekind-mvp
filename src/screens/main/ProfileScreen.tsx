@@ -6,48 +6,35 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
 import { PROFILE_COPY } from '@/constants/copy';
-import { useAuthStore } from '@/store/authStore';
-import { getProfile, updateProfile } from '@/services/profile';
+import { useProfileStore } from '@/store/profileStore';
 import { startCheckout } from '@/services/premium';
-import type { Profile } from '@/types';
 
 export default function ProfileScreen() {
-  const user = useAuthStore((s) => s.user);
-  const signOut = useAuthStore((s) => s.signOut);
+  const profile = useProfileStore((s) => s.profile);
+  const saveName = useProfileStore((s) => s.setName);
+  const eraseAll = useProfileStore((s) => s.eraseAll);
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(profile?.name ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-    getProfile(user.id)
-      .then((p) => {
-        setProfile(p);
-        setName(p?.name ?? '');
-      })
-      .catch((err) => console.warn('Could not load profile:', err));
-  }, [user?.id]);
+    setName(profile?.name ?? '');
+  }, [profile?.name]);
 
   const onSave = async () => {
-    if (!user) return;
     setSaving(true);
     try {
-      await updateProfile(user.id, { name });
-      Alert.alert('Saved', 'Your profile is up to date.');
+      await saveName(name);
+      Alert.alert(PROFILE_COPY.savedTitle, PROFILE_COPY.savedBody);
     } catch (e) {
-      Alert.alert('Could not save', e instanceof Error ? e.message : '');
+      Alert.alert(PROFILE_COPY.saveFailedTitle, e instanceof Error ? e.message : '');
     } finally {
       setSaving(false);
     }
   };
 
-  const onSignOut = async () => {
-    await signOut();
-  };
-
   const onPremium = async () => {
-    const result = await startCheckout(user?.id ?? '');
+    const result = await startCheckout(profile?.id ?? '');
     if (result) {
       Alert.alert('Premium', `Continue to: ${result.url}`);
     } else {
@@ -55,18 +42,32 @@ export default function ProfileScreen() {
     }
   };
 
+  const onErase = () => {
+    Alert.alert(PROFILE_COPY.eraseTitle, PROFILE_COPY.eraseBody, [
+      { text: PROFILE_COPY.cancel, style: 'cancel' },
+      {
+        text: PROFILE_COPY.eraseConfirm,
+        style: 'destructive',
+        onPress: () => {
+          eraseAll().catch((e) => console.warn('Could not erase data:', e));
+        },
+      },
+    ]);
+  };
+
   return (
     <Screen>
       <Header tag={PROFILE_COPY.tag} title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
 
       <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>Name</Text>
+        <Text style={styles.label}>{PROFILE_COPY.nameLabel}</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          accessibilityLabel="Name"
-          placeholder="Your name"
+          accessibilityLabel={PROFILE_COPY.nameLabel}
+          placeholder={PROFILE_COPY.namePlaceholder}
           placeholderTextColor={colors.textMuted}
+          maxLength={40}
           style={styles.input}
         />
 
@@ -76,7 +77,7 @@ export default function ProfileScreen() {
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.label}>{PROFILE_COPY.premiumTitle}</Text>
-        <Text style={styles.premiumDesc}>
+        <Text style={styles.body}>
           {profile?.is_premium ? PROFILE_COPY.premiumActive : PROFILE_COPY.premiumDesc}
         </Text>
         <View style={{ height: 8 }} />
@@ -88,11 +89,11 @@ export default function ProfileScreen() {
       </Card>
 
       <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user?.email}</Text>
+        <Text style={styles.label}>{PROFILE_COPY.dataTitle}</Text>
+        <Text style={styles.body}>{PROFILE_COPY.localNote}</Text>
       </Card>
 
-      <Button label="Sign out" variant="link" onPress={onSignOut} />
+      <Button label={PROFILE_COPY.eraseButton} variant="link" onPress={onErase} />
     </Screen>
   );
 }
@@ -116,6 +117,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textPrimary,
   },
-  value: { fontSize: 15, color: colors.textPrimary },
-  premiumDesc: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
+  body: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
 });

@@ -4,8 +4,10 @@ import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
 import { colors, stateColors } from '@/constants/colors';
-import { supabase } from '@/services/supabase';
-import { useAuthStore } from '@/store/authStore';
+import { db } from '@/services/db';
+import { exerciseById } from '@/data/exercises';
+import { mapEnergyToState } from '@/domain/checkin/moods';
+import { useProfileStore } from '@/store/profileStore';
 import type { UserState } from '@/types';
 import { BarChart } from '@/components/BarChart';
 import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
@@ -26,109 +28,56 @@ interface PlaybookItem {
 }
 
 export default function JourneyScreen() {
-  const user = useAuthStore((s) => s.user);
   const { profile } = useBehavioralProfile();
+  const isPremium = useProfileStore((s) => s.profile?.is_premium ?? false);
 
   const [loading, setLoading] = useState(true);
   const [stateStats, setStateStats] = useState<StateStats[]>([]);
   const [playbook, setPlaybook] = useState<PlaybookItem[]>([]);
   const [totalSessions, setTotalSessions] = useState(0);
   const [avgDelta, setAvgDelta] = useState(0.0);
-  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-    
     let cancelled = false;
 
     const loadJourneyData = async () => {
-      // 1. Fetch check-ins to calculate state distribution
-      const { data: checkIns } = await supabase
-        .from('check_ins')
-        .select('energy_score')
-        .eq('user_id', user.id);
-
-      // 2. Fetch user exercise stats for Personal Playbook
-      const { data: statsData } = await supabase
-        .from('user_exercise_stats')
-        .select('times_completed, average_energy_delta, exercise:exercises(name, category)')
-        .eq('user_id', user.id)
-        .order('average_energy_delta', { ascending: false })
-        .limit(3);
-
-      // 3. Fetch total completed sessions count
-      const { count } = await supabase
-        .from('sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'completed');
-
-      // 3b. Premium entitlement (gates the extended history/trend cards)
-      const { data: profileRow } = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      // 4. Fetch average rating delta
-      const { data: ratings } = await supabase
-        .from('post_ratings')
-        .select('rating_delta')
-        .eq('session_id IN (select id from sessions where user_id = ?)', user.id); 
-      // Wait, let's write a clean query for post_ratings delta:
-      const { data: ratingData } = await supabase
-        .from('post_ratings')
-        .select('rating_delta, sessions!inner(user_id)')
-        .eq('sessions.user_id', user.id);
-
+      const [checkIns, stats, completed, ratings] = await Promise.all([
+        db.checkIns.all(),
+        db.stats.all(),
+        db.sessions.countCompleted(),
+        db.ratings.list(),
+      ]);
       if (cancelled) return;
 
-      // Process check-ins
-      const counts: Record<UserState, number> = {
-        overloaded: 0,
-        recovering: 0,
-        regulated: 0,
-        activated: 0,
-      };
+      // How your days have felt: share of check-ins per mood
+      const counts: Record<UserState, number> = { overloaded: 0, recovering: 0, regulated: 0, activated: 0 };
+      for (const c of checkIns) counts[mapEnergyToState(c.energy_score)]++;
+      const totalCheckins = checkIns.length || 1;
+      const pct = (n: number) => Math.round((n / totalCheckins) * 100);
+      setStateStats(
+        (['overloaded', 'recovering', 'regulated', 'activated'] as const).map((m) => ({
+          label: MOOD_COPY[m].label,
+          count: counts[m],
+          percentage: pct(counts[m]),
+          color: stateColors[m].accent,
+        })),
+      );
 
-      (checkIns || []).forEach((c) => {
-        let state: UserState = 'recovering';
-        if (c.energy_score === 1) state = 'overloaded';
-        else if (c.energy_score <= 3) state = 'recovering';
-        else if (c.energy_score === 4) state = 'regulated';
-        else state = 'activated';
-        counts[state]++;
-      });
+      // Personal Playbook: the three exercises that lift you most
+      setPlaybook(
+        [...stats]
+          .sort((a, b) => b.average_energy_delta - a.average_energy_delta)
+          .slice(0, 3)
+          .flatMap((s) => {
+            const ex = exerciseById(s.exercise_id);
+            return ex
+              ? [{ name: ex.name, category: ex.category, average_energy_delta: s.average_energy_delta, times_completed: s.times_completed }]
+              : [];
+          }),
+      );
 
-      const totalCheckins = (checkIns || []).length || 1;
-      
-      const statsList: StateStats[] = [
-        { label: MOOD_COPY.overloaded.label, count: counts.overloaded, percentage: Math.round((counts.overloaded / totalCheckins) * 100), color: stateColors.overloaded.accent },
-        { label: MOOD_COPY.recovering.label, count: counts.recovering, percentage: Math.round((counts.recovering / totalCheckins) * 100), color: stateColors.recovering.accent },
-        { label: MOOD_COPY.regulated.label, count: counts.regulated, percentage: Math.round((counts.regulated / totalCheckins) * 100), color: stateColors.regulated.accent },
-        { label: MOOD_COPY.activated.label, count: counts.activated, percentage: Math.round((counts.activated / totalCheckins) * 100), color: stateColors.activated.accent },
-      ];
-
-      // Process playbook items
-      const mappedPlaybook: PlaybookItem[] = (statsData || []).map((s: any) => ({
-        name: s.exercise.name,
-        category: s.exercise.category,
-        average_energy_delta: Number(s.average_energy_delta),
-        times_completed: s.times_completed,
-      }));
-
-      // Process average delta
-      let meanDelta = 0;
-      if (ratingData && ratingData.length > 0) {
-        const sum = ratingData.reduce((acc, curr) => acc + curr.rating_delta, 0);
-        meanDelta = sum / ratingData.length;
-      }
-
-      setStateStats(statsList);
-      setPlaybook(mappedPlaybook);
-      setTotalSessions(count || 0);
-      setAvgDelta(meanDelta);
-      setIsPremium(Boolean(profileRow?.is_premium));
+      setTotalSessions(completed);
+      setAvgDelta(ratings.length ? ratings.reduce((acc, r) => acc + r.rating_delta, 0) / ratings.length : 0);
       setLoading(false);
     };
 
@@ -140,7 +89,7 @@ export default function JourneyScreen() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, []);
 
   const isPlaybookUnlocked = totalSessions >= 10;
 

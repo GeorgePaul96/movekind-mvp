@@ -4,14 +4,6 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
-jest.mock('../src/services/supabase', () => ({
-  supabase: {
-    auth: {
-      getUser: jest.fn(async () => ({ data: { user: null } })),
-    },
-  },
-}));
-
 jest.mock('../src/services/telemetry', () => ({
   telemetry: { capture: jest.fn(), identify: jest.fn(), reset: jest.fn() },
 }));
@@ -53,19 +45,13 @@ describe('useSessionStore', () => {
     expect(s.paywallDismissedThisSession).toBe(true);
   });
 
-  it('logCheckIn rejects when unauthenticated', async () => {
-    await expect(useSessionStore.getState().logCheckIn('regulated')).rejects.toThrow('Unauthenticated');
-  });
-
   it('starts on the week view step with no week loaded', () => {
     const s = useSessionStore.getState();
     expect(s.homeStep).toBe('done');
     expect(s.week).toBeNull();
   });
 
-  it('safeHarborBypass rejects when unauthenticated', async () => {
-    await expect(useSessionStore.getState().safeHarborBypass()).rejects.toThrow(
-      'Unauthenticated',
-    );
+  it('startTodaysSession needs a check-in first (no accounts, but no silent session)', async () => {
+    await expect(useSessionStore.getState().startTodaysSession()).rejects.toThrow('No check-in today');
   });
 });

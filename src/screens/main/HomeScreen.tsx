@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { colors } from '@/constants/colors';
-import { useAuthStore } from '@/store/authStore';
+import { useProfileStore } from '@/store/profileStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { SessionOverview } from '@/components/SessionOverview';
 import { SessionPlayer } from '@/components/SessionPlayer';
@@ -26,8 +26,8 @@ function partOfDay(d: Date): string {
 }
 
 export default function HomeScreen() {
-  const user = useAuthStore((s) => s.user);
-  const name: string | null = user?.user_metadata?.name ?? null;
+
+  const name = useProfileStore((s) => s.profile?.name ?? null);
 
   const currentSession = useSessionStore((s) => s.currentSession);
   const currentCheckIn = useSessionStore((s) => s.currentCheckIn);

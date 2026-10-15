@@ -7,12 +7,10 @@ import ProfileScreen from '@/screens/main/ProfileScreen';
 import { colors } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
 import type { TabParamList } from './types';
-import { useBootstrapData } from '@/hooks/useBootstrapData';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
-  useBootstrapData();
   return (
     <Tab.Navigator
       screenOptions={{
