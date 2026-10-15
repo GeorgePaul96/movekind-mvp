@@ -25,10 +25,16 @@ There is no linter/build to run locally. The composer has the most valuable test
 ## Common tasks
 
 ### Add an exercise
-1. Add an entry to [src/data/exercises.ts](src/data/exercises.ts) with the **next free stable id**
+1. Find an **authoritative source** that describes *the same variant* you will teach (NHS, NHS inform,
+   Mayo Clinic, Cleveland Clinic…). A high-impact source does not back a low-impact version. No source
+   → don't add it (or add it as `review: 'pending_review'`, which keeps it hidden).
+2. Add an entry to [src/data/exercises.ts](src/data/exercises.ts) with the **next free stable id**
    in its category (e.g. `ex-regulate-7`) — never renumber existing ids (stats are keyed by them).
-   `category` is one of `regulate|mobilize|strengthen|move|downshift`; `base_difficulty` 1–3.
-2. Update the count in [__tests__/exercises.test.ts](__tests__/exercises.test.ts).
+   Write the cues in **your own words** (cite, never copy), set `source`, copy the source's
+   skip-this-if advice into `cautions`, and `review: 'sourced'`.
+3. If the host is new, add it to `TRUSTED_SOURCE_HOSTS` in
+   [__tests__/exercises.test.ts](__tests__/exercises.test.ts) and update the counts there.
+4. Record it in [docs/exercise-source-review.md](docs/exercise-source-review.md).
 
 ### Change how sessions are composed
 - Edit [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts) (keep it **pure**).

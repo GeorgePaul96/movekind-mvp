@@ -67,6 +67,10 @@ Verify changes with `npm run typecheck` and `npm test`.
 - **Local-first, no accounts.** All data lives on the phone; [src/services/db/](src/services/db/index.ts) is the
   **only** data access path. First launch → onboarding (asks a name) → Home. The exercise library is code:
   [src/data/exercises.ts](src/data/exercises.ts) — ids are stable, never renumber.
+- **Exercises must be source-verified.** Every shown exercise cites an authoritative source (NHS, Mayo
+  Clinic…) in our own words, with the source's cautions. Unsourced or pending-physio exercises are
+  `review: 'pending_review'` and are never shown. Users see a one-time "Before you move" safety notice
+  before any exercise. See [docs/exercise-source-review.md](docs/exercise-source-review.md).
 
 ## Conventions
 

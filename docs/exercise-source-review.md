@@ -1,6 +1,10 @@
 # Exercise source review — proposal (2026-10-16)
 
-> Status: **proposal, awaiting approval.** Nothing in the app has changed yet.
+> Status: **implemented 2026-10-16** (approved by the owner). One change from the proposal, found while
+> verifying citations: ACE only describes the *jumping* jumping jack, so the low-impact **step-out jacks**
+> (ex-move-3) has no source and is hidden with the other pending items. Knee lifts and side-to-side steps
+> now cite NHS inform's strength-and-balance programme (level 2: "purposeful march", "sideways walking")
+> instead of ACE, which only describes the high-impact versions.
 > Goal: every exercise MoveKind shows is backed by an authoritative public source, written in our
 > own words (we cite, never copy), with safety notes where the source gives them.
 
@@ -49,10 +53,10 @@ evidence is thin, and one trial found it [raised post-exercise heart rate](https
 | ex-strengthen-6 | Bodyweight Row (doorframe) | 🔁 | **Sideways leg lift** holding a chair (NHS-S) | Pulling on a doorframe can slip |
 | ex-move-1 | March in Place | ✅ | Easy marching (NHSi-SB) | Sourced |
 | ex-move-2 | Shadow Boxing | ✅ | Light punches, soft knees (ACE) | Fitness-body source |
-| ex-move-3 | Modified Jumping Jacks | ✅ | Step-out jacks, no jump (ACE) | ACE low-impact version |
+| ex-move-3 | Modified Jumping Jacks | ⚠️ | Step-out jacks — **hidden** | ACE only describes the jumping version; no source for stepping |
 | ex-move-4 | Cardio Step-back | ⚠️ | — | No source found; physio to confirm |
-| ex-move-5 | High Knees | ✏️ | **Knee lifts** (walking, knee to waist) (ACE) | ACE rates running high knees as advanced |
-| ex-move-6 | Lateral Hops | 🔁 | **Side-to-side steps** (ACE) | Impact; no source |
+| ex-move-5 | High Knees | ✏️ | **Knee lifts** — purposeful march (NHSi-SB level 2) | Running high knees is high-impact |
+| ex-move-6 | Lateral Hops | 🔁 | **Side-to-side steps** — sideways walking (NHSi-SB level 2) | Impact; no source |
 | ex-downshift-1 | Legs-up-Wall | ✏️ | Keep + warning (CC-LUW) | **Avoid with glaucoma**; caution with heart problems |
 | ex-downshift-2 | Child's Pose | ⚠️ | Keep with cushion option | Only physio-practice sources; stop if pain runs down a leg |
 | ex-downshift-3 | Thread the Needle | 🔁 | **Knee rolls** (NHSi-BP) | No source |
@@ -60,8 +64,8 @@ evidence is thin, and one trial found it [raised post-exercise heart rate](https
 | ex-downshift-5 | Sphinx Pose | 🔁 | **Lying slow breathing** (NHS-B, lying posture) | Thin evidence; disc/back cautions |
 | ex-downshift-6 | Corpse Pose | 🔁 | merged into ex-downshift-5 | Duplicate of lying rest |
 
-**Tally:** 7 keep · 7 change · 14 replace · 2 pending physio. The library becomes 29 sourced exercises
-(downshift has 5). Replacements reuse the old ids where possible so stats keep working.
+**Tally (as built):** 6 keep · 7 change · 14 replace · 3 hidden pending physio. 29 entries, **26 shown**
+(regulate 6, mobilize 6, strengthen 6, move 4, downshift 4). Old ids are reused so stats keep working.
 
 ## Safety layer to add (from the sources)
 
@@ -75,5 +79,10 @@ evidence is thin, and one trial found it [raised post-exercise heart rate](https
 
 ## Still recommended
 
-A one-time review by a chartered physiotherapist of the final 29 before launch — the only thing that
-makes "verified" a true claim. The two ⚠️ items are for them to decide.
+A one-time review by a chartered physiotherapist before launch — the only thing that makes "verified" a
+true claim. For them to decide:
+1. The three hidden exercises (ex-move-3, ex-move-4, ex-downshift-2).
+2. **Block lengths.** The composer gives single exercises 2–7 minutes (e.g. 6–7 min for a strength
+   block). Cues say "do 5 slowly, rest, and repeat while the timer runs" and every block can be ended
+   early, but the physio should confirm these durations for a low-energy audience (any change bumps
+   `ENGINE_VERSION`).

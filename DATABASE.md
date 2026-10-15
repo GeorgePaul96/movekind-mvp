@@ -29,9 +29,16 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 
 ## The exercise library
 
-Not stored: it ships in the app as [src/data/exercises.ts](src/data/exercises.ts) (30 exercises,
-6 per category). **Ids are stable** (`ex-<category>-<n>`) because stats are keyed by them — never
-renumber; add new exercises with the next free index.
+Not stored: it ships in the app as [src/data/exercises.ts](src/data/exercises.ts). **Ids are stable**
+(`ex-<category>-<n>`) because stats are keyed by them — never renumber; add new exercises with the next
+free index.
+
+**Safety contract:** every exercise has `source` (authoritative page we cite — instructions are our own
+words), optional `cautions` (the source's skip-this-if advice, shown and spoken in the player) and
+`review`. Only `review: 'sourced'` exercises are returned by `db.exercises.all()` and can ever be
+composed; `pending_review` ones (awaiting a physiotherapist) are hidden. `exerciseById` still finds
+every entry so old history renders. Rationale and per-exercise sources:
+[docs/exercise-source-review.md](docs/exercise-source-review.md).
 
 ## The stats engine
 
