@@ -1,3 +1,7 @@
+-- ARCHIVED 2026-10-15. MoveKind is local-first: all data lives on the device
+-- (src/services/db). This schema is NOT used by the app. It is kept as a reference
+-- for a future optional server (e.g. small circles), which would sync from the local store.
+
 -- MoveKind v2.3 — Supabase database schema
 -- Run this in the Supabase SQL editor for a fresh project.
 
