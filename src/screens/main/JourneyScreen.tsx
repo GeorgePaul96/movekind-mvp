@@ -8,6 +8,7 @@ import { db } from '@/services/db';
 import { exerciseById } from '@/data/exercises';
 import { mapEnergyToState } from '@/domain/checkin/moods';
 import { useProfileStore } from '@/store/profileStore';
+import { effectivePremium } from '@/domain/premium/entitlements';
 import type { UserState } from '@/types';
 import { BarChart } from '@/components/BarChart';
 import { useBehavioralProfile } from '@/hooks/useBehavioralProfile';
@@ -29,7 +30,7 @@ interface PlaybookItem {
 
 export default function JourneyScreen() {
   const { profile } = useBehavioralProfile();
-  const isPremium = useProfileStore((s) => s.profile?.is_premium ?? false);
+  const isPremium = effectivePremium(useProfileStore((s) => s.profile?.is_premium ?? false));
 
   const [loading, setLoading] = useState(true);
   const [stateStats, setStateStats] = useState<StateStats[]>([]);

@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import { PROFILE_COPY } from '@/constants/copy';
 import { useProfileStore } from '@/store/profileStore';
 import { startCheckout } from '@/services/premium';
+import { PRO_PLAN_LIVE } from '@/domain/premium/entitlements';
 
 export default function ProfileScreen() {
   const profile = useProfileStore((s) => s.profile);
@@ -75,18 +76,21 @@ export default function ProfileScreen() {
         <Button label={saving ? 'Saving…' : 'Save changes'} onPress={onSave} loading={saving} />
       </Card>
 
-      <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>{PROFILE_COPY.premiumTitle}</Text>
-        <Text style={styles.body}>
-          {profile?.is_premium ? PROFILE_COPY.premiumActive : PROFILE_COPY.premiumDesc}
-        </Text>
-        <View style={{ height: 8 }} />
-        <Button
-          label={profile?.is_premium ? 'Manage premium' : 'Learn about premium'}
-          variant="secondary"
-          onPress={onPremium}
-        />
-      </Card>
+      {/* Hidden until the Pro plan launches — MoveKind is free for now. */}
+      {PRO_PLAN_LIVE && (
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.label}>{PROFILE_COPY.premiumTitle}</Text>
+          <Text style={styles.body}>
+            {profile?.is_premium ? PROFILE_COPY.premiumActive : PROFILE_COPY.premiumDesc}
+          </Text>
+          <View style={{ height: 8 }} />
+          <Button
+            label={profile?.is_premium ? 'Manage premium' : 'Learn about premium'}
+            variant="secondary"
+            onPress={onPremium}
+          />
+        </Card>
+      )}
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.label}>{PROFILE_COPY.dataTitle}</Text>

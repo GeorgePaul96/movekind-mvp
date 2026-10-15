@@ -77,16 +77,15 @@ describe('session flow on the local repository', () => {
     expect((await db.sessions.latestActive())?.id).toBe(s.currentSession!.id);
   });
 
-  it('shows the paywall only when starting a session past the free limit', async () => {
+  it('never shows a paywall while the Pro plan is not live — even after 5 free sessions', async () => {
     await db.profile.update({ is_premium: false });
     for (let i = 0; i < 5; i++) {
       await db.sessions.add({ check_in_id: null, state: 'regulated', engine_version: 'v3.0', status: 'completed' });
     }
     await useSessionStore.getState().logCheckIn('recovering');
-    expect(useSessionStore.getState().paywallVisible).toBe(false);
     await useSessionStore.getState().startTodaysSession();
-    expect(useSessionStore.getState().paywallVisible).toBe(true);
-    expect(useSessionStore.getState().currentSession).toBeNull();
+    expect(useSessionStore.getState().paywallVisible).toBe(false);
+    expect(useSessionStore.getState().currentSession).not.toBeNull();
   });
 
   it('completes the session, resets state and returns Home to the week view', async () => {

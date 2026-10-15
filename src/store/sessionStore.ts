@@ -4,7 +4,7 @@ import { telemetry } from '@/services/telemetry';
 import { friendlyErrorMessage } from '@/services/network';
 import { fetchBehavioralProfile } from '@/services/behavioralProfile';
 import { composeSession } from '@/domain/sessions/composer';
-import { visibleExercises } from '@/domain/premium/entitlements';
+import { effectivePremium, visibleExercises } from '@/domain/premium/entitlements';
 import { mapEnergyToState, moodToEnergy } from '@/domain/checkin/moods';
 import { compareWeeks, isSameLocalDay, weekBounds, type WeekComparison } from '@/domain/insights/weekCompare';
 export { mapEnergyToState } from '@/domain/checkin/moods';
@@ -175,7 +175,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      const isPremium = (await db.profile.get()).is_premium;
+      const isPremium = effectivePremium((await db.profile.get()).is_premium);
       if (!isPremium) {
         const freeCount = await get().getFreeSessionsCount();
         if (freeCount >= 5) {

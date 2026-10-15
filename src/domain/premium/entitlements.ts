@@ -10,6 +10,19 @@ import type { Exercise } from '@/types';
  */
 export type PremiumFeature = 'extended_insights' | 'exercise_packs';
 
+/**
+ * Free-until-launch (decided 2026-10-16): MoveKind is entirely free until it has
+ * enough users to justify a Pro plan. While this is false, everyone is treated as
+ * Pro — no paywall, nothing locked. Flip to true only when Pro launches, and only
+ * ever gate NEW things then: never take back something people already had free.
+ */
+export const PRO_PLAN_LIVE = false;
+
+/** What the app should treat the user as. Use this — never `profile.is_premium` directly. */
+export function effectivePremium(isPremium: boolean, live: boolean = PRO_PLAN_LIVE): boolean {
+  return !live || isPremium;
+}
+
 export const PREMIUM_FEATURES: readonly PremiumFeature[] = [
   'extended_insights',
   'exercise_packs',

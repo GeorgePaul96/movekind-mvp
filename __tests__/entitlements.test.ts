@@ -55,3 +55,17 @@ describe('entitlements: insightsWindowDays', () => {
     expect(insightsWindowDays(true)).toBe(Infinity);
   });
 });
+
+import { PRO_PLAN_LIVE, effectivePremium } from '../src/domain/premium/entitlements';
+
+describe('free-until-launch switch', () => {
+  it('the Pro plan is not live yet', () => expect(PRO_PLAN_LIVE).toBe(false));
+  it('while not live, everyone gets everything', () => {
+    expect(effectivePremium(false)).toBe(true);
+    expect(effectivePremium(true)).toBe(true);
+  });
+  it('once live, only Pro members get Pro features', () => {
+    expect(effectivePremium(false, true)).toBe(false);
+    expect(effectivePremium(true, true)).toBe(true);
+  });
+});
