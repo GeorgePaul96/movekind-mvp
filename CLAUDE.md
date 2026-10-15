@@ -67,6 +67,9 @@ Verify changes with `npm run typecheck` and `npm test`.
 - **Local-first, no accounts.** All data lives on the phone; [src/services/db/](src/services/db/index.ts) is the
   **only** data access path. First launch → onboarding (asks a name) → Home. The exercise library is code:
   [src/data/exercises.ts](src/data/exercises.ts) — ids are stable, never renumber.
+- **The guide voice is pre-recorded** (Kokoro `af_heart`, see `scripts/voice/generate.ts`). What is
+  spoken is defined once in [voiceScript.ts](src/domain/sessions/voiceScript.ts) — warnings are never
+  trimmed. Editing any exercise name/cue/caution ⇒ `npm run voice:generate` (a test enforces it).
 - **Exercises must be source-verified.** Every shown exercise cites an authoritative source (NHS, Mayo
   Clinic…) in our own words, with the source's cautions. Unsourced or pending-physio exercises are
   `review: 'pending_review'` and are never shown. Users see a one-time "Before you move" safety notice

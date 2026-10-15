@@ -35,6 +35,24 @@ There is no linter/build to run locally. The composer has the most valuable test
 3. If the host is new, add it to `TRUSTED_SOURCE_HOSTS` in
    [__tests__/exercises.test.ts](__tests__/exercises.test.ts) and update the counts there.
 4. Record it in [docs/exercise-source-review.md](docs/exercise-source-review.md).
+5. Re-record the voice (next section) — the voice test fails until you do.
+
+### Re-record the guide voice
+The guide speaks pre-recorded clips (Kokoro, voice `af_heart` at 0.9 speed, Apache-2.0), not the
+phone's robot voice. Any change to an exercise name, cue or caution needs new clips:
+
+```bash
+npm run voice:generate          # records only new/changed lines (~5 s each)
+npm run voice:generate -- --all # re-record everything
+```
+
+It QA-checks every clip (silence, truncation, dropouts — Kokoro occasionally falls silent on a
+phrase), writes `assets/voice/*.m4a` and `src/data/voiceClips.generated.ts`, and a listen-through
+file `.voice-review/review.m4a` (+ `review-script.txt`). **Listen to it before committing** —
+pronunciation can only be checked by ear. `__tests__/voiceClips.test.ts` fails if any spoken line
+has no clip. At runtime a missing or broken clip falls back to the phone's voice. ffmpeg-static
+and the espeak-ng phonemizer are GPL but run only on your machine; nothing GPL ships in the app.
+First run downloads the ~90 MB model to your temp folder.
 
 ### Change how sessions are composed
 - Edit [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts) (keep it **pure**).
