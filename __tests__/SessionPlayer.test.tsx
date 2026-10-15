@@ -6,6 +6,10 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('expo-speech', () => ({ speak: jest.fn(), stop: jest.fn() }));
+jest.mock('../src/services/voicePlayer', () => ({
+  speakLines: jest.fn(async () => {}),
+  stopSpeaking: jest.fn(),
+}));
 jest.mock('../src/services/telemetry', () => ({ telemetry: { capture: jest.fn() } }));
 
 import { SessionPlayer } from '../src/components/SessionPlayer';
@@ -42,13 +46,24 @@ describe('<SessionPlayer /> safety information', () => {
     open.mockRestore();
   });
 
-  it('speaks the warning too, for people listening rather than looking', () => {
-    const Speech = require('expo-speech');
-    Speech.speak.mockClear();
-    playing('ex-downshift-4');
+  it('speaks the warning too — never trimmed, even on a running-on-empty day', () => {
+    const { speakLines } = require('../src/services/voicePlayer');
+    speakLines.mockClear();
+    playing('ex-downshift-4'); // session state is 'overloaded' → only 1 cue spoken
     render(<SessionPlayer />);
-    const spoken = Speech.speak.mock.calls.map((c: unknown[]) => c[0]).join(' ');
-    expect(spoken).toMatch(/osteoporosis/i);
+    const [lines, opts] = speakLines.mock.calls[0];
+    const e = exerciseById('ex-downshift-4')!;
+    expect(lines).toEqual(['Next exercise: Knee-to-chest stretch.', 'Take care.', ...e.cautions!, e.cues[0]]);
+    expect(opts.rate).toBeLessThan(1); // calmer pace on a low-energy day
+  });
+
+  it('stops the voice when the exercise screen goes away', () => {
+    const { stopSpeaking } = require('../src/services/voicePlayer');
+    stopSpeaking.mockClear();
+    playing('ex-move-1');
+    const { unmount } = render(<SessionPlayer />);
+    unmount();
+    expect(stopSpeaking).toHaveBeenCalled();
   });
 
   it('always reminds people to stop if something hurts', () => {

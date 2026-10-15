@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, Vibration, ActivityIndicator, Linking } from 'react-native';
-import * as Speech from 'expo-speech';
+import { speakLines, stopSpeaking } from '@/services/voicePlayer';
 import { Card } from './Card';
 import { Button } from './Button';
 import { colors, stateColors } from '@/constants/colors';
 import { SESSION_COPY } from '@/constants/copy';
 import { useSessionStore } from '@/store/sessionStore';
 import { formatClock } from '@/utils/format';
-import { speechParamsForState } from '@/domain/sessions/voice';
+import { clipPlaybackRate, speechParamsForState } from '@/domain/sessions/voice';
+import { spokenLinesFor } from '@/domain/sessions/voiceScript';
 
 export function SessionPlayer() {
   const session = useSessionStore((s) => s.currentSession);
@@ -31,34 +32,19 @@ export function SessionPlayer() {
     setTimeLeft(activeBlock.target_duration);
     setIsPaused(false);
 
-    // Speak details, tuned to the user's capacity state (gentler when depleted)
+    // The recorded guide voice, tuned to the user's state (slower, fewer cues when depleted).
+    // spokenLinesFor never trims safety warnings — people following by voice may not be looking.
     const voice = speechParamsForState(session.state);
-    Speech.stop();
-    Speech.speak(`Next exercise: ${activeBlock.exercise.name}.`, {
-      pitch: voice.pitch,
-      rate: voice.rate,
-    });
-
-    // Safety warnings are always spoken (never trimmed by maxSpokenCues): people
-    // following by voice may not be looking at the screen.
-    const cautions = activeBlock.exercise.cautions ?? [];
-    if (cautions.length > 0) {
-      Speech.speak(`Take care. ${cautions.join(' ')}`, { pitch: voice.pitch, rate: voice.rate });
-    }
-
-    const spokenCues = activeBlock.exercise.cues.slice(0, voice.maxSpokenCues);
-    if (spokenCues.length > 0) {
-      Speech.speak(`Cues: ${spokenCues.join('. ')}`, {
-        pitch: voice.pitch,
-        rate: voice.rate,
-      });
-    }
+    speakLines(spokenLinesFor(activeBlock.exercise, voice.maxSpokenCues), {
+      rate: clipPlaybackRate(session.state),
+      fallback: { rate: voice.rate, pitch: voice.pitch },
+    }).catch((e) => console.warn('Voice guidance failed:', e));
 
     // Trigger haptic vibration
     Vibration.vibrate(200);
 
     return () => {
-      Speech.stop();
+      stopSpeaking();
     };
   }, [activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
