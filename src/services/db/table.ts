@@ -39,8 +39,8 @@ function createStore<V>(name: string, fallback: () => V, isValid: (v: unknown) =
   function mutate<R>(op: (current: V) => { next: V; result: R }): Promise<R> {
     const run = queue.then(async () => {
       const { next, result } = op(await load());
-      cache = next;
       await AsyncStorage.setItem(key, JSON.stringify(next));
+      cache = next; // only after the write lands, so a failed save leaves no ghost row
       return result;
     });
     queue = run.catch(() => undefined); // a failed write must not block later ones

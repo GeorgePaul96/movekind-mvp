@@ -30,6 +30,20 @@ describe('local repository', () => {
     expect(await db.checkIns.all()).toHaveLength(3);
   });
 
+  it('a failed write leaves no ghost row behind (memory matches disk)', async () => {
+    await db.profile.get(); // create the profile first so the failure hits the check-in write
+    // setItem is already a jest.fn in the AsyncStorage mock: use a one-shot implementation
+    // (spyOn + mockRestore would wipe its real behavior for every later test).
+    (AsyncStorage.setItem as jest.Mock).mockImplementationOnce(async () => {
+      throw new Error('disk full');
+    });
+    await expect(db.checkIns.add(ci())).rejects.toThrow('disk full');
+    expect(await db.checkIns.all()).toEqual([]);
+    // and the table still works afterwards
+    await db.checkIns.add(ci());
+    expect(await db.checkIns.all()).toHaveLength(1);
+  });
+
   it('survives corrupt stored data with an empty table', async () => {
     await AsyncStorage.setItem('@movekind/db/check_ins', '{not json');
     expect(await db.checkIns.all()).toEqual([]);
