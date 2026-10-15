@@ -14,15 +14,15 @@
 │ components/      UI primitives + home/* (MoodPicker, LoggedPanel,│
 │                  WeekView) + session UI (Overview/Player/Complete)│
 ├──────────────────────────────────────────────────────────────┤
-│ store/ (Zustand) authStore · sessionStore · settingsStore      │
+│ store/ (Zustand) profileStore · sessionStore · settingsStore   │
 │                  own all async + orchestration                 │
 ├──────────────────────────────────────────────────────────────┤
 │ domain/          PURE: sessions/composer · checkin/moods ·     │
 │                  insights/weekCompare · behavioral · premium   │
-│ services/        supabase · telemetry · notifications ·         │
+│ services/        db (local repository) · telemetry ·           │
 │                  premium · profile · cache  (all side effects) │
 ├──────────────────────────────────────────────────────────────┤
-│ Supabase         Postgres + Auth + RLS + triggers (schema.sql) │
+│ Device storage   AsyncStorage JSON tables — no backend         │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -80,7 +80,7 @@ HomeScreen  (render order: active session → mood tiles → Logged panel → we
   └─ SessionOverview ──► startSession()            (status=started)
   └─ SessionPlayer ──► completeBlock()/skipBlock()  (per block; voice cues via expo-speech)
   └─ SessionComplete ──► completeSession(ratingDelta, notes)
-        • INSERT post_ratings  ──► DB TRIGGER recomputes user_exercise_stats
+        • db.ratings.add  ──► applyRating() recomputes user_exercise_stats
         • UPDATE sessions status=completed
         • schedule tomorrow's state-aware notification
         • reload stats/history, homeStep='done', loadWeek()
@@ -90,8 +90,9 @@ HomeScreen  (render order: active session → mood tiles → Logged panel → we
 
 ## State & persistence
 
-- **Auth** (`authStore`): subscribes to `supabase.auth.onAuthStateChange`; session persisted
-  by Supabase via AsyncStorage. Identifies the user in PostHog.
+- **Profile** (`profileStore`): no accounts. A local profile (random install id, optional name,
+  premium flag) is created on first launch; its id is the anonymous PostHog id. "Erase all my
+  data" wipes the repository and returns to onboarding.
 - **Session** (`sessionStore`): the live session, composed blocks, active index, and cached
   `userStats`. Rehydrated on entering the authed tabs via `loadStatsAndHistory()`.
 - **Settings** (`settingsStore`): notifications/reduceMotion/onboarding flags + onboarding

@@ -1,10 +1,11 @@
 /**
  * Network-failure classification and calm, anti-guilt user messaging.
  *
- * Supabase-js rejects (throws) on transport failures — the React Native fetch
- * layer surfaces these as `TypeError: Network request failed`, and timeouts as
- * `AbortError`. Database/RLS errors are *returned* as `{ error }`, not thrown,
- * so this helper only needs to recognize transport-level failures.
+ * MoveKind is local-first, so the core loop never touches the network. These
+ * helpers remain for the few networked edges (analytics, future billing/sync):
+ * React Native fetch surfaces transport failures as `TypeError: Network request
+ * failed` and timeouts as `AbortError`. `friendlyErrorMessage` also gives calm
+ * copy for any other thrown error.
  */
 
 /** Calm copy shown when the user appears to be offline. Never blames them. */

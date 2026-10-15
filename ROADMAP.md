@@ -76,7 +76,7 @@ voice/cue quality stay free — permanently. Encoded in `src/domain/premium/enti
 | Wire gates | ✅ done (2026-07-04) | `checkIn` composes only from `visibleExercises(...)`; JourneyScreen gates the Rhythm-Over-Time / Return-Rhythm trend cards behind premium (free users see a calm "Your Full Journey" unlock card; recovery + distribution stay free). |
 | Paywall UX | ✅ done (2026-07-04) | Session-scoped one-tap dismissal: `dismissPaywall()` + `paywallDismissedThisSession` in the store; `checkIn` never re-pops the paywall after dismissal (gate still holds), resets on app launch. Copy rewritten to the real tier (removed the incorrect "text-to-speech" pitch — voice is free); a11y roles added. |
 | Activate PostHog | 🟡 contract shipped (2026-07-04) | Privacy-first contract enforced in code: `src/services/telemetryPrivacy.ts` `sanitizeProperties()` strips body-data (energy/sleep/rating/notes) + PII from every event; `identify()` is anonymous (no email/name). **Remaining:** set `EXPO_PUBLIC_POSTHOG_API_KEY` to actually emit; feature flags for composer experiments. Needs the key + authorized PostHog connector. |
-| Wire Stripe | ⬜ deferred | `startCheckout` still a stub; Paywall keeps the beta `is_premium=true` self-upgrade for testing. Real wiring needs live Stripe keys, a Supabase Edge Function + webhook to flip `profiles.is_premium`, RLS, and a restore-purchases flow — none verifiable in this environment; the Stripe MCP connector also isn't authorized here. See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md). |
+| Wire purchases | ⬜ deferred | `startCheckout` still a stub; Paywall keeps the beta self-upgrade (sets the local `profile.is_premium`). **Since local-first (2026-10-15):** use App Store / Google Play billing (e.g. RevenueCat) — purchase/restore → `profileStore.setPremium(true)`; no server or Stripe webhook needed. See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md). |
 
 **Exit criteria:** ✅ a real purchase completes in test mode — *deferred with Stripe wiring*;
 🟡 telemetry funnels — contract ready, needs the API key to emit; ✅ premium gating works
@@ -93,12 +93,19 @@ Instagram) didn't land. Five sub-projects, built in order:
 
 | # | Sub-project | Status | Notes |
 |---|---|---|---|
-| 1 | Visual clarity + one-tap check-in | ✅ built (2026-10-03, branch `redesign/visual-clarity`) | Sunrise palette (contrast-tested), 3-variant Button + MoodTile/Chip/WeekCard, all hand-rolled buttons and legacy color aliases removed, jargon purged, min font 13. `logCheckIn` (never paywalls) split from `startTodaysSession`; 4-state Home; this-week-vs-last card; `check_ins_update_own` RLS policy (**run it in Supabase before testing**). Paywall price now $4.99 and no fake "trial". 159 tests. Spec: [docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md](docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md). Follow-ups: real exercise illustrations (player shows a mood panel for now); offline check-in queue; re-test with the same friends. |
+| 1 | Visual clarity + one-tap check-in | ✅ built (2026-10-03, branch `redesign/visual-clarity`) | Sunrise palette (contrast-tested), 3-variant Button + MoodTile/Chip/WeekCard, all hand-rolled buttons and legacy color aliases removed, jargon purged, min font 13. `logCheckIn` (never paywalls) split from `startTodaysSession`; 4-state Home; this-week-vs-last card; (the `check_ins_update_own` policy it added became moot with local-first). Paywall price now $4.99 and no fake "trial". 159 tests. Spec: [docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md](docs/superpowers/specs/2026-10-03-visual-clarity-one-tap-checkin-design.md). Follow-ups: real exercise illustrations (player shows a mood panel for now); offline check-in queue; re-test with the same friends. |
 | 2 | Reason to return | ⬜ | Finch-style "something of yours that grows when you show up". Rest days count. |
 | 3 | Weekly analytics | ⬜ | This-week-vs-last beyond the week card. |
 | 4 | Honest custom workouts | ⬜ | Show the composer's reasoning per exercise ("picked because…"). |
 | 5 | Light social | ⬜ | Points / small circles. Needs friends + invites backend. |
+| — | **Local-first architecture** | ✅ built (2026-10-15) | Supabase removed (project paused; no free slots). All data on the device via `src/services/db` (AsyncStorage, serialized writes); exercise library bundled with stable ids; stats trigger ported to pure `applyRating`; **no accounts** (onboarding asks a name; Profile has "Erase all my data"). Benchmark rationale: Bend / Down Dog / Finch need no server for the core loop. Spec: [docs/superpowers/specs/2026-10-15-local-first-design.md](docs/superpowers/specs/2026-10-15-local-first-design.md). Follow-ups: "Export my data"; a small optional server only when circles (5) are built. |
 | — | Pricing | ⬜ blocked on Stripe | Pro $4.99/mo (~$29.99/yr). "Rough month? It's on us" honor-system free month. Consistency rewards are in-app, never cash. Rejected: "6 workouts/week → free month" (charges people for resting; inverted revenue; Pact/GymPact precedent). |
+
+**Benchmark & order (decided 2026-10-14):** primary benchmark is **Bend** (short daily guided
+routine for non-gym people); retention model is **Finch**; adaptive-session proof is **Down Dog**;
+Hevy only for its growth playbook (organic, product-first, social feed from the activity itself).
+Order: ✅ local-first → **exercise visuals** (biggest gap vs Bend) → reason to return (Finch-style,
+with a home-screen widget) → store listing + launch → circles.
 
 ## Phase 6 — Ship & Scale *(in progress)*
 
@@ -106,7 +113,7 @@ Instagram) didn't land. Five sub-projects, built in order:
 
 | Item | Status | Notes |
 |---|---|---|
-| EAS pipeline | 🟡 config done (2026-09-30) | `eas.json` with four profiles — `development` (dev-client, internal, Android APK), `development-simulator` (iOS sim), `preview` (internal release), `production` (store, `autoIncrement`, AAB). `appVersionSource: "remote"` so EAS owns build numbers. `expo-dev-client` + `expo-updates` installed; `app.json` gained `scheme: "movekind"`, `runtimeVersion` (appVersion policy), `primaryColor`, and `ITSAppUsesNonExemptEncryption: false` (skips the export-compliance prompt on every submit). Store credentials gitignored. npm scripts: `build:dev:android`, `build:preview`, `build:prod`, `submit:prod`, `ota`. **Remaining (needs accounts, not code):** `eas init` to create the project + inject `extra.eas.projectId`; `eas env:create` to push `EXPO_PUBLIC_*` to the development/preview/production environments (they are NOT in git — `.env` is ignored, so cloud builds have no Supabase creds until this is done); fill the three `REPLACE_WITH_*` placeholders in `eas.json` `submit.production.ios`. |
+| EAS pipeline | 🟡 config done (2026-09-30) | `eas.json` with four profiles — `development` (dev-client, internal, Android APK), `development-simulator` (iOS sim), `preview` (internal release), `production` (store, `autoIncrement`, AAB). `appVersionSource: "remote"` so EAS owns build numbers. `expo-dev-client` + `expo-updates` installed; `app.json` gained `scheme: "movekind"`, `runtimeVersion` (appVersion policy), `primaryColor`, and `ITSAppUsesNonExemptEncryption: false` (skips the export-compliance prompt on every submit). Store credentials gitignored. npm scripts: `build:dev:android`, `build:preview`, `build:prod`, `submit:prod`, `ota`. **Remaining (needs accounts, not code):** `eas init` to create the project + inject `extra.eas.projectId`; (no backend env vars are needed since local-first — only the optional PostHog key via `eas env:create`); fill the three `REPLACE_WITH_*` placeholders in `eas.json` `submit.production.ios`. |
 | OTA updates | 🟡 ready, not wired | `expo-updates` installed and `runtimeVersion` set; channels declared per build profile (development/preview/production). Needs `eas update:configure` (after `eas init`) to add `updates.url` — that requires the project ID. |
 | Beta program | 20–50 users; the behavioral engine needs real longitudinal data — 90-day windows are untested with real humans. |
 | Monitoring | Crash/error tracking (PostHog error tracking or Sentry); EAS Observe for build/update health. |
@@ -131,7 +138,9 @@ without a store review.
    and comparison is only to yourself or a small circle — never a public ranking.
 2. **The composer stays pure.** New signals enter as arguments; I/O stays in stores/services.
    Bump `ENGINE_VERSION` on any composition change; test via `composer.test.ts`.
-3. **Explicit color contract.** Every interactive state gets an explicit color; `sageDark`
-   for accessible actives. No conditionally-undefined styles.
-4. **Schema changes touch three places:** `supabase/schema.sql`, `src/types/index.ts`, `DATABASE.md`.
+3. **Explicit color contract.** Every interactive state gets an explicit color from the Sunrise
+   tokens; contrast is enforced by `__tests__/colors.test.ts`. No conditionally-undefined styles.
+4. **Data-model changes touch three places:** `src/services/db/`, `src/types/index.ts`, `DATABASE.md`.
 5. **Verify with** `npm run typecheck` **and** `npm test` — there is no lint or build step.
+6. **Local-first.** User data never leaves the phone. Anything that needs a server (circles) is
+   additive and optional — the core loop must keep working with no network and no account.

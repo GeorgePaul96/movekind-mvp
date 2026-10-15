@@ -1,61 +1,40 @@
-# API_MAP.md — data-access surface
+# API_MAP.md — Data access by caller
 
-MoveKind has **no REST/GraphQL backend of its own**. All data access is the **Supabase
-JS client** (`src/services/supabase.ts`) talking directly to Postgres under RLS, plus
-Supabase **Auth**. This map lists every query/mutation grouped by caller, so you can find
-the one line that touches a table without reading whole files.
+There is no network API: every read and write goes through the local repository
+[`db`](src/services/db/index.ts). This maps each caller to the repository methods it uses.
 
-## Auth — `src/store/authStore.ts`
-| Call | Supabase API |
+## `src/store/sessionStore.ts`
+
+| Action | Repository calls |
 |---|---|
-| restore session | `auth.getSession()` |
-| live sync | `auth.onAuthStateChange(...)` |
-| sign in | `auth.signInWithPassword({ email, password })` |
-| sign up | `auth.signUp({ email, password, options.data.name })` |
-| sign out | `auth.signOut()` |
+| `loadStatsAndHistory()` | `db.stats.all()` · `db.checkIns.since(localMidnight)` (today's check-in) · `db.sessions.latestActive()` · `db.blocks.forSession(id)` |
+| `logCheckIn(mood)` | `db.checkIns.add(...)` — or `updateCheckIn({energy_score})` when today's check-in exists. **Never touches the paywall.** |
+| `updateCheckIn(patch)` | `db.checkIns.update(todayId, patch)` |
+| `startTodaysSession()` | `db.profile.get()` (premium) · `db.sessions.countCompleted()` (free limit → paywall) · `db.exercises.all()` · `db.blocks.recentCompletedExerciseIds(10)` · `db.sessions.add` · `db.blocks.addMany` |
+| `safeHarborBypass()` | `db.exercises.all()` · `db.sessions.add` · `db.blocks.addMany` |
+| `startSession()` | `db.sessions.update(id, {status:'started'})` |
+| `completeBlock()` / `skipBlock()` | `db.blocks.update(id, …)` |
+| `completeSession()` | `db.ratings.add(...)` (also updates stats) · `db.sessions.update(id, {status:'completed'})` · `db.stats.all()` · `loadWeek()` |
+| `abandonSession()` | `db.sessions.update(id, {status:'abandoned'})` |
+| `loadWeek()` | `db.checkIns.since(lastMonday−7d)` · `db.sessions.list({since, statuses:['completed']})` · `db.blocks.secondsBySession()` |
+| `getFreeSessionsCount()` | `db.sessions.countCompleted()` |
 
-## Session lifecycle — `src/store/sessionStore.ts`
-| Method | Tables touched |
+## `src/store/profileStore.ts`
+
+| Action | Repository calls |
 |---|---|
-| `loadStatsAndHistory()` | SELECT `user_exercise_stats`; SELECT latest `check_ins` (today); SELECT active `sessions` (`generated\|started`); SELECT `session_blocks` (+ joined `exercises`) |
-| `logCheckIn(mood)` | INSERT `check_ins` (energy from mood; sleep/intention null). If today's check-in already exists → delegates to `updateCheckIn`. **Never touches the paywall.** |
-| `updateCheckIn(patch)` | UPDATE `check_ins` (`sleep_quality` / `intention` / `energy_score`) `.eq('id', today's id)` |
-| `startTodaysSession()` | SELECT `profiles.is_premium`; (quota) count `sessions`; SELECT `exercises`; SELECT recent completed `session_blocks`; INSERT `sessions`; INSERT `session_blocks` |
-| `loadWeek()` | SELECT `check_ins(energy_score, created_at)` since last Monday−7d; SELECT completed `sessions(created_at, status, session_blocks(actual_duration))` since the same date |
-| `safeHarborBypass()` | SELECT `exercises`; INSERT `sessions` (check_in_id null); INSERT `session_blocks` |
-| `startSession()` | UPDATE `sessions.status='started'` |
-| `completeBlock(id, dur)` | UPDATE `session_blocks` status/actual_duration |
-| `skipBlock(id)` | UPDATE `session_blocks.status='skipped'` |
-| `completeSession(delta, notes)` | INSERT `post_ratings` (→ trigger updates stats); UPDATE `sessions.status='completed'` |
-| `abandonSession()` | UPDATE `sessions.status='abandoned'` |
-| `getFreeSessionsCount()` | COUNT `sessions` where `status='completed'` (free tier limit = **5**) |
+| `hydrate()` | `db.profile.get()` |
+| `setName()` / `setPremium()` | `db.profile.update(...)` |
+| `eraseAll()` | `db.eraseAll()` + `settingsStore.reset()` |
 
-> The `post_ratings` INSERT is the only path that mutates `user_exercise_stats` —
-> via the `sync_user_exercise_stats` DB trigger, not client code. See [DATABASE.md](DATABASE.md).
+## Services, screens, components
 
-## Profile — `src/services/profile.ts`
-| Fn | Behavior |
+| Caller | Repository calls |
 |---|---|
-| `getProfile(userId)` | SELECT `profiles`; falls back to AsyncStorage cache on error |
-| `updateProfile(userId, patch)` | UPDATE `profiles` (`name`/`is_premium`); writes cache |
+| `services/behavioralProfile.ts` | `db.sessions.list({since: 90d, statuses: completed/abandoned})` · `db.checkIns.since` · `db.ratings.list` |
+| `screens/main/JourneyScreen.tsx` | `db.checkIns.all()` · `db.stats.all()` · `db.sessions.countCompleted()` · `db.ratings.list()` |
+| `components/Paywall.tsx` | `db.ratings.list()` · `db.stats.all()` · beta upgrade → `profileStore.setPremium(true)` |
+| `components/SessionComplete.tsx` | `db.sessions.countCompleted(thisMonday)` (weekly win) |
 
-## Premium — `src/services/premium.ts` (stub)
-| Fn | Behavior |
-|---|---|
-| `isPremium(userId)` | SELECT `profiles.is_premium` |
-| `startCheckout(userId)` | **returns null** — placeholder for a Stripe Edge Function |
-
-## External services (not Supabase)
-- **PostHog** — `telemetry.identify/capture/reset` (`src/services/telemetry.ts`). No-op
-  unless `EXPO_PUBLIC_POSTHOG_API_KEY` is set. Events: `checkin_completed`,
-  `session_generated/started/completed/abandoned`, `block_completed/skipped`, `safe_harbor_bypass`.
-- **expo-notifications** — daily `daily-nudge` scheduling (`src/services/notifications.ts`).
-- **expo-speech** — voice cues in `SessionPlayer`.
-
-## Environment variables
-| Key | Required | Purpose |
-|---|---|---|
-| `EXPO_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | yes | anon public key |
-| `EXPO_PUBLIC_POSTHOG_API_KEY` | no | enables analytics |
-| `EXPO_PUBLIC_POSTHOG_HOST` | no | defaults to `https://us.i.posthog.com` |
+`settingsStore` keeps its own AsyncStorage key (`@movekind/settings`) for app preferences and the
+onboarding flag — it is not user activity data.

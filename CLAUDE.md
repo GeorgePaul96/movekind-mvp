@@ -13,8 +13,8 @@ future sessions personalize. No streaks, no guilt.
 
 ## Tech stack
 
-Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict) · Supabase
-(Postgres + Auth + RLS) · Zustand (state) · React Navigation 6 · NativeWind 4 (Tailwind) ·
+Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict) · **local-first: all
+data on the device (AsyncStorage via `src/services/db`), no backend, no accounts** · Zustand (state) · React Navigation 6 · NativeWind 4 (Tailwind) ·
 Victory Native (charts) · PostHog (optional analytics) · Jest + Testing Library.
 
 ## Commands
@@ -35,8 +35,8 @@ Verify changes with `npm run typecheck` and `npm test`.
 |---|---|
 | How data flows, the state machine, layering | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | "Where is X?" — file-by-file index | [PROJECT_MAP.md](PROJECT_MAP.md) |
-| Tables, columns, RLS, triggers, the stats engine | [DATABASE.md](DATABASE.md) |
-| Every Supabase query, grouped by caller | [API_MAP.md](API_MAP.md) |
+| The local data model, storage rules, the stats engine | [DATABASE.md](DATABASE.md) |
+| Every repository call, grouped by caller | [API_MAP.md](API_MAP.md) |
 | Setup, testing, "how do I add an exercise / wire Stripe" | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
 | Product framing, env vars, build | [README.md](README.md) |
 | What's next — phases, priorities, guardrails | [ROADMAP.md](ROADMAP.md) |
@@ -56,19 +56,22 @@ Verify changes with `npm run typecheck` and `npm test`.
   paywall; `startTodaysSession()` composes the session and is the only paywall path.
 - **Composer is pure & sacred.** [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts)
   takes state + exercise library + recency + stats and returns blocks. **No I/O, no React,
-  no Supabase.** It is the only unit-tested business logic. Keep it pure; test changes via
+  no storage.** It is the only unit-tested business logic. Keep it pure; test changes via
   [__tests__/composer.test.ts](__tests__/composer.test.ts).
 - **`ENGINE_VERSION`** (currently `v3.0`) is stamped on every check-in and session. Bump it
   when composition logic changes.
 - **Exercise categories:** `regulate · mobilize · strengthen · move · downshift`. Each state
   maps to a fixed category sequence with target durations (see the composer).
-- **Stats are computed server-side.** A Postgres trigger updates `user_exercise_stats` when a
-  `post_ratings` row is inserted — the client never writes stats directly. See [DATABASE.md](DATABASE.md).
+- **Stats update on rating.** `db.ratings.add()` runs the pure [applyRating](src/domain/sessions/applyRating.ts)
+  (a port of the old server trigger) — nothing else writes `user_exercise_stats`. See [DATABASE.md](DATABASE.md).
+- **Local-first, no accounts.** All data lives on the phone; [src/services/db/](src/services/db/index.ts) is the
+  **only** data access path. First launch → onboarding (asks a name) → Home. The exercise library is code:
+  [src/data/exercises.ts](src/data/exercises.ts) — ids are stable, never renumber.
 
 ## Conventions
 
 - **Imports:** use the `@/` alias for `src/` (configured in `tsconfig.json` + `babel.config.js`).
-- **State:** Zustand stores in `src/store/`. Stores own async + Supabase calls; components stay thin.
+- **State:** Zustand stores in `src/store/`. Stores own async + `db` calls; components stay thin.
 - **Styling:** NativeWind classes; **all color comes from semantic tokens in
   [src/constants/colors.ts](src/constants/colors.ts)** — never hardcode hex. Use the semantic
   names (`background`, `surface`, `surfaceSecondary`, `primary`/`primaryPressed`/`onPrimary`,
@@ -82,7 +85,7 @@ Verify changes with `npm run typecheck` and `npm test`.
   `"link"` (underlined, 44pt target). Choice sets use `<Chip>`; mood picks use `<MoodTile>`.
   No hand-rolled `Pressable` buttons. Minimum font size 13.
 - **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts).
-- **Side effects** (Supabase, telemetry, notifications) live in `src/services/`, never in `domain/`.
+- **Side effects** (storage, telemetry, notifications) live in `src/services/`, never in `domain/`.
 
 ## Gotchas / known debt (do not "fix" silently)
 
@@ -92,6 +95,7 @@ Verify changes with `npm run typecheck` and `npm test`.
 ## Doing work efficiently
 
 - To change **session logic** → `composer.ts` (+ its test) and/or `sessionStore.ts`. Nothing else.
-- To change **the DB** → `supabase/schema.sql` + `src/types/index.ts` + [DATABASE.md](DATABASE.md). Keep all three in sync.
+- To change **the data model** → `src/services/db/` + `src/types/index.ts` + [DATABASE.md](DATABASE.md). Keep all three in sync.
+- To add **an exercise** → `src/data/exercises.ts` with the next free stable id.
 - To change **a screen** → `src/screens/**`; shared UI in `src/components/**`.
 - **Never** open `package-lock.json` or `node_modules/**` (excluded via `.claudeignore`).

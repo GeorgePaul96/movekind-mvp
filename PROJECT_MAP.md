@@ -13,7 +13,7 @@
 | [tailwind.config.js](tailwind.config.js) / [global.css](global.css) | NativeWind v4 setup |
 | [tsconfig.json](tsconfig.json) | Strict TS + `@/*` path alias |
 | [jest.setup.ts](jest.setup.ts) | Test setup |
-| [supabase/schema.sql](supabase/schema.sql) | **All** DDL, RLS, triggers, exercise seed → see [DATABASE.md](DATABASE.md) |
+| [docs/archive/supabase-schema.sql](docs/archive/supabase-schema.sql) | **Archived** former server schema (reference only) — the live data model is [DATABASE.md](DATABASE.md) |
 
 ## `src/domain/` — pure business logic (no I/O)
 
@@ -25,7 +25,7 @@
 
 | File | Owns |
 |---|---|
-| [authStore.ts](src/store/authStore.ts) | session/user, signIn/Up/Out, restoreSession |
+| [profileStore.ts](src/store/profileStore.ts) | local profile (name, premium, install id); `eraseAll` |
 | [sessionStore.ts](src/store/sessionStore.ts) | `logCheckIn` / `updateCheckIn` → `startTodaysSession` (free-quota gate) → play → complete; `homeStep`; `loadWeek`; stats cache |
 | [settingsStore.ts](src/store/settingsStore.ts) | notifications/motion/onboarding flags (AsyncStorage) |
 
@@ -33,22 +33,21 @@
 
 | File | Purpose |
 |---|---|
-| [supabase.ts](src/services/supabase.ts) | Supabase client (AsyncStorage-backed auth) |
+| [db/](src/services/db/index.ts) | **the only data layer** — local repository over AsyncStorage (`table.ts` = serialized JSON tables) |
 | [telemetry.ts](src/services/telemetry.ts) | PostHog wrapper; no-op without API key |
 | [notifications.ts](src/services/notifications.ts) | state-aware daily nudge scheduling |
-| [premium.ts](src/services/premium.ts) | `isPremium` / `startCheckout` (**Stripe stub**) |
-| [profile.ts](src/services/profile.ts) | get/update profile (cache fallback) |
-| [cache.ts](src/services/cache.ts) | AsyncStorage read/write helpers (⚠ has dead keys) |
+| [premium.ts](src/services/premium.ts) | `startCheckout` (**stub** — store billing later; premium flag lives on the local profile) |
+| [behavioralProfile.ts](src/services/behavioralProfile.ts) | 90-day behavioral profile from local history |
+| [network.ts](src/services/network.ts) | `friendlyErrorMessage` (calm error copy) |
 
 ## `src/screens/`
 
 | File | Purpose |
 |---|---|
-| [auth/OnboardingScreen.tsx](src/screens/auth/OnboardingScreen.tsx) | new-user onboarding (largest screen, 405 ln) |
-| [auth/SignInScreen.tsx](src/screens/auth/SignInScreen.tsx) / [SignUpScreen.tsx](src/screens/auth/SignUpScreen.tsx) | auth |
+| [onboarding/OnboardingScreen.tsx](src/screens/onboarding/OnboardingScreen.tsx) | first launch: name (optional) + 4 preference steps. **No sign-in screens exist.** |
 | [main/HomeScreen.tsx](src/screens/main/HomeScreen.tsx) | 4-state home: active session → mood tiles → Logged panel → week view |
 | [main/JourneyScreen.tsx](src/screens/main/JourneyScreen.tsx) | history + charts |
-| [main/ProfileScreen.tsx](src/screens/main/ProfileScreen.tsx) | profile, premium, settings |
+| [main/ProfileScreen.tsx](src/screens/main/ProfileScreen.tsx) | name, premium, "your data stays on this phone", Erase all my data |
 
 ## `src/components/`
 
@@ -73,6 +72,8 @@ Primitives: [Button](src/components/Button.tsx) (primary/secondary/link) · [Moo
 |---|---|
 | [types/index.ts](src/types/index.ts) | **All shared domain types** (Profile, CheckIn, Exercise, Session, SessionBlock, PostRating, UserExerciseStats, UserState) |
 | [constants/colors.ts](src/constants/colors.ts) | "Sunrise" palette + `stateColors` (soft/ink/accent/tint); contrast-tested |
+| [data/exercises.ts](src/data/exercises.ts) | the bundled exercise library (30, stable ids `ex-<category>-<n>`) |
+| [domain/sessions/applyRating.ts](src/domain/sessions/applyRating.ts) | per-exercise stats update on rating (pure port of the old trigger) |
 | [domain/checkin/moods.ts](src/domain/checkin/moods.ts) | `MOODS`, `moodToEnergy`, `mapEnergyToState` (pure) |
 | [domain/insights/weekCompare.ts](src/domain/insights/weekCompare.ts) | `compareWeeks`, `weekBounds`, `isSameLocalDay` (pure) |
 | [constants/copy.ts](src/constants/copy.ts) | user-facing strings |

@@ -1,21 +1,22 @@
 # MoveKind
 
-A calm, kind movement app that meets your nervous system where it is. Built with React Native, Expo, TypeScript, Supabase, NativeWind, and Zustand.
+A calm, kind movement app that meets your nervous system where it is. Built with React Native, Expo, TypeScript, NativeWind, and Zustand. **Local-first:** no account, no backend — everything you log stays on your phone.
 
 Instead of asking you to grind through a fixed workout, MoveKind starts with a short check-in, reads your current capacity, and composes an adaptive movement session to match — gentle regulation when you're overloaded, progressive strength when you're activated. No guilt, no streaks, just the right amount of movement for today.
 
 ## How it works
 
-1. **Check in.** A quick energy/sleep check-in maps you to one of four capacity states: `overloaded`, `recovering`, `regulated`, or `activated`.
+1. **Check in.** One tap on a mood tile ("Running on empty / A bit low / Steady / Buzzing") maps you to one of four capacity states: `overloaded`, `recovering`, `regulated`, or `activated`. Logging alone counts; a session is offered, never forced.
 2. **Get a session.** A pure session composer builds a sequence of exercise blocks (e.g. _regulate → mobilize → strengthen → downshift_) tuned to that state and how recently you've done each exercise.
 3. **Move, guided.** The session player walks you block by block with timed targets and spoken cues (`expo-speech`).
 4. **Reflect & adapt.** A post-session rating feeds per-exercise stats so future sessions get more personal over time.
 
 ## Features
 
-- Email / password authentication with persisted sessions (Supabase)
-- Onboarding flow for new users
-- Capacity check-in → state classification
+- No accounts: first launch → short onboarding (asks your name) → Home
+- All data on the device (AsyncStorage repository in `src/services/db`); "Erase all my data" in Profile
+- One-tap mood check-in → state classification
+- This-week-vs-last card
 - Adaptive session composer (state → exercise blocks), unit-tested as a pure function
 - Guided session player with timed blocks and voice cues
 - Session overview and post-session completion / rating
@@ -23,35 +24,27 @@ Instead of asking you to grind through a fixed workout, MoveKind starts with a s
 - Premium paywall (Stripe-ready placeholder)
 - Product analytics via PostHog (optional)
 - Gentle local notifications
-- Offline-first cache via AsyncStorage
+- Works fully offline (there is nothing to sync)
 
 ## Quickstart
 
 ```bash
 npm install
-cp .env.example .env
-# Fill in EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
-npx expo start
+npx expo start          # or: npm run go  (forces Expo Go)
 ```
 
 Press `i` for iOS Simulator, `a` for an Android emulator, or scan the QR code with the Expo Go app.
 
 > Requires the Expo SDK 57 toolchain (React Native 0.86, React 19.2). Node version is pinned in `.nvmrc`.
 
-## Supabase setup
+## Data & privacy
 
-1. Create a project at https://supabase.com.
-2. In the SQL editor, paste and run `supabase/schema.sql`. This creates all tables (profiles, check-ins, exercises, sessions, session blocks, post-ratings, user exercise stats), indexes, row-level security policies, and the exercise seed library.
-3. Copy your project URL and anon key into `.env`.
-
-When a new user signs up, a `profile` row is created automatically by the `handle_new_user` trigger.
+There is no backend. The exercise library ships in the app ([src/data/exercises.ts](src/data/exercises.ts)) and everything you log is stored on the device — see [DATABASE.md](DATABASE.md). Uninstalling the app deletes your data; device backups include it. The former Supabase schema is archived at [docs/archive/supabase-schema.sql](docs/archive/supabase-schema.sql) for a possible future server (e.g. small circles).
 
 ## Environment variables
 
 | Key | Required | Purpose |
 | --- | --- | --- |
-| `EXPO_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon public key |
 | `EXPO_PUBLIC_POSTHOG_API_KEY` | no | Enables PostHog product analytics. Telemetry is a no-op when unset. |
 | `EXPO_PUBLIC_POSTHOG_HOST` | no | PostHog host. Defaults to `https://us.i.posthog.com`. |
 
@@ -101,8 +94,6 @@ movekind-mvp/
 ├── app.json
 ├── global.css                  # NativeWind v4 entry
 ├── tailwind.config.js
-├── supabase/
-│   └── schema.sql              # Tables, RLS, policies, exercise seed
 ├── src/
 │   ├── components/             # UI primitives + session UI
 │   │   ├── home/               # MoodPicker, LoggedPanel, WeekView
@@ -110,20 +101,22 @@ movekind-mvp/
 │   │   ├── SessionPlayer.tsx
 │   │   ├── SessionComplete.tsx
 │   │   └── Paywall.tsx
+│   ├── data/exercises.ts       # Bundled exercise library (stable ids)
 │   ├── domain/
 │   │   ├── sessions/composer.ts   # Pure session composer (unit-tested)
+│   │   ├── sessions/applyRating.ts # Per-exercise stats update on rating
 │   │   ├── checkin/moods.ts       # Mood tiles → energy → capacity state
 │   │   └── insights/weekCompare.ts # This week vs last
 │   ├── screens/
-│   │   ├── auth/               # Onboarding, Sign in, Sign up
+│   │   ├── onboarding/         # First launch (name + preferences)
 │   │   └── main/               # Home, Journey, Profile
-│   ├── hooks/                  # useBootstrapData, useToast
-│   ├── services/              # supabase, telemetry, notifications, premium, profile, cache
-│   ├── store/                  # Zustand stores (auth, session, settings)
+│   ├── hooks/                  # useBehavioralProfile, useToast
+│   ├── services/              # db (local repository), telemetry, notifications, premium
+│   ├── store/                  # Zustand stores (profile, session, settings)
 │   ├── utils/                  # date, format
 │   ├── constants/              # colors, copy
 │   ├── types/                  # shared TypeScript types
-│   └── navigation/             # RootNavigator, AuthStack, TabNavigator
+│   └── navigation/             # RootNavigator, TabNavigator
 └── __tests__/                  # Unit + component tests
 ```
 
@@ -134,13 +127,9 @@ movekind-mvp/
 - Zustand stores avoid React-specific imports and are independently testable
 - Components are split by responsibility; no monolithic screens
 
-## Premium (Stripe)
+## Premium
 
-`src/services/premium.ts` defines the contract used by the paywall and `ProfileScreen`. It returns a stub today. To wire Stripe:
-
-1. Add `@stripe/stripe-react-native` to dependencies.
-2. Replace the body of `startCheckout()` with a call to a Supabase Edge Function that creates a Stripe Checkout session.
-3. Update `isPremium()` to read from `profiles.is_premium` (already present in the schema).
+Premium is a flag on the local profile (`useProfileStore`). `src/services/premium.ts` `startCheckout()` is a stub; until real billing is wired, the paywall offers a beta self-upgrade. The plan is App Store / Google Play billing (e.g. RevenueCat), which needs no server of our own. Pricing decision: see [ROADMAP.md](ROADMAP.md).
 
 ## License
 

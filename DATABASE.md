@@ -1,72 +1,47 @@
-# DATABASE.md — Supabase / Postgres
+# DATABASE.md — Local data model
 
-Source of truth: [supabase/schema.sql](supabase/schema.sql). TS mirror: [src/types/index.ts](src/types/index.ts).
-**Keep these two in sync** when changing the schema. All tables have **Row Level Security**;
-users can only see/modify their own rows.
+MoveKind is **local-first**: every byte of user data lives on the device. There is no backend,
+no account and no sync. The only data layer is [src/services/db/](src/services/db/index.ts);
+TS types live in [src/types/index.ts](src/types/index.ts). The former Supabase schema is kept for
+reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schema.sql).
+
+## Storage
+
+- **Engine:** AsyncStorage (works in Expo Go and dev/store builds). Each table is **one JSON
+  document** under the key `@movekind/db/<table>`, cached in memory after the first read.
+- **Writes are serialized per table** (a promise chain), so overlapping async writes — e.g. a
+  block completing while another is skipped — never lose rows.
+- **Corrupt or unreadable data** falls back to an empty table instead of crashing launch.
+- **Size:** a few rows a day — years of use stay in the low hundreds of KB.
+- **Backups:** iOS and Android device backups include app data. Uninstalling deletes it.
+  "Export my data" is a ROADMAP item.
 
 ## Tables
 
-### `profiles`
-`id` (uuid, = `auth.users.id`) · `name` · `is_premium` (bool, default false) · `created_at` · `updated_at`.
-Auto-created on signup by the `handle_new_user` trigger. RLS: select/insert/update own.
+| Key | Type | Notes |
+|---|---|---|
+| `profile` (single doc) | `Profile` | `id` (random install id — also the anonymous telemetry id and every row's `user_id`), `name` (optional, from onboarding), `is_premium`, `created_at`. Created on first read. |
+| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` (`good\|fair\|poor\|null`), `intention` (optional note), `engine_version`, `created_at`. **A day is one check-in:** re-picking today's mood updates the row. |
+| `sessions` | `Session` | `check_in_id` (null for the gentle reset), `state`, `status` (`generated\|started\|completed\|abandoned`), `engine_version`, `created_at`. |
+| `session_blocks` | `SessionBlock` | `session_id`, `exercise_id`, `block_order`, `target_duration` (s), `actual_duration` (s, nullable), `status` (`pending\|completed\|skipped\|swapped`), `created_at`. Read back joined to the exercise library (`BlockWithExercise`). |
+| `post_ratings` | `PostRating` | `session_id`, `rating_delta` −1…2, `notes`, `created_at`. |
+| `user_exercise_stats` | `UserExerciseStats` | Per exercise: `times_completed`, `average_energy_delta`, `last_completed_at`. **Written only by `db.ratings.add`.** |
 
-### `check_ins`
-`id` · `user_id` → profiles · `energy_score` (int **1–5**, checked) · `sleep_quality`
-(`good|fair|poor|null`) · `intention` (text, nullable — optional one-line intention set at
-check-in, reflected back at session end) · `engine_version` · `created_at`.
-Index: `(user_id, created_at desc)`. RLS: select/insert/update own —
-`check_ins_update_own` lets a user update only their own rows (used to add sleep/note after a
-one-tap check-in, or to change today's mood; a day is one check-in).
+## The exercise library
 
-### `exercises` (read-only library)
-`id` · `name` · `category` (`regulate|mobilize|strengthen|move|downshift`) ·
-`base_difficulty` (int 1–3) · `cues` (text[]) · `illustration_ref` · `created_at`.
-Index: `(category)`. RLS: **select=true for all** (shared library); no client writes.
-Seeded with **30 exercises** (6 per category) at the bottom of `schema.sql`.
+Not stored: it ships in the app as [src/data/exercises.ts](src/data/exercises.ts) (30 exercises,
+6 per category). **Ids are stable** (`ex-<category>-<n>`) because stats are keyed by them — never
+renumber; add new exercises with the next free index.
 
-### `sessions`
-`id` · `user_id` → profiles · `check_in_id` → check_ins (nullable; null for Safe Harbor) ·
-`state` (`overloaded|recovering|regulated|activated`) ·
-`status` (`generated|started|completed|abandoned`, default generated) · `engine_version` · `created_at`.
-Index: `(user_id, created_at desc)`. RLS: select/insert/update own.
+## The stats engine
 
-### `session_blocks`
-`id` · `session_id` → sessions · `exercise_id` → exercises · `block_order` (int) ·
-`target_duration` (sec) · `actual_duration` (sec, nullable) ·
-`status` (`pending|completed|skipped|swapped`, default pending) · `created_at`.
-Index: `(session_id)`. RLS: ownership checked via parent `sessions.user_id`.
+`db.ratings.add()` saves the rating, then runs the pure
+[`applyRating`](src/domain/sessions/applyRating.ts) over that session's **completed** blocks — an
+exact port of the former Postgres trigger: first time → `n=1, avg=delta`; otherwise
+`avg = (avg·n + delta)/(n+1)`, `n+1`. The composer reads these stats to personalize sessions.
 
-### `post_ratings`
-`id` · `session_id` → sessions · `rating_delta` (int **−1 to 2**, checked) · `notes` · `created_at`.
-Index: `(session_id)`. RLS via parent session. **Insert here fires the stats trigger.**
+## Changing the data model
 
-### `user_exercise_stats`
-`id` · `user_id` → profiles · `exercise_id` → exercises · `times_completed` ·
-`average_energy_delta` (numeric 3,2) · `average_session_completion_rate` (numeric 3,2) ·
-`last_completed_at`. **Unique `(user_id, exercise_id)`.** RLS: select own.
-**Written only by the trigger below**, never by the client.
-
-## Triggers / functions
-
-- **`handle_new_user()`** — `after insert on auth.users` → inserts a `profiles` row
-  (name from `raw_user_meta_data`). `security definer`.
-- **`sync_user_exercise_stats()`** — `after insert on post_ratings`. For every `completed`
-  block in that session it upserts `user_exercise_stats`, recomputing a running
-  `average_energy_delta` from the new `rating_delta`. This is the adaptive-personalization
-  engine the composer reads from. `security definer`.
-
-## ER sketch
-
-```
-auth.users ─1:1─ profiles ─1:N─ check_ins
-                     │
-                     ├─1:N─ sessions ─1:N─ session_blocks ─N:1─ exercises
-                     │            └─1:N─ post_ratings ──(trigger)──┐
-                     └─1:N─ user_exercise_stats ◄──────────────────┘
-```
-
-## Changing the schema — checklist
-1. Edit `supabase/schema.sql` (statements are idempotent: `if not exists`, `drop policy if exists`).
-2. Update the matching interface in `src/types/index.ts`.
-3. Update queries (see [API_MAP.md](API_MAP.md)) and this doc.
-4. Re-run the SQL in the Supabase SQL editor.
+Touch three places together: the repository ([src/services/db/](src/services/db/index.ts)), the
+types ([src/types/index.ts](src/types/index.ts)) and this file. Old stored rows simply lack new
+fields, so make new fields optional or default them when reading.
