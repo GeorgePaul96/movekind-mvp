@@ -13,7 +13,10 @@ interface SettingsState {
   reduceMotion: boolean;
   onboarded: boolean;
   onboardingAnswers: OnboardingAnswers | null;
+  /** The one-time "Before you move" safety notice has been read and accepted. */
+  safetyAcknowledged: boolean;
   hydrate: () => Promise<void>;
+  acknowledgeSafety: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
   completeOnboarding: (answers: OnboardingAnswers) => Promise<void>;
@@ -28,6 +31,7 @@ interface PersistedSettings {
   reduceMotion: boolean;
   onboarded: boolean;
   onboardingAnswers: OnboardingAnswers | null;
+  safetyAcknowledged: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -35,6 +39,7 @@ const DEFAULTS: PersistedSettings = {
   reduceMotion: false,
   onboarded: false,
   onboardingAnswers: null,
+  safetyAcknowledged: false,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -76,6 +81,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   completeOnboarding: async (answers) => {
     set({ onboarded: true, onboardingAnswers: answers });
     await write({ ...get(), onboarded: true, onboardingAnswers: answers });
+  },
+
+  acknowledgeSafety: async () => {
+    set({ safetyAcknowledged: true });
+    await write({ ...get(), safetyAcknowledged: true });
   },
 
   reset: async () => {

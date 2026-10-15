@@ -204,6 +204,35 @@ export const ONBOARDING_COPY = {
   namePlaceholder: 'Your name',
 } as const;
 
+/**
+ * One-time notice before any exercise. Kept to standard, conservative guidance:
+ * not medical advice; check with a doctor in the listed cases; the NHS inform pain guide;
+ * emergency signs. Do not add health claims here.
+ */
+export const SAFETY_COPY = {
+  tag: 'Before you move',
+  title: 'A few things to know first',
+  notAdvice:
+    "MoveKind suggests gentle exercises based on NHS and Mayo Clinic guidance. It isn't medical advice and doesn't replace your doctor or physiotherapist.",
+  checkFirstTitle: 'Check with a doctor before starting if you:',
+  checkFirst: [
+    'have a heart condition, or get chest pain when active',
+    'feel faint or dizzy when you exert yourself',
+    'are pregnant or have recently given birth',
+    'are recovering from surgery or an injury',
+    'have pain that is severe, unexplained or getting worse',
+  ],
+  painTitle: 'While you move',
+  pain: [
+    'Keep any discomfort mild — 5 out of 10 at most.',
+    'Stop if anything hurts in a new way or feels wrong.',
+    "Every exercise shows a 'Take care' note when its source gives one. Please read it.",
+  ],
+  emergency:
+    'Stop and get medical help straight away if you have chest pain, severe breathlessness, or feel faint.',
+  accept: 'I understand',
+} as const;
+
 export const PROFILE_COPY = {
   tag: 'Profile',
   premiumTitle: 'MoveKind Premium',

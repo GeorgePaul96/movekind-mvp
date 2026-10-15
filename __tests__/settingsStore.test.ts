@@ -59,3 +59,36 @@ describe('settingsStore', () => {
     expect(s.onboardingAnswers).toMatchObject(answers);
   });
 });
+
+describe('safety notice acknowledgement', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    await useSettingsStore.getState().reset();
+  });
+
+  it('starts unacknowledged so the notice shows before any exercise', async () => {
+    await useSettingsStore.getState().hydrate();
+    expect(useSettingsStore.getState().safetyAcknowledged).toBe(false);
+  });
+
+  it('persists the acknowledgement', async () => {
+    await useSettingsStore.getState().acknowledgeSafety();
+    expect(useSettingsStore.getState().safetyAcknowledged).toBe(true);
+    expect(JSON.parse(await AsyncStorage.getItem(KEY))).toMatchObject({ safetyAcknowledged: true });
+  });
+
+  it('"Erase all my data" brings the notice back', async () => {
+    await useSettingsStore.getState().acknowledgeSafety();
+    await useSettingsStore.getState().reset();
+    expect(useSettingsStore.getState().safetyAcknowledged).toBe(false);
+  });
+});
+
+describe('rootRoute (what the app shows first)', () => {
+  const { rootRoute } = require('../src/navigation/rootRoute');
+  it('onboarding → safety notice → app', () => {
+    expect(rootRoute({ onboarded: false, safetyAcknowledged: false })).toBe('Onboarding');
+    expect(rootRoute({ onboarded: true, safetyAcknowledged: false })).toBe('SafetyNotice');
+    expect(rootRoute({ onboarded: true, safetyAcknowledged: true })).toBe('Main');
+  });
+});
