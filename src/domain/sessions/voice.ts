@@ -14,6 +14,23 @@ export interface SpeechParams {
 }
 
 /**
+ * Playback speed for the pre-recorded voice clips (recorded at a calm 0.9 already).
+ * Slightly slower on low-energy days; never faster than recorded, never below 0.85
+ * so the voice stays natural.
+ */
+export function clipPlaybackRate(state: UserState): number {
+  switch (state) {
+    case 'overloaded':
+      return 0.88;
+    case 'recovering':
+      return 0.94;
+    case 'regulated':
+    case 'activated':
+      return 1;
+  }
+}
+
+/**
  * Per-capacity-state voice tuning for the guided player (Composer v3 companion).
  * Gentler, slower, fewer words when the user is depleted; brisker when activated.
  */
