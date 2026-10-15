@@ -48,6 +48,7 @@ export interface SessionBlock {
   target_duration: number; // in seconds
   actual_duration: number | null;
   status: 'pending' | 'completed' | 'skipped' | 'swapped';
+  created_at?: string;
 }
 
 export interface PostRating {
