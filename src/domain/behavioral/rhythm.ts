@@ -52,7 +52,7 @@ export function computeRhythm(sessions: Session[], now: Date = new Date()): Rhyt
       observation = 'Your rhythm is becoming more consistent.';
     } else if (secondHalfAvg < firstHalfAvg) {
       trajectory = 'fragmenting';
-      observation = "Your rhythm has loosened lately — that's okay.";
+      observation = "Your rhythm has loosened lately, and that's okay.";
     } else {
       trajectory = 'stable';
       observation = 'Your weekly rhythm is steady.';

@@ -237,7 +237,7 @@ export default function JourneyScreen() {
             <Text style={styles.sectionDesc}>
               Rhythm-over-time and return-rhythm trends are part of Premium's
               extended history. Your check-ins, sessions, and recovery insights
-              stay free — this just adds the long-term view whenever you're ready.
+              stay free. This just adds the long-term view whenever you're ready.
             </Text>
           </Card>
         )}

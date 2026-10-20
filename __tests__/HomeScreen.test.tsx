@@ -62,7 +62,7 @@ describe('<HomeScreen /> states', () => {
     const { getByText } = render(<HomeScreen />);
     expect(getByText("Running on empty. That's okay.")).toBeTruthy();
     expect(getByText('Start')).toBeTruthy();
-    expect(getByText("Not now — I'm done for today")).toBeTruthy();
+    expect(getByText("Not now, I'm done for today")).toBeTruthy();
   });
 
   it('done for today → the week view', () => {

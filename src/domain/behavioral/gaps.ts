@@ -45,7 +45,7 @@ export function computeGapProfile(sessions: Session[], now: Date = new Date()): 
       observation = 'Your gaps between sessions are shrinking.';
     } else if (recentAvg > earlierAvg + tolerance) {
       trend = 'growing';
-      observation = 'Your gaps between sessions have been growing — no judgment, just noticing.';
+      observation = 'Your gaps between sessions have been growing. No judgment, just noticing.';
     } else {
       trend = 'stable';
       observation = 'Your rhythm between sessions is holding steady.';

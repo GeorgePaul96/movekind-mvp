@@ -16,14 +16,14 @@ export const NOTIFICATION_LINES = [
   'Rest is part of progress. Your body deserves space to heal.',
   'A gentle walk counts. Always.',
   'Thank yourself for moving. Every bit matters.',
-  'No pressure — just check in with how your body feels today.',
+  'No pressure. Just check in with how your body feels today.',
 ];
 
 export const FALLBACK_INSIGHTS = [
-  'You are building a warm foundation. Small, consistent choices are working — keep going at your own comfortable pace.',
+  'You are building a warm foundation. Small, consistent choices are working. Keep going at your own comfortable pace.',
   'Your energy is quietly expanding. Consider a light, nourishing stretch today to integrate your progress.',
   'Strength comes from rhythm, not intensity. Keep moving gently and listening to your body.',
-  'You took a moment to reflect — that awareness is a powerful step forward.',
+  'You took a moment to reflect. That awareness is a powerful step forward.',
   'Trust the slow build. Recovery is where adaptation and healing actually happen.',
 ];
 
@@ -36,7 +36,7 @@ export const REFLECTION_PROMPTS = [
 
 export const BEHAVIORAL_FALLBACK: Record<RecoverySignal, { message: string }> = {
   returning: { message: "Glad you're here. Whenever you're ready, we'll meet you where you are." },
-  collapse: { message: "It's been a little while — and that's completely okay. One gentle check-in is enough." },
+  collapse: { message: "It's been a little while, and that's completely okay. One gentle check-in is enough." },
   spiral: { message: 'No pressure today. Even opening the app is a step. We keep it light.' },
   burnout_risk: { message: 'Your body might be asking for rest. A short, soft session is more than enough.' },
   thriving: { message: "You've found a beautiful rhythm. Keep listening to your body." },
@@ -45,20 +45,20 @@ export const BEHAVIORAL_FALLBACK: Record<RecoverySignal, { message: string }> = 
 
 export const RE_ENTRY_READINESS: Record<'high' | 'medium' | 'low', string> = {
   high: 'Your body looks ready for a fuller session today.',
-  medium: 'Meet yourself where you are — a moderate session fits today.',
+  medium: 'Meet yourself where you are. A moderate session fits today.',
   low: 'Gentle is enough today. Honor what your body is asking for.',
 };
 
 export const INTENTION = {
   label: 'One intention for today',
-  hint: 'Optional — a word or a line, just for you.',
+  hint: 'Optional. A word or a line, just for you.',
   placeholder: 'e.g. move gently, breathe, just show up',
   reflectionTitle: 'Your intention today',
 } as const;
 
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',
-  body: "The app hit a snag — nothing you did. Your progress is safe, and a fresh start is one tap away.",
+  body: "The app hit a snag, and it's nothing you did. Your progress is safe, and a fresh start is one tap away.",
   action: 'Start fresh',
 } as const;
 
@@ -67,7 +67,7 @@ export const NUDGE_COPY: Record<RecoverySignal, string> = {
   stable: "A few kind minutes of movement are here when you're ready.",
   returning: "Good to see you back. Whenever you're ready, we'll meet you where you are.",
   burnout_risk: 'Rest counts too. If you move today, keep it gentle and short.',
-  spiral: "No pressure at all — even opening the app counts. We're here.",
+  spiral: "No pressure at all. Even opening the app counts. We're here.",
   collapse: "Whenever you're ready, the smallest step is enough. We'll meet you there.",
 };
 
@@ -120,13 +120,13 @@ export const SLEEP_COPY: Record<'poor' | 'fair' | 'good', string> = {
 export const CHECKIN_COPY = {
   logged: 'Logged ✓',
   start: 'Start',
-  notNow: "Not now — I'm done for today",
+  notNow: "Not now, I'm done for today",
   sleepPrompt: 'Optional: how did you sleep?',
   addNote: '+ Add a note for today',
   notePlaceholder: 'e.g. move gently, breathe, just show up',
   saveNote: 'Save note',
   gentleReset: 'Too wiped to choose? Start a gentle reset',
-  saveFailed: "Couldn't save that — tap to try again.",
+  saveFailed: "Couldn't save that. Tap to try again.",
   updateFailed: "Couldn't save that. Try again in a moment.",
   changeToday: "Change today's check-in",
   anotherSession: 'Do another short session',
@@ -140,17 +140,17 @@ export const CHECKIN_COPY = {
 export const SESSION_COPY = {
   overviewTitle: "Today's session",
   why: {
-    overloaded: 'Today is about recovering. Expect slow breathing and gentle release — nothing strenuous.',
+    overloaded: 'Today is about recovering. Expect slow breathing and gentle release, nothing strenuous.',
     recovering: 'Today is about loosening up. Slow, easy movement to get things going without wearing you out.',
     regulated: 'A balanced day: joint prep, some bodyweight strength, and a calm finish.',
     activated: "You've got energy today, so there's a fuller strength block and a proper wind-down.",
   } as Record<UserState, string>,
   start: 'Start session',
-  discard: 'Not this one — go back',
+  discard: 'Not this one, go back',
   discardHint: 'Discards this session. Your check-in stays logged.',
   progress: (n: number, total: number) => `${n} of ${total}`,
   /** NHS inform pain guide: keep discomfort at 5/10 or below; stop on new pain. */
-  painReminder: 'Keep any discomfort mild — 5 out of 10 at most. Stop if anything hurts or feels wrong.',
+  painReminder: 'Keep any discomfort mild, no more than 5 out of 10. Stop if anything hurts or feels wrong.',
   cautionsTitle: 'Take care',
   sourceLabel: (name: string) => `Source: ${name}`,
   sourceHint: 'Opens the page this exercise is based on',
@@ -191,8 +191,8 @@ export const PAYWALL_COPY = {
   restored: (delta: string) => `In your first sessions you felt about ${delta} points better per session, on average.`,
   bestCategory: (category: string) => `${category} sessions seem to help you most.`,
   pitch:
-    'Premium unlocks your full Journey — all your history, long-term trends, and your Personal Playbook — plus extra exercise packs. Checking in, sessions, recovery and voice guidance stay free, always.',
-  upgrade: 'Get Premium — $4.99/month',
+    'Premium unlocks your full Journey (all your history, long-term trends and your Personal Playbook) plus extra exercise packs. Checking in, sessions, recovery and voice guidance stay free, always.',
+  upgrade: 'Get Premium for $4.99/month',
   upgradeA11y: 'Get Premium, 4 dollars 99 cents per month',
   later: 'Maybe later',
 } as const;
@@ -200,7 +200,7 @@ export const PAYWALL_COPY = {
 export const ONBOARDING_COPY = {
   nameTag: 'Welcome to MoveKind',
   nameTitle: 'What should we call you?',
-  nameSubtitle: 'Optional. It stays on this phone — there are no accounts.',
+  nameSubtitle: 'Optional. It stays on this phone, and there are no accounts.',
   namePlaceholder: 'Your name',
 } as const;
 
@@ -224,7 +224,7 @@ export const SAFETY_COPY = {
   ],
   painTitle: 'While you move',
   pain: [
-    'Keep any discomfort mild — 5 out of 10 at most.',
+    'Keep any discomfort mild, no more than 5 out of 10.',
     'Stop if anything hurts in a new way or feels wrong.',
     "Every exercise shows a 'Take care' note when its source gives one. Please read it.",
   ],
@@ -238,7 +238,7 @@ export const PROFILE_COPY = {
   premiumTitle: 'MoveKind Premium',
   premiumDesc:
     'Your full Journey history, long-term trends, and extra exercise packs. Checking in and sessions stay free, always.',
-  premiumActive: "You're a Premium member — thank you.",
+  premiumActive: "You're a Premium member. Thank you.",
   premiumComingSoonTitle: 'Premium is coming soon',
   premiumComingSoonBody: "We're putting the finishing touches on Premium. Everything you use today stays free.",
   nameLabel: 'Name',

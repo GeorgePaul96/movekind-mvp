@@ -37,11 +37,11 @@ export function computeFollowThrough(sessions: Session[]): FollowThrough {
   const pct = Math.round(completionRate * 100);
   let observation: string;
   if (completionRate >= 0.8) {
-    observation = `You finish what you start — about ${pct}% of the sessions you begin.`;
+    observation = `You finish what you start, about ${pct}% of the sessions you begin.`;
   } else if (completionRate >= 0.5) {
     observation = `You complete around ${pct}% of the sessions you start. That's real follow-through.`;
   } else {
-    observation = `Starting counts too — every session you begin builds trust (${pct}% completed so far).`;
+    observation = `Starting counts too. Every session you begin builds trust (${pct}% completed so far).`;
   }
   if (trend === 'building') observation += " And it's been climbing lately.";
 

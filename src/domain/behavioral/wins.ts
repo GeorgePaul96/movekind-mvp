@@ -38,7 +38,7 @@ export function detectWins(
   }
 
   if (gaps.trend === 'shrinking') {
-    wins.push({ type: 'gap_shrinking', observation: "The space between your sessions is shrinking — you're returning more easily.", at: lastCompletedMs });
+    wins.push({ type: 'gap_shrinking', observation: "The space between your sessions is shrinking. You're returning more easily.", at: lastCompletedMs });
   }
 
   if (rhythm.trajectory === 'stabilizing' || rhythm.trajectory === 'stable') {

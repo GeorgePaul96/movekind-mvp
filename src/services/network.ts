@@ -10,7 +10,7 @@
 
 /** Calm copy shown when the user appears to be offline. Never blames them. */
 export const NETWORK_ERROR_MESSAGE =
-  "You seem to be offline. Nothing's lost — we'll pick up right where you are once you're reconnected.";
+  "You seem to be offline. Nothing's lost, and we'll pick up right where you are once you're reconnected.";
 
 const NETWORK_HINTS = [
   'network request failed',
