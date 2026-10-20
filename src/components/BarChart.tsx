@@ -17,32 +17,32 @@ interface Props {
 
 /**
  * Minimal, dependency-free bar chart that matches the prototype.
- * Pure RN views — no native chart deps required for first render.
+ * Pure RN views, no native chart deps required for first render.
  */
 export function BarChart({ data, color, highlightColor, max, unit }: Props) {
   const computedMax = Math.max(max ?? 0, ...data.map((d) => d.value), 1);
   return (
     <View>
-      <View style={styles.chart}>
+      {/* Bars live in a fixed-height plot; labels sit in their own row below it, so a
+          full-height bar can never push a label into the text underneath the chart. */}
+      <View style={styles.chart} testID="bar-plot">
         {data.map((d, i) => {
-          const ratio = Math.max(0.04, d.value / computedMax);
+          const ratio = Math.min(1, Math.max(0.04, d.value / computedMax));
           const isLast = i === data.length - 1;
           const bg = isLast && highlightColor ? highlightColor : color;
           return (
             <View key={d.label} style={styles.col}>
-              <View
-                style={[
-                  styles.bar,
-                  {
-                    height: `${ratio * 100}%`,
-                    backgroundColor: bg,
-                  },
-                ]}
-              />
-              <Text style={styles.label}>{d.label}</Text>
+              <View testID="bar" style={[styles.bar, { height: `${ratio * 100}%`, backgroundColor: bg }]} />
             </View>
           );
         })}
+      </View>
+      <View style={styles.labels}>
+        {data.map((d) => (
+          <Text key={d.label} style={styles.label} numberOfLines={1}>
+            {d.label}
+          </Text>
+        ))}
       </View>
       {unit ? <Text style={styles.unit}>{unit}</Text> : null}
     </View>
@@ -56,18 +56,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 6,
   },
-  col: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
+  col: { flex: 1, height: '100%', justifyContent: 'flex-end' },
   bar: { width: '100%', borderRadius: 6 },
+  labels: { flexDirection: 'row', gap: 6, marginTop: 4 },
   label: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: 13,
     color: colors.textMuted,
     textTransform: 'uppercase',
-    marginTop: 4,
   },
   unit: {
     fontSize: 13,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: 6,
     textAlign: 'right',
   },
 });
