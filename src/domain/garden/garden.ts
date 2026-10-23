@@ -80,8 +80,10 @@ export function gardenState(input: GardenInput, now: Date): GardenState {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, { energy }]) => ({ day, mood: mapEnergyToState(energy) }));
 
+  // Resting means "away for a while", so a brand-new garden (nothing logged yet) is awake.
+  const everything = [...water, ...workouts, ...checkIns];
   const awakeSince = since(startOfLocalDay(now, -(QUIET_DAYS_BEFORE_REST - 1)));
-  const resting = ![...water, ...workouts, ...checkIns].some(awakeSince);
+  const resting = everything.length > 0 && !everything.some(awakeSince);
 
   return {
     stream,

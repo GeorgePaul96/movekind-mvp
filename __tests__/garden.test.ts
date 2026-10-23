@@ -11,8 +11,12 @@ const glasses = (n: number, day = 20) => Array.from({ length: n }, (_, i) => ({ 
 describe('gardenState', () => {
   it('empty input is a calm sprout garden', () => {
     expect(gardenState(empty, NOW)).toEqual({
-      stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: true,
+      stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false,
     });
+  });
+
+  it('a brand-new garden is awake, not resting (resting means away, not new)', () => {
+    expect(gardenState(empty, NOW).resting).toBe(false);
   });
 
   it('one glass makes the stream visibly fuller', () => {

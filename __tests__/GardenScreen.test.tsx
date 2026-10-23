@@ -42,7 +42,7 @@ describe('<GardenScreen />', () => {
     expect(save.props.accessibilityState?.disabled).toBe(true);
     fireEvent.press(getByText(WORKOUT_COPY.types.walk));
     expect(getByLabelText(WORKOUT_COPY.save).props.accessibilityState?.disabled).toBe(true);
-    fireEvent.press(getByText(WORKOUT_COPY.minutes(20)));
+    fireEvent.press(getByLabelText(WORKOUT_COPY.durationA11y(20)));
     expect(getByLabelText(WORKOUT_COPY.save).props.accessibilityState?.disabled).toBe(false);
   });
 
@@ -50,7 +50,7 @@ describe('<GardenScreen />', () => {
     const { getByLabelText, getByText, findByText, queryByText } = render(<GardenScreen />);
     fireEvent.press(getByLabelText(GARDEN_COPY.workoutA11y));
     fireEvent.press(getByText(WORKOUT_COPY.types.yoga));
-    fireEvent.press(getByText(WORKOUT_COPY.minutes(30)));
+    fireEvent.press(getByLabelText(WORKOUT_COPY.durationA11y(30)));
     fireEvent.press(getByLabelText(WORKOUT_COPY.save));
     expect(await findByText(WORKOUT_COPY.entry('yoga', 30))).toBeTruthy();
     await waitFor(() => expect(queryByText(WORKOUT_COPY.title)).toBeNull());

@@ -7,7 +7,7 @@ import { WORKOUT_COPY } from '@/constants/copy';
 import type { WorkoutType } from '@/types';
 
 const TYPES: WorkoutType[] = ['walk', 'run', 'yoga', 'gym', 'cycle', 'sport', 'dance', 'other'];
-const PER_ROW = 4;
+const PER_ROW = 3; // keeps every label on one line, even on small phones
 
 interface Props {
   visible: boolean;
@@ -29,7 +29,9 @@ export function WorkoutSheet({ visible, initial, onSave, onClose }: Props) {
     }
   }, [visible, initial]);
 
-  const rows = [TYPES.slice(0, PER_ROW), TYPES.slice(PER_ROW)];
+  const rows = Array.from({ length: Math.ceil(TYPES.length / PER_ROW) }, (_, i) =>
+    TYPES.slice(i * PER_ROW, (i + 1) * PER_ROW),
+  );
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -47,7 +49,13 @@ export function WorkoutSheet({ visible, initial, onSave, onClose }: Props) {
           <Text style={styles.subtitle}>{WORKOUT_COPY.lengthTitle}</Text>
           <View style={styles.row}>
             {WORKOUT_COPY.durations.map((m) => (
-              <Chip key={m} label={WORKOUT_COPY.minutes(m)} selected={minutes === m} onPress={() => setMinutes(m)} />
+              <Chip
+                key={m}
+                label={WORKOUT_COPY.durationChip(m)}
+                accessibilityLabel={WORKOUT_COPY.durationA11y(m)}
+                selected={minutes === m}
+                onPress={() => setMinutes(m)}
+              />
             ))}
           </View>
 

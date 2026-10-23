@@ -93,7 +93,7 @@ export const GARDEN_COPY = {
 
 export const WORKOUT_COPY = {
   title: 'What did you do?',
-  lengthTitle: 'About how long?',
+  lengthTitle: 'About how many minutes?',
   save: 'Add to my garden',
   update: 'Save changes',
   cancel: 'Not now',
@@ -112,6 +112,9 @@ export const WORKOUT_COPY = {
   } as Record<WorkoutType, string>,
   durations: [10, 20, 30, 45, 60] as const,
   minutes: (m: number) => (m >= 60 ? '1 hr+' : `${m} min`),
+  /** Short chip label; the question above says "minutes". */
+  durationChip: (m: number) => (m >= 60 ? '60+' : String(m)),
+  durationA11y: (m: number) => (m >= 60 ? 'An hour or more' : `${m} minutes`),
   entry: (type: WorkoutType, m: number) => `${WORKOUT_COPY.names[type]} · ${WORKOUT_COPY.minutes(m)}`,
   edit: 'Edit',
   delete: 'Delete',

@@ -9,10 +9,11 @@ import { useReduceMotion } from '@/hooks/useReduceMotion';
 const TICK_MS = 100; // gentle motion only: 10 updates a second is plenty
 const BLADES = 24;
 const MAX_FLOWERS = 28;
+const VIEW_W = 290;
+const VIEW_H = 250;
 
 interface Props {
   state: GardenState;
-  height?: number;
 }
 
 /**
@@ -20,7 +21,7 @@ interface Props {
  * (steps), tree (workouts), flowers (moods). It only grows or rests; resting swaps the
  * sun for a moon and changes nothing else. Holds still when the phone asks for less motion.
  */
-export function Garden({ state, height = 250 }: Props) {
+export function Garden({ state }: Props) {
   const reduceMotion = useReduceMotion();
   const [phase, setPhase] = useState(0);
 
@@ -34,8 +35,14 @@ export function Garden({ state, height = 250 }: Props) {
   const bladeHeight = 6 + state.grass * 5;
 
   return (
-    <View accessible accessibilityRole="image" accessibilityLabel={GARDEN_COPY.a11ySummary(state)}>
-      <Svg width="100%" height={height} viewBox="0 0 290 250" preserveAspectRatio="xMidYMid slice">
+    <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={GARDEN_COPY.a11ySummary(state)}
+      style={{ width: '100%', aspectRatio: VIEW_W / VIEW_H }}
+    >
+      {/* Keeps the scene's own proportions so nothing (sun, grass, flowers) is ever cropped. */}
+      <Svg width="100%" height="100%" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
         <Rect width="290" height="250" fill={state.resting ? c.skyRest : c.sky} />
         {state.resting ? (
           <G testID="moon">

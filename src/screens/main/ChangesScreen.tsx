@@ -51,13 +51,13 @@ export default function ChangesScreen() {
         <View style={styles.compare}>
           <View style={styles.half} testID="garden-then">
             <View style={styles.mini}>
-              <Garden state={gardenState({ ...input, stepsToday: null }, monthAgo)} height={130} />
+              <Garden state={gardenState({ ...input, stepsToday: null }, monthAgo)} />
             </View>
             <Text style={styles.caption}>{CHANGES_COPY.then}</Text>
           </View>
           <View style={styles.half} testID="garden-now">
             <View style={styles.mini}>
-              <Garden state={gardenState(input, now)} height={130} />
+              <Garden state={gardenState(input, now)} />
             </View>
             <Text style={styles.caption}>{CHANGES_COPY.now}</Text>
           </View>
