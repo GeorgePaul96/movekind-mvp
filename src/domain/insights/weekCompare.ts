@@ -11,6 +11,9 @@ export interface WeekComparison {
   daily: (UserState | null)[];
 }
 
+import { isSameLocalDay, weekBounds } from '@/domain/garden/days';
+export { isSameLocalDay, weekBounds };
+
 /** Monday = 0 … Sunday = 6. */
 function weekdayIndex(d: Date): number {
   return (d.getDay() + 6) % 7;
@@ -18,17 +21,6 @@ function weekdayIndex(d: Date): number {
 
 function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-export function isSameLocalDay(a: Date, b: Date): boolean {
-  return dayKey(a) === dayKey(b);
-}
-
-export function weekBounds(now: Date): { lastStart: Date; thisStart: Date; nextStart: Date } {
-  const thisStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - weekdayIndex(now));
-  const lastStart = new Date(thisStart.getFullYear(), thisStart.getMonth(), thisStart.getDate() - 7);
-  const nextStart = new Date(thisStart.getFullYear(), thisStart.getMonth(), thisStart.getDate() + 7);
-  return { lastStart, thisStart, nextStart };
 }
 
 export function compareWeeks(
