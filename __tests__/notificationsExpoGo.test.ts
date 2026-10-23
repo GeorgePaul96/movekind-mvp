@@ -28,5 +28,7 @@ describe('notifications service in Expo Go on Android', () => {
     await expect(svc.initNotifications()).resolves.toBeUndefined();
     await expect(svc.scheduleAdaptiveNudge('stable')).resolves.toBeUndefined();
     await expect(svc.sendNow('hi')).resolves.toBeUndefined();
+    await expect(svc.enableDailyReminder()).resolves.toBe(false);
+    await expect(svc.disableDailyReminder()).resolves.toBeUndefined();
   });
 });

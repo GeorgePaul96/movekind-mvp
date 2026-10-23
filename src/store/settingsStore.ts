@@ -1,25 +1,15 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export interface OnboardingAnswers {
-  movementFeel: string;
-  appFatigueReason: string;
-  approachableMovements: string[];
-  averageEnergy: number;
-}
-
 interface SettingsState {
+  /** The optional 9am reminder. Off until the user turns it on in Me. */
   notificationsEnabled: boolean;
   reduceMotion: boolean;
   onboarded: boolean;
-  onboardingAnswers: OnboardingAnswers | null;
-  /** The one-time "Before you move" safety notice has been read and accepted. */
-  safetyAcknowledged: boolean;
   hydrate: () => Promise<void>;
-  acknowledgeSafety: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
-  completeOnboarding: (answers: OnboardingAnswers) => Promise<void>;
+  completeOnboarding: () => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -30,23 +20,25 @@ interface PersistedSettings {
   notificationsEnabled: boolean;
   reduceMotion: boolean;
   onboarded: boolean;
-  onboardingAnswers: OnboardingAnswers | null;
-  safetyAcknowledged: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
-  notificationsEnabled: true,
+  notificationsEnabled: false,
   reduceMotion: false,
   onboarded: false,
-  onboardingAnswers: null,
-  safetyAcknowledged: false,
 };
 
 async function read(): Promise<PersistedSettings> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
-    return { ...DEFAULTS, ...(JSON.parse(raw) as PersistedSettings) };
+    const v = JSON.parse(raw) as Partial<PersistedSettings>;
+    // Only known keys: older versions stored fields (safety notice, onboarding answers) we no longer use.
+    return {
+      notificationsEnabled: v.notificationsEnabled ?? DEFAULTS.notificationsEnabled,
+      reduceMotion: v.reduceMotion ?? DEFAULTS.reduceMotion,
+      onboarded: v.onboarded ?? DEFAULTS.onboarded,
+    };
   } catch {
     return DEFAULTS;
   }
@@ -60,32 +52,32 @@ async function write(value: PersistedSettings): Promise<void> {
   }
 }
 
+const persisted = (s: PersistedSettings): PersistedSettings => ({
+  notificationsEnabled: s.notificationsEnabled,
+  reduceMotion: s.reduceMotion,
+  onboarded: s.onboarded,
+});
+
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   ...DEFAULTS,
 
   hydrate: async () => {
-    const v = await read();
-    set(v);
+    set(await read());
   },
 
   setNotificationsEnabled: async (v) => {
     set({ notificationsEnabled: v });
-    await write({ ...get(), notificationsEnabled: v });
+    await write(persisted(get()));
   },
 
   setReduceMotion: async (v) => {
     set({ reduceMotion: v });
-    await write({ ...get(), reduceMotion: v });
+    await write(persisted(get()));
   },
 
-  completeOnboarding: async (answers) => {
-    set({ onboarded: true, onboardingAnswers: answers });
-    await write({ ...get(), onboarded: true, onboardingAnswers: answers });
-  },
-
-  acknowledgeSafety: async () => {
-    set({ safetyAcknowledged: true });
-    await write({ ...get(), safetyAcknowledged: true });
+  completeOnboarding: async () => {
+    set({ onboarded: true });
+    await write(persisted(get()));
   },
 
   reset: async () => {
@@ -93,4 +85,3 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await write(DEFAULTS);
   },
 }));
-

@@ -41,9 +41,7 @@ describe('profileStore (no accounts)', () => {
   it('eraseAll wipes data, returns to onboarding and starts a new profile', async () => {
     await useProfileStore.getState().hydrate();
     const oldId = useProfileStore.getState().profile!.id;
-    await useSettingsStore.getState().completeOnboarding({
-      movementFeel: 'gentle', appFatigueReason: 'streaks', approachableMovements: ['walk'], averageEnergy: 5,
-    });
+    await useSettingsStore.getState().completeOnboarding();
     await db.checkIns.add({ energy_score: 4, sleep_quality: null, intention: null, engine_version: 'v3.0' });
 
     await useProfileStore.getState().eraseAll();

@@ -363,3 +363,31 @@ export const CHANGES_COPY = {
   weekOf: (d: Date) => `Week of ${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`,
   emptyWeek: 'No flowers this week',
 } as const;
+
+export const REMINDER_COPY = {
+  body: 'Your garden is here whenever you are. A glass of water counts.',
+} as const;
+
+/** The Me tab. */
+export const ME_COPY = {
+  tag: 'Me',
+  reminderTitle: 'Daily reminder',
+  reminderLabel: 'Daily reminder at 9am',
+  reminderBody: 'One gentle note each morning. Off unless you turn it on.',
+  reminderDenied: "Notifications are off for MoveKind in your phone's settings, so the reminder can't be sent.",
+} as const;
+
+/** The one screen after the name: how the garden grows. */
+export const GARDEN_INTRO_COPY = {
+  tag: 'Your garden',
+  title: 'A garden that grows with you',
+  lines: [
+    { emoji: '💧', text: 'Water makes the stream flow' },
+    { emoji: '👣', text: 'Steps grow the grass' },
+    { emoji: '🌳', text: 'Workouts grow the tree' },
+    { emoji: '🌸', text: 'Each mood check-in plants a flower' },
+  ],
+  promise: 'Nothing ever wilts. If you are away, your garden simply rests until you are back.',
+  start: 'Start my garden',
+  next: 'Continue',
+} as const;

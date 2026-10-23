@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
-import { nudgeBodyFor } from '@/constants/copy';
+import { nudgeBodyFor, REMINDER_COPY } from '@/constants/copy';
 import type { RecoverySignal } from '@/domain/behavioral/types';
 
 type NotificationsModule = typeof import('expo-notifications');
@@ -79,5 +79,52 @@ export async function sendNow(body: string): Promise<void> {
     });
   } catch {
     // ignore — notifications are best effort
+  }
+}
+
+const REMINDER_KIND = 'daily-reminder';
+/** Scheduled by the old session app; cleared so a reminder the user never chose stops firing. */
+const LEGACY_KINDS = ['daily-nudge'];
+
+async function cancelReminders(): Promise<void> {
+  if (!Notifications) return;
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const n of scheduled) {
+    const kind = n.content.data?.kind;
+    if (kind === REMINDER_KIND || LEGACY_KINDS.includes(kind as string)) {
+      await Notifications.cancelScheduledNotificationAsync(n.identifier);
+    }
+  }
+}
+
+/**
+ * Turns on the one optional daily reminder (9:00, local). Asks for permission only now,
+ * never at launch. Resolves false when notifications are unavailable or not allowed.
+ */
+export async function enableDailyReminder(): Promise<boolean> {
+  if (!Notifications) return false;
+  try {
+    let { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') status = (await Notifications.requestPermissionsAsync()).status;
+    if (status !== 'granted') return false;
+
+    await cancelReminders();
+    await Notifications.scheduleNotificationAsync({
+      content: { title: 'MoveKind', body: REMINDER_COPY.body, data: { kind: REMINDER_KIND } },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: 9, minute: 0 },
+    });
+    return true;
+  } catch (err) {
+    console.warn('Could not schedule the daily reminder:', err);
+    return false;
+  }
+}
+
+/** Turns the reminder off (and clears any reminder the old app scheduled). */
+export async function disableDailyReminder(): Promise<void> {
+  try {
+    await cancelReminders();
+  } catch {
+    // best effort
   }
 }

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
-import { PROFILE_COPY } from '@/constants/copy';
+import { ME_COPY, PROFILE_COPY } from '@/constants/copy';
 import { useProfileStore } from '@/store/profileStore';
-import { startCheckout } from '@/services/premium';
-import { PRO_PLAN_LIVE } from '@/domain/premium/entitlements';
+import { useSettingsStore } from '@/store/settingsStore';
+import { disableDailyReminder, enableDailyReminder } from '@/services/notifications';
 
 export default function ProfileScreen() {
   const profile = useProfileStore((s) => s.profile);
@@ -34,13 +34,20 @@ export default function ProfileScreen() {
     }
   };
 
-  const onPremium = async () => {
-    const result = await startCheckout(profile?.id ?? '');
-    if (result) {
-      Alert.alert('Premium', `Continue to: ${result.url}`);
-    } else {
-      Alert.alert(PROFILE_COPY.premiumComingSoonTitle, PROFILE_COPY.premiumComingSoonBody);
+  const reminderOn = useSettingsStore((s) => s.notificationsEnabled);
+  const setReminderOn = useSettingsStore((s) => s.setNotificationsEnabled);
+  const [reminderDenied, setReminderDenied] = useState(false);
+
+  const onReminder = async (on: boolean) => {
+    setReminderDenied(false);
+    if (!on) {
+      await setReminderOn(false);
+      await disableDailyReminder();
+      return;
     }
+    const ok = await enableDailyReminder();
+    if (ok) await setReminderOn(true);
+    else setReminderDenied(true);
   };
 
   const onErase = () => {
@@ -58,7 +65,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <Header tag={PROFILE_COPY.tag} title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
+      <Header tag={ME_COPY.tag} title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.label}>{PROFILE_COPY.nameLabel}</Text>
@@ -76,21 +83,22 @@ export default function ProfileScreen() {
         <Button label={saving ? 'Saving…' : 'Save changes'} onPress={onSave} loading={saving} />
       </Card>
 
-      {/* Hidden until the Pro plan launches — MoveKind is free for now. */}
-      {PRO_PLAN_LIVE && (
-        <Card style={{ marginBottom: 12 }}>
-          <Text style={styles.label}>{PROFILE_COPY.premiumTitle}</Text>
-          <Text style={styles.body}>
-            {profile?.is_premium ? PROFILE_COPY.premiumActive : PROFILE_COPY.premiumDesc}
-          </Text>
-          <View style={{ height: 8 }} />
-          <Button
-            label={profile?.is_premium ? 'Manage premium' : 'Learn about premium'}
-            variant="secondary"
-            onPress={onPremium}
+      <Card style={{ marginBottom: 12 }}>
+        <Text style={styles.label}>{ME_COPY.reminderTitle}</Text>
+        <View style={styles.switchRow}>
+          <Text style={[styles.body, { flex: 1 }]}>{ME_COPY.reminderBody}</Text>
+          <Switch
+            value={reminderOn}
+            onValueChange={(v) => {
+              onReminder(v).catch((e) => console.warn('Could not change the reminder:', e));
+            }}
+            accessibilityLabel={ME_COPY.reminderLabel}
+            trackColor={{ true: colors.primary, false: colors.border }}
+            thumbColor={colors.surface}
           />
-        </Card>
-      )}
+        </View>
+        {reminderDenied && <Text style={[styles.body, { marginTop: 8 }]}>{ME_COPY.reminderDenied}</Text>}
+      </Card>
 
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.label}>{PROFILE_COPY.dataTitle}</Text>
@@ -122,4 +130,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   body: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
 });

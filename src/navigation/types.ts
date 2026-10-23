@@ -9,5 +9,4 @@ export type TabParamList = {
 export type RootStackParamList = {
   Main: NavigatorScreenParams<TabParamList>;
   Onboarding: undefined;
-  SafetyNotice: undefined;
 };

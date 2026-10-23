@@ -1,12 +1,9 @@
 /**
  * What the app shows first. Pure so it can be tested.
- * Onboarding → the one-time "Before you move" safety notice → the app.
- * No exercise is ever reachable before the safety notice has been accepted.
+ * First launch → onboarding (a name, then how the garden grows) → the app.
  */
-export type RootRoute = 'Onboarding' | 'SafetyNotice' | 'Main';
+export type RootRoute = 'Onboarding' | 'Main';
 
-export function rootRoute(s: { onboarded: boolean; safetyAcknowledged: boolean }): RootRoute {
-  if (!s.onboarded) return 'Onboarding';
-  if (!s.safetyAcknowledged) return 'SafetyNotice';
-  return 'Main';
+export function rootRoute(s: { onboarded: boolean }): RootRoute {
+  return s.onboarded ? 'Main' : 'Onboarding';
 }
