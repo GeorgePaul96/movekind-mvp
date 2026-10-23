@@ -17,6 +17,24 @@ that says in plain sentences what activity is changing. Design:
 | Release 2 | Camera heart rate (finger on camera, FFT of brightness; morning resting reading + optional after-workout recovery reading, framed as a wellness estimate). More from Apple Health / Health Connect (automatic workouts, body composition from scales/watches people already own). | after validation |
 | Later | A creature living in the garden (owner designs it, likely in Rive). | after validation |
 
+### Garden ideas backlog (owner's ideas, 2026-10-23; the garden is the selling point)
+
+- **Looks:** a winding, curvy river with a curvy flow line (not a straight line); grass as small
+  bendable V tufts, not single strokes.
+- **Heart rate in the garden (release 2):** relate it to time of day / season / weather rather
+  than a number, e.g. a calm resting heart gives a still, clear morning.
+- **Time of day and seasons:** dawn / day / dusk / night skies from the phone's clock; seasons
+  from the calendar.
+- **The full range of feelings:** the garden should be able to show every mood, not only
+  "good". Owner's example: when someone is sick, a dirty garden, a cloudy river, still water.
+  *Claude's caution:* show hard days as **weather and atmosphere** (rain, fog, a grey cloudy
+  river, a sheltering tree, wildflowers that only bloom in rain), never as **decay or dirt**.
+  Sick or sad is not a failure; a dirty garden reads as "you let it go", which breaks the
+  no-guilt promise and makes people avoid the app exactly when they feel worst. Hard-day
+  scenes should be as beautiful as sunny ones, and recover by themselves.
+- A "how are you feeling physically" option (e.g. unwell) alongside the four moods, to drive
+  the weather above.
+
 **Not doing:** exercise instructions, calorie counting, weight/BMI, anything that judges bodies,
 targets, streaks, scores, public comparison.
 

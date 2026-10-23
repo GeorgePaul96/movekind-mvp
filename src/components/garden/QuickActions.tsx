@@ -18,7 +18,6 @@ export function QuickActions({ glassesToday, stepsToday, onWater, onUndoWater, o
     <View>
       <View style={styles.row}>
         <ActionTile
-          primary
           emoji="💧"
           label={GARDEN_COPY.water}
           detail={GARDEN_COPY.glasses(glassesToday)}

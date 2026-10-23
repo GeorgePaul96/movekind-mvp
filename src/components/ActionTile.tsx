@@ -9,13 +9,14 @@ interface Props {
   onPress: () => void;
   accessibilityLabel: string;
   accessibilityHint?: string;
-  /** The one main action: solid green. Others are outlined. */
-  primary?: boolean;
   disabled?: boolean;
 }
 
-/** A big, square-ish logging button (the garden's Water / Workout / Steps). Always clearly tappable. */
-export function ActionTile({ emoji, label, detail, onPress, accessibilityLabel, accessibilityHint, primary, disabled }: Props) {
+/**
+ * A big, square-ish logging button (the garden's Water / Workout / Steps): white tile, green
+ * outline, dark text. All three look alike so none reads as more important or hard to read.
+ */
+export function ActionTile({ emoji, label, detail, onPress, accessibilityLabel, accessibilityHint, disabled }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -24,13 +25,13 @@ export function ActionTile({ emoji, label, detail, onPress, accessibilityLabel, 
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.tile, primary && styles.primary, pressed && !disabled && styles.pressed]}
+      style={({ pressed }) => [styles.tile, pressed && !disabled && styles.pressed]}
     >
       <Text style={styles.emoji} importantForAccessibility="no" accessibilityElementsHidden>
         {emoji}
       </Text>
-      <Text style={[styles.label, primary && styles.onPrimary]}>{label}</Text>
-      <Text style={[styles.detail, primary && styles.onPrimary]}>{detail}</Text>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.detail}>{detail}</Text>
     </Pressable>
   );
 }
@@ -47,10 +48,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 8,
   },
-  primary: { backgroundColor: colors.primary },
-  pressed: { transform: [{ scale: 0.97 }] },
+  pressed: { backgroundColor: colors.primarySoft, transform: [{ scale: 0.97 }] },
   emoji: { fontSize: 24, marginBottom: 2 },
-  label: { fontSize: 15, fontWeight: '800', color: colors.primary },
+  label: { fontSize: 15, fontWeight: '800', color: colors.textPrimary },
   detail: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
-  onPrimary: { color: colors.onPrimary },
 });
