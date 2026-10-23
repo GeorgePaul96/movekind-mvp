@@ -60,6 +60,31 @@ export const stateColors = {
 
 export type CapacityState = keyof typeof stateColors;
 
+/**
+ * The garden illustration (src/components/garden/Garden.tsx). Decorative only: no text
+ * or control ever sits on these, and the garden has a spoken summary, so they are exempt
+ * from the contrast pairs. Mood flowers use `stateColors[mood].tint`.
+ */
+export const gardenColors = {
+  sky: '#FCE3C4',
+  skyRest: '#DCE3EE',
+  sun: '#F9C97C',
+  moon: '#F4F1E8',
+  hillBack: '#A8C98A',
+  hillFront: '#7FB069',
+  grass: '#5E9A4E',
+  stream: '#8EC5E8',
+  streamDeep: '#5FA6D6',
+  trunk: '#8B6B4A',
+  leaf: '#4E8B5F',
+  leafLight: '#5C9B6B',
+  blossom: '#F6C1C9',
+  fruit: '#E07A5F',
+  bird: '#5A4A3A',
+  duck: '#F2D36B',
+  flowerHeart: '#FFE08A',
+} as const;
+
 /** Soft, consistent elevation for cards and raised surfaces. */
 export const elevation = {
   card: {

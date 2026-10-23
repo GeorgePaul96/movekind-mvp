@@ -259,3 +259,33 @@ export const PROFILE_COPY = {
 export function checkInPrompt(name?: string | null): string {
   return name ? `How's your energy, ${name}?` : "How's your energy?";
 }
+
+// ---- Garden ---------------------------------------------------------------
+
+const STREAM_LINE = [
+  'A gentle trickle runs through your garden',
+  'Your stream is flowing',
+  'Your stream is lively, with ducks paddling',
+  'Your stream is full and sparkling, with ducks',
+  'Your stream is brimming, ducks everywhere',
+] as const;
+const GRASS_LINE = ['the grass is soft and short', 'the grass is growing', 'the grass is tall and green', 'the grass is lush'] as const;
+const TREE_LINE = [
+  'a sprout is waiting for its first workout',
+  'a sapling is growing',
+  'a young tree stands tall',
+  'birds sing in your tree',
+  'your tree is blossoming',
+  'your tree has fruit',
+  'two trees bear fruit side by side',
+] as const;
+
+export const GARDEN_COPY = {
+  /** What a screen reader says about the garden. Never negative, whatever the state. */
+  a11ySummary(s: { stream: number; grass: number; tree: number; flowers: unknown[]; resting: boolean }): string {
+    const flowers =
+      s.flowers.length === 0 ? '' : s.flowers.length === 1 ? ' One flower blooms.' : ` ${s.flowers.length} flowers bloom.`;
+    const rest = s.resting ? 'Your garden is resting under the moon. ' : '';
+    return `${rest}${STREAM_LINE[s.stream]}, ${GRASS_LINE[s.grass - 1]}, and ${TREE_LINE[s.tree]}.${flowers}`;
+  },
+} as const;
