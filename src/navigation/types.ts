@@ -1,9 +1,9 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type TabParamList = {
-  Home: undefined;
-  Journey: undefined;
-  Profile: undefined;
+  Garden: undefined;
+  Changes: undefined;
+  Me: undefined;
 };
 
 export type RootStackParamList = {

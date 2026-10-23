@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
-import HomeScreen from '@/screens/main/HomeScreen';
+import GardenScreen from '@/screens/main/GardenScreen';
 import JourneyScreen from '@/screens/main/JourneyScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import { colors } from '@/constants/colors';
@@ -27,24 +27,24 @@ export default function TabNavigator() {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeScreen}
+        name="Garden"
+        component={GardenScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🏡" />,
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌳" />,
         }}
       />
       <Tab.Screen
-        name="Journey"
+        name="Changes"
         component={JourneyScreen}
         options={{
           tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌱" />,
         }}
       />
       <Tab.Screen
-        name="Profile"
+        name="Me"
         component={ProfileScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌿" />,
+          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🙂" />,
         }}
       />
     </Tab.Navigator>

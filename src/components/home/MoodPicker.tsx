@@ -5,24 +5,27 @@ import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
 import { CHECKIN_COPY, checkInPrompt } from '@/constants/copy';
 import { MOODS } from '@/domain/checkin/moods';
-import { useSessionStore } from '@/store/sessionStore';
+import { useGardenStore } from '@/store/gardenStore';
 import type { UserState } from '@/types';
 
-/** The whole check-in: one tap on a tile. */
-export function MoodPicker({ name }: { name?: string | null }) {
-  const logCheckIn = useSessionStore((s) => s.logCheckIn);
-  const safeHarbor = useSessionStore((s) => s.safeHarborBypass);
-  const loading = useSessionStore((s) => s.loading);
+/** The whole check-in: one tap on a tile plants today's flower. */
+export function MoodPicker({ name, onPicked }: { name?: string | null; onPicked?: () => void }) {
+  const logMood = useGardenStore((s) => s.logMood);
   const [picked, setPicked] = useState<UserState | null>(null);
+  const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
 
   const pick = async (mood: UserState) => {
     setPicked(mood);
     setFailed(false);
+    setSaving(true);
     try {
-      await logCheckIn(mood);
+      await logMood(mood);
+      onPicked?.();
     } catch {
       setFailed(true); // keep the tile selected; one tap retries
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -33,7 +36,7 @@ export function MoodPicker({ name }: { name?: string | null }) {
         {[0, 2].map((row) => (
           <View key={row} style={styles.row}>
             {MOODS.slice(row, row + 2).map((m) => (
-              <MoodTile key={m} mood={m} selected={picked === m} disabled={loading} onPress={() => pick(m)} />
+              <MoodTile key={m} mood={m} selected={picked === m} disabled={saving} onPress={() => pick(m)} />
             ))}
           </View>
         ))}
@@ -41,18 +44,12 @@ export function MoodPicker({ name }: { name?: string | null }) {
       {failed && picked && (
         <Button label={CHECKIN_COPY.saveFailed} variant="link" onPress={() => pick(picked)} />
       )}
-      <Button
-        label={CHECKIN_COPY.gentleReset}
-        variant="link"
-        disabled={loading}
-        onPress={() => safeHarbor().catch((e) => console.warn('Gentle reset error:', e))}
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  prompt: { fontSize: 24, fontWeight: '800', color: colors.textPrimary, marginBottom: 16, lineHeight: 30 },
+  prompt: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: 12, lineHeight: 26 },
   grid: { gap: 10, marginBottom: 8 },
   row: { flexDirection: 'row', gap: 10 },
 });

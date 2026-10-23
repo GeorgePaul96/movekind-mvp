@@ -34,6 +34,7 @@ export const colors = {
   border: '#CDBFA6',            // decorative card edges only — never the sole cue for a control
   divider: '#EFE6D6',
   shadow: '#3A2F1E',
+  scrim: 'rgba(43,42,38,0.35)', // dims the screen behind a bottom sheet
 
   // ---- Status ------------------------------------------------------------
   success: '#2F7A52',

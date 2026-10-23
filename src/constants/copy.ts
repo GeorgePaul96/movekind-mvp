@@ -1,5 +1,5 @@
 import type { RecoverySignal } from '@/domain/behavioral/types';
-import type { UserState } from '@/types';
+import type { UserState, WorkoutType } from '@/types';
 
 export const QUOTES = [
   'Rest is part of progress. Your body remembers consistency, not perfection.',
@@ -281,6 +281,23 @@ const TREE_LINE = [
 ] as const;
 
 export const GARDEN_COPY = {
+  greeting: (partOfDay: string, name?: string | null) =>
+    name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
+  title: 'Your garden',
+  defaultNote: 'Everything you log helps your garden grow.',
+  water: 'Water',
+  glasses: (n: number) => (n === 1 ? '1 glass' : `${n} glasses`),
+  waterA11y: (n: number) => `Add a glass of water. ${n === 1 ? '1 glass' : `${n} glasses`} today.`,
+  undoGlass: 'Undo last glass',
+  workout: 'Workout',
+  logOne: 'Log one',
+  workoutA11y: 'Log a workout',
+  steps: 'Steps',
+  stepsSoon: 'Arrive soon',
+  stepsHint: 'Your phone will count steps for you in the next update.',
+  todayMood: (label: string) => `Today: ${label}`,
+  changeMood: 'Change',
+  todayWorkouts: 'Today',
   /** What a screen reader says about the garden. Never negative, whatever the state. */
   a11ySummary(s: { stream: number; grass: number; tree: number; flowers: unknown[]; resting: boolean }): string {
     const flowers =
@@ -289,3 +306,31 @@ export const GARDEN_COPY = {
     return `${rest}${STREAM_LINE[s.stream]}, ${GRASS_LINE[s.grass - 1]}, and ${TREE_LINE[s.tree]}.${flowers}`;
   },
 } as const;
+
+export const WORKOUT_COPY = {
+  title: 'What did you do?',
+  lengthTitle: 'About how long?',
+  save: 'Add to my garden',
+  update: 'Save changes',
+  cancel: 'Not now',
+  types: {
+    walk: '🚶 Walk',
+    run: '🏃 Run',
+    yoga: '🧘 Yoga',
+    gym: '🏋️ Gym',
+    cycle: '🚴 Cycle',
+    sport: '⚽ Sport',
+    dance: '💃 Dance',
+    other: '✨ Other',
+  } as Record<WorkoutType, string>,
+  names: {
+    walk: 'Walk', run: 'Run', yoga: 'Yoga', gym: 'Gym', cycle: 'Cycle', sport: 'Sport', dance: 'Dance', other: 'Other',
+  } as Record<WorkoutType, string>,
+  durations: [10, 20, 30, 45, 60] as const,
+  minutes: (m: number) => (m >= 60 ? '1 hr+' : `${m} min`),
+  entry: (type: WorkoutType, m: number) => `${WORKOUT_COPY.names[type]} · ${WORKOUT_COPY.minutes(m)}`,
+  edit: 'Edit',
+  delete: 'Delete',
+  editA11y: (type: WorkoutType, m: number) => `Edit ${WORKOUT_COPY.entry(type, m)}`,
+  deleteA11y: (type: WorkoutType, m: number) => `Delete ${WORKOUT_COPY.entry(type, m)}`,
+};
