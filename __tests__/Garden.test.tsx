@@ -74,6 +74,15 @@ describe('<Garden />', () => {
     expect(tipX(tree)).not.toBeCloseTo(start, 3);
   });
 
+  it('holds still when asked to (small previews never animate)', () => {
+    const tree = render(<Garden state={base} still />);
+    const start = tipX(tree);
+    act(() => {
+      jest.advanceTimersByTime(1500);
+    });
+    expect(tipX(tree)).toBeCloseTo(start, 5);
+  });
+
   it('holds still with reduce motion', () => {
     mockReducedMotion = true;
     const tree = render(<Garden state={base} />);

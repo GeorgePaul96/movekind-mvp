@@ -14,6 +14,8 @@ const VIEW_H = 250;
 
 interface Props {
   state: GardenState;
+  /** No motion at all (small previews, e.g. the Changes then-and-now pair). */
+  still?: boolean;
 }
 
 /**
@@ -21,8 +23,8 @@ interface Props {
  * (steps), tree (workouts), flowers (moods). It only grows or rests; resting swaps the
  * sun for a moon and changes nothing else. Holds still when the phone asks for less motion.
  */
-export function Garden({ state }: Props) {
-  const reduceMotion = useReduceMotion();
+export function Garden({ state, still = false }: Props) {
+  const reduceMotion = useReduceMotion() || still;
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
