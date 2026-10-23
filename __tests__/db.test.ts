@@ -54,41 +54,13 @@ describe('local repository', () => {
     __resetDbCacheForTests();
     const b = await db.profile.get();
     expect(b.id).toBe(a.id);
-    expect(b).toMatchObject({ name: null, is_premium: false });
+    expect(b).toMatchObject({ name: null });
   });
 
   it('updates a row by id', async () => {
     const row = await db.checkIns.add(ci());
     await db.checkIns.update(row.id, { sleep_quality: 'poor' });
     expect((await db.checkIns.all())[0]?.sleep_quality).toBe('poor');
-  });
-
-  it('joins blocks to the exercise library and finds the active session', async () => {
-    const s = await db.sessions.add({ check_in_id: null, state: 'regulated', engine_version: 'v3.0', status: 'generated' });
-    const blocks = await db.blocks.addMany(s.id, [{ exercise_id: 'ex-regulate-1', block_order: 0, target_duration: 60 }]);
-    expect(blocks[0]?.exercise.name).toBe('Slow belly breathing');
-    expect((await db.sessions.latestActive())?.id).toBe(s.id);
-  });
-
-  it('a rating updates per-exercise stats for completed blocks only', async () => {
-    const s = await db.sessions.add({ check_in_id: null, state: 'regulated', engine_version: 'v3.0', status: 'started' });
-    const [b1, b2] = await db.blocks.addMany(s.id, [
-      { exercise_id: 'ex-regulate-1', block_order: 0, target_duration: 60 },
-      { exercise_id: 'ex-move-1', block_order: 1, target_duration: 60 },
-    ]);
-    await db.blocks.update(b1!.id, { status: 'completed', actual_duration: 60 });
-    await db.blocks.update(b2!.id, { status: 'skipped' });
-    await db.ratings.add({ session_id: s.id, rating_delta: 2, notes: null });
-    const stats = await db.stats.all();
-    expect(stats).toEqual([
-      expect.objectContaining({ exercise_id: 'ex-regulate-1', times_completed: 1, average_energy_delta: 2 }),
-    ]);
-  });
-
-  it('only offers source-verified exercises to the session builder', async () => {
-    const ids = db.exercises.all().map((e) => e.id);
-    expect(ids).not.toContain('ex-downshift-2'); // pending physio review
-    expect(db.exercises.all().every((e) => e.review === 'sourced')).toBe(true);
   });
 
   it('eraseAll removes everything, including the profile', async () => {
@@ -144,5 +116,22 @@ describe('water and workouts', () => {
     const glass = await db.water.add();
     await db.water.remove('nope');
     expect(await db.water.since(new Date(0).toISOString())).toEqual([glass]);
+  });
+});
+
+describe('legacy cleanup', () => {
+  it('drops legacy tables, keeps profile and check-ins', async () => {
+    const legacy = ['sessions', 'session_blocks', 'post_ratings', 'user_exercise_stats'];
+    for (const k of legacy) await AsyncStorage.setItem(`@movekind/db/${k}`, JSON.stringify([{ id: 'x' }]));
+    const profile = await db.profile.get();
+    const checkIn = await db.checkIns.add(ci());
+
+    await db.dropLegacy();
+    await db.dropLegacy(); // idempotent
+
+    for (const k of legacy) expect(await AsyncStorage.getItem(`@movekind/db/${k}`)).toBeNull();
+    __resetDbCacheForTests();
+    expect((await db.profile.get()).id).toBe(profile.id);
+    expect(await db.checkIns.all()).toEqual([checkIn]);
   });
 });

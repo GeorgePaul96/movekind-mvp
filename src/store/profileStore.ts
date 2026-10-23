@@ -13,7 +13,6 @@ interface ProfileState {
   profile: Profile | null;
   hydrate: () => Promise<void>;
   setName: (name: string) => Promise<void>;
-  setPremium: (value: boolean) => Promise<void>;
   /** Deletes all data on this phone and returns the app to onboarding. */
   eraseAll: () => Promise<void>;
 }
@@ -29,10 +28,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   setName: async (name) => {
     set({ profile: await db.profile.update({ name: name.trim() || null }) });
-  },
-
-  setPremium: async (value) => {
-    set({ profile: await db.profile.update({ is_premium: value }) });
   },
 
   eraseAll: async () => {

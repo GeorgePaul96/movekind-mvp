@@ -10,6 +10,7 @@ import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { disableDailyReminder } from '@/services/notifications';
 import { trackAppOpened } from '@/services/appOpens';
+import { db } from '@/services/db';
 import { colors } from '@/constants/colors';
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           useSettingsStore.getState().hydrate(),
           useProfileStore.getState().hydrate(),
         ]);
+        await db.dropLegacy(); // the old session app's tables, if this phone has them
         const { profile } = useProfileStore.getState();
         if (profile) trackAppOpened(profile.created_at);
         // No permission prompt at launch. If the reminder is off, also clear any reminder

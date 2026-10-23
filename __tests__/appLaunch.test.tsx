@@ -8,9 +8,7 @@ jest.mock('../global.css', () => ({}), { virtual: true });
 jest.mock('../src/navigation/RootNavigator', () => () => null);
 jest.mock('../src/services/telemetry', () => ({ telemetry: { capture: jest.fn(), identify: jest.fn(), reset: jest.fn() } }));
 const mockRequest = jest.fn();
-const mockInit = jest.fn();
 jest.mock('../src/services/notifications', () => ({
-  initNotifications: () => mockInit(),
   enableDailyReminder: () => mockRequest(),
   disableDailyReminder: jest.fn(),
 }));
@@ -23,6 +21,5 @@ describe('app launch', () => {
     render(<App />);
     await waitFor(() => expect(telemetry.capture).toHaveBeenCalledWith('app_opened', expect.anything()));
     expect(mockRequest).not.toHaveBeenCalled();
-    expect(mockInit).not.toHaveBeenCalled();
   });
 });

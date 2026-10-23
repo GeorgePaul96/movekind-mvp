@@ -19,46 +19,21 @@ npm run typecheck   # tsc --noEmit — strict; must pass
 npm test            # Jest unit + component
 ```
 
-There is no linter/build to run locally. The composer has the most valuable tests; add to
-`__tests__/composer.test.ts` whenever you touch composition logic.
+There is no linter/build to run locally. The garden logic has the most valuable tests; add to
+`__tests__/garden.test.ts` / `__tests__/changes.test.ts` whenever you touch it.
 
 ## Common tasks
 
-### Add an exercise
-1. Find an **authoritative source** that describes *the same variant* you will teach (NHS, NHS inform,
-   Mayo Clinic, Cleveland Clinic…). A high-impact source does not back a low-impact version. No source
-   → don't add it (or add it as `review: 'pending_review'`, which keeps it hidden).
-2. Add an entry to [src/data/exercises.ts](src/data/exercises.ts) with the **next free stable id**
-   in its category (e.g. `ex-regulate-7`) — never renumber existing ids (stats are keyed by them).
-   Write the cues in **your own words** (cite, never copy), set `source`, copy the source's
-   skip-this-if advice into `cautions`, and `review: 'sourced'`.
-3. If the host is new, add it to `TRUSTED_SOURCE_HOSTS` in
-   [__tests__/exercises.test.ts](__tests__/exercises.test.ts) and update the counts there.
-4. Record it in [docs/exercise-source-review.md](docs/exercise-source-review.md).
-5. Re-record the voice (next section) — the voice test fails until you do.
+### Change what the garden shows
+- Edit [src/domain/garden/garden.ts](src/domain/garden/garden.ts) (keep it **pure**: `now` is a parameter, no
+  `Date.now()`), then the drawing in [Garden.tsx](src/components/garden/Garden.tsx).
+- Extend [__tests__/garden.test.ts](__tests__/garden.test.ts). Keep the rules: stream and grass never
+  below their floor, the tree never shrinks, every mood flower equally pretty, resting loses nothing.
+- Keep `GARDEN_COPY.a11ySummary` in step (its test bans negative words).
 
-### Re-record the guide voice
-The guide speaks pre-recorded clips (Kokoro, voice `af_heart` at 0.9 speed, Apache-2.0), not the
-phone's robot voice. Any change to an exercise name, cue or caution needs new clips:
-
-```bash
-npm run voice:generate          # records only new/changed lines (~5 s each)
-npm run voice:generate -- --all # re-record everything
-```
-
-It QA-checks every clip (silence, truncation, dropouts — Kokoro occasionally falls silent on a
-phrase), writes `assets/voice/*.m4a` and `src/data/voiceClips.generated.ts`, and a listen-through
-file `.voice-review/review.m4a` (+ `review-script.txt`). **Listen to it before committing** —
-pronunciation can only be checked by ear. `__tests__/voiceClips.test.ts` fails if any spoken line
-has no clip. At runtime a missing or broken clip falls back to the phone's voice. ffmpeg-static
-and the espeak-ng phonemizer are GPL but run only on your machine; nothing GPL ships in the app.
-First run downloads the ~90 MB model to your temp folder.
-
-### Change how sessions are composed
-- Edit [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts) (keep it **pure**).
-- Update/extend [__tests__/composer.test.ts](__tests__/composer.test.ts).
-- If output semantics change, **bump `ENGINE_VERSION`** in
-  [src/store/sessionStore.ts](src/store/sessionStore.ts).
+### Change the Changes sentences
+Edit [changes.ts](src/domain/garden/changes.ts) and `CHANGES_COPY`. Quieter weeks are named gently and
+never state a shortfall (the test bans digits and "less / fewer / down / drop / missed" in them).
 
 ### Add a field or table to the data model
 Change [src/services/db/](src/services/db/index.ts) + `src/types/index.ts` + [DATABASE.md](DATABASE.md)
@@ -68,11 +43,6 @@ Add a test in [__tests__/db.test.ts](__tests__/db.test.ts).
 ### Add a screen
 Create under `src/screens/**`, register it in the relevant navigator
 (`src/navigation/`), and add its param type to `src/navigation/types.ts`.
-
-### Wire real purchases (premium)
-`src/services/premium.ts` `startCheckout()` is a stub. Use App Store / Google Play billing
-(e.g. RevenueCat): on a successful purchase or restore, call `useProfileStore.getState().setPremium(true)`.
-No server of our own is required.
 
 ## Conventions recap
 - Import from `@/…` (alias to `src/`).
@@ -87,7 +57,7 @@ Read [CLAUDE.md](CLAUDE.md) first, then open only the files the task names below
 | Task | Open only |
 |---|---|
 | **Bug fix** | Reproduce/locate via the doc map → the owning store/service/component + its test. Use `systematic-debugging`. |
-| **Feature** | `CLAUDE.md` + `ARCHITECTURE.md` → the one layer it lives in. New domain logic ⇒ `composer`-style pure module + test first (TDD). |
+| **Feature** | `CLAUDE.md` + `ARCHITECTURE.md` → the one layer it lives in. New domain logic ⇒ a pure module like `garden.ts` + test first (TDD). |
 | **Refactor** | `PROJECT_MAP.md` to find all call sites; change behavior-preserving only; `typecheck` + `test`. |
 | **Security audit** | `DATABASE.md` (on-device storage), `services/telemetryPrivacy.ts` (what leaves the phone), env handling (`EXPO_PUBLIC_*` ships inside the app). |
 | **Architecture review** | `ARCHITECTURE.md`; verify the dependency rule (domain imports nothing but types). |

@@ -19,7 +19,7 @@ beforeEach(async () => {
 describe('profileStore (no accounts)', () => {
   it('hydrate creates a local profile', async () => {
     await useProfileStore.getState().hydrate();
-    expect(useProfileStore.getState().profile).toMatchObject({ name: null, is_premium: false });
+    expect(useProfileStore.getState().profile).toMatchObject({ name: null });
   });
 
   it('setName trims and persists; blank becomes null', async () => {
@@ -29,13 +29,6 @@ describe('profileStore (no accounts)', () => {
     expect((await db.profile.get()).name).toBe('Sam');
     await useProfileStore.getState().setName('   ');
     expect(useProfileStore.getState().profile?.name).toBeNull();
-  });
-
-  it('setPremium persists', async () => {
-    await useProfileStore.getState().hydrate();
-    await useProfileStore.getState().setPremium(true);
-    __resetDbCacheForTests();
-    expect((await db.profile.get()).is_premium).toBe(true);
   });
 
   it('eraseAll wipes data, returns to onboarding and starts a new profile', async () => {

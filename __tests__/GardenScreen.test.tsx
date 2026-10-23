@@ -23,7 +23,7 @@ beforeEach(async () => {
   __resetDbCacheForTests();
   useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, loaded: true, error: null });
   useProfileStore.setState({
-    profile: { id: 'p1', name: 'Sam', is_premium: false, created_at: new Date().toISOString() },
+    profile: { id: 'p1', name: 'Sam', created_at: new Date().toISOString() },
   });
 });
 

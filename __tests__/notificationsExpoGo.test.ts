@@ -25,9 +25,6 @@ describe('notifications service in Expo Go on Android', () => {
   it('every entry point is a quiet no-op', async () => {
     const svc = require('../src/services/notifications');
     expect(svc.notificationsAvailable).toBe(false);
-    await expect(svc.initNotifications()).resolves.toBeUndefined();
-    await expect(svc.scheduleAdaptiveNudge('stable')).resolves.toBeUndefined();
-    await expect(svc.sendNow('hi')).resolves.toBeUndefined();
     await expect(svc.enableDailyReminder()).resolves.toBe(false);
     await expect(svc.disableDailyReminder()).resolves.toBeUndefined();
   });

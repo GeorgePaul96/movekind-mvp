@@ -16,7 +16,7 @@ export function moodToEnergy(mood: UserState): number {
   return ENERGY_FOR_MOOD[mood];
 }
 
-/** energy_score (1–5) → capacity state. Moved from sessionStore; the store re-exports it. */
+/** energy_score (1–5) → mood (also the flower colour in the garden). */
 export function mapEnergyToState(score: number): UserState {
   if (score === 1) return 'overloaded';
   if (score <= 3) return 'recovering';

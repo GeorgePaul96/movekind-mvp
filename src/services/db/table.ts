@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PREFIX = '@movekind/db/';
+export const PREFIX = '@movekind/db/';
 
 /** Every live store registers here so tests can simulate an app restart. */
 const caches: { drop: () => void }[] = [];

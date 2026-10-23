@@ -5,22 +5,25 @@
 
 ## What this is
 
-MoveKind is a **calm, anti-guilt movement app** (Expo / React Native / TypeScript).
-A user does a short **check-in** → the app maps their energy to one of four **capacity
-states** → a **pure composer** builds an adaptive exercise session → a **guided player**
-walks them through it with voice cues → a **post-rating** feeds per-exercise stats so
-future sessions personalize. No streaks, no guilt.
+MoveKind is a **calm, anti-guilt self-care tracker with a garden that grows** (Expo / React
+Native / TypeScript). People log the everyday care they already spread across several apps
+(**water, workouts done anywhere, a one-tap mood check-in**, and soon **steps**) and see it
+turn into a living garden: water fills the stream, steps grow the grass, workouts grow the
+tree, each mood plants a flower. A **Changes** tab says in plain sentences what their
+activity is changing. MoveKind **never tells anyone how to move** (no exercise instructions).
+No streaks, no targets, no guilt: the garden only grows or rests.
 
 ## Tech stack
 
 Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict) · **local-first: all
-data on the device (AsyncStorage via `src/services/db`), no backend, no accounts** · Zustand (state) · React Navigation 6 · NativeWind 4 (Tailwind) ·
-Victory Native (charts) · PostHog (optional analytics) · Jest + Testing Library.
+data on the device (AsyncStorage via `src/services/db`), no backend, no accounts** · Zustand (state) ·
+React Navigation 6 · react-native-svg (the garden) · NativeWind 4 · PostHog (optional, anonymous) ·
+Jest + Testing Library.
 
 ## Commands
 
 ```bash
-npm start          # Expo dev server
+npm start          # Expo dev server   (npm run go = force Expo Go)
 npm run ios|android|web
 npm test           # Jest (unit + component)
 npm run typecheck  # tsc --noEmit  ← run this after any TS change
@@ -33,76 +36,73 @@ Verify changes with `npm run typecheck` and `npm test`.
 
 | Need | Read |
 |---|---|
-| How data flows, the state machine, layering | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| How data flows, layering | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | "Where is X?" — file-by-file index | [PROJECT_MAP.md](PROJECT_MAP.md) |
-| The local data model, storage rules, the stats engine | [DATABASE.md](DATABASE.md) |
+| The local data model and storage rules | [DATABASE.md](DATABASE.md) |
 | Every repository call, grouped by caller | [API_MAP.md](API_MAP.md) |
-| Setup, testing, "how do I add an exercise / wire Stripe" | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
+| Setup, testing, common tasks | [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) |
 | Product framing, env vars, build | [README.md](README.md) |
 | What's next — phases, priorities, guardrails | [ROADMAP.md](ROADMAP.md) |
 
-> **Planning authority:** [ROADMAP.md](ROADMAP.md) is the **only** current plan. The specs and
-> plans under `docs/superpowers/**` and `.superpowers/**` are **historical archives** of already
-> -shipped work (Phases 1–3A) — never treat them as pending work or current requirements. When a
-> document there conflicts with ROADMAP.md, ROADMAP.md wins. Update ROADMAP.md as phases complete.
+> **Planning authority:** [ROADMAP.md](ROADMAP.md) is the **only** current plan. Specs and plans
+> under `docs/superpowers/**` are archives of their own work (the garden pivot spec is
+> `docs/superpowers/specs/2026-10-23-garden-pivot-design.md`); older ones describe the removed
+> guided-session app. When anything conflicts with ROADMAP.md, ROADMAP.md wins.
 
 ## Core concepts (memorize these)
 
-- **Four capacity states:** `overloaded · recovering · regulated · activated`. Derived
-  from `energy_score` (1–5) by `mapEnergyToState` in [moods.ts](src/domain/checkin/moods.ts)
-  (re-exported by the store). Users never see these names — they tap one of four mood tiles
-  ("Running on empty / A bit low / Steady / Buzzing", `MOOD_COPY`) → `moodToEnergy` (1/2/4/5).
-- **One-tap check-in.** `logCheckIn(mood)` only saves the check-in and **never** shows the
-  paywall; `startTodaysSession()` composes the session and is the only paywall path.
-- **Composer is pure & sacred.** [src/domain/sessions/composer.ts](src/domain/sessions/composer.ts)
-  takes state + exercise library + recency + stats and returns blocks. **No I/O, no React,
-  no storage.** It is the only unit-tested business logic. Keep it pure; test changes via
-  [__tests__/composer.test.ts](__tests__/composer.test.ts).
-- **`ENGINE_VERSION`** (currently `v3.0`) is stamped on every check-in and session. Bump it
-  when composition logic changes.
-- **Exercise categories:** `regulate · mobilize · strengthen · move · downshift`. Each state
-  maps to a fixed category sequence with target durations (see the composer).
-- **Stats update on rating.** `db.ratings.add()` runs the pure [applyRating](src/domain/sessions/applyRating.ts)
-  (a port of the old server trigger) — nothing else writes `user_exercise_stats`. See [DATABASE.md](DATABASE.md).
-- **Local-first, no accounts.** All data lives on the phone; [src/services/db/](src/services/db/index.ts) is the
-  **only** data access path. First launch → onboarding (asks a name) → Home. The exercise library is code:
-  [src/data/exercises.ts](src/data/exercises.ts) — ids are stable, never renumber.
-- **The guide voice is pre-recorded** (Kokoro `af_heart`, see `scripts/voice/generate.ts`). What is
-  spoken is defined once in [voiceScript.ts](src/domain/sessions/voiceScript.ts) — warnings are never
-  trimmed. Editing any exercise name/cue/caution ⇒ `npm run voice:generate` (a test enforces it).
-- **Exercises must be source-verified.** Every shown exercise cites an authoritative source (NHS, Mayo
-  Clinic…) in our own words, with the source's cautions. Unsourced or pending-physio exercises are
-  `review: 'pending_review'` and are never shown. Users see a one-time "Before you move" safety notice
-  before any exercise. See [docs/exercise-source-review.md](docs/exercise-source-review.md).
+- **The garden is pure and derived.** [gardenState(input, now)](src/domain/garden/garden.ts) turns
+  logged water / workouts / check-ins / steps into what the garden shows. **No I/O, no React,
+  no clock** (`now` is a parameter, so `gardenState(input, aMonthAgo)` is the past garden).
+  Stream and grass reset each local morning and have a floor (a trickle, short grass); the tree
+  grows from all-time workout minutes (`TREE_STAGE_MINUTES`) and **never shrinks**; one flower per
+  day with a check-in (latest mood wins); `resting` after 3 quiet days (moon, nothing lost).
+- **Changes are gentle.** [weeklyChanges](src/domain/garden/changes.ts) compares this week so far
+  with the *same stretch* of last week. Ups are celebrated; quieter weeks are named kindly and
+  never state a shortfall (no numbers, no "less/fewer/missed").
+- **Days are local.** Use `localDayKey` / `startOfLocalDay` / `weekBounds` from
+  [days.ts](src/domain/garden/days.ts). Never UTC day maths.
+- **Moods.** Four tiles ("Running on empty / A bit low / Steady / Buzzing", `MOOD_COPY`) →
+  `moodToEnergy` (1/2/4/5) → `mapEnergyToState` in [moods.ts](src/domain/checkin/moods.ts). A day is
+  one check-in: re-picking edits it. Mood colour = `stateColors[mood].tint` (the flower).
+- **One store.** [gardenStore](src/store/gardenStore.ts) owns loading and every log action; screens
+  stay thin. Each log sends telemetry `logged {kind}` only — never values.
+- **Local-first, no accounts.** [src/services/db/](src/services/db/index.ts) is the **only** data
+  access path. First launch → onboarding (optional name, then "how your garden grows") → Garden.
+- **Reminder is opt-in.** One 9am reminder, **off by default**, permission asked only when switched
+  on in Me. Nothing is requested at launch.
+- **Steps (stage 2).** `stepsToday` is `null` until the development build adds Health Connect
+  (Android) / the iOS step counter; the grass keeps a calm default meanwhile.
 
 ## Conventions
 
 - **Imports:** use the `@/` alias for `src/` (configured in `tsconfig.json` + `babel.config.js`).
 - **State:** Zustand stores in `src/store/`. Stores own async + `db` calls; components stay thin.
-- **Styling:** NativeWind classes; **all color comes from semantic tokens in
-  [src/constants/colors.ts](src/constants/colors.ts)** — never hardcode hex. Use the semantic
-  names (`background`, `surface`, `surfaceSecondary`, `primary`/`primaryPressed`/`onPrimary`,
-  `textPrimary`/`textSecondary`/`textMuted`, `border`, `divider`, `success`/`warning`/`error`/`info`,
-  `shadow`) plus `elevation.card`/`elevation.raised`. For mood color use
-  `stateColors[state]`: `.soft` tile/surface fill, `.ink` text + border on `.soft`, `.accent`
-  for fills bearing white text, `.tint` for bars/slider. Palette is "Sunrise" (warm cream).
-  **Contrast is enforced by [__tests__/colors.test.ts](__tests__/colors.test.ts)** (text ≥4.5:1,
-  UI/graphs ≥3:1) — add a pair there when you add a token.
-- **Buttons:** only `<Button>` with `variant="primary"` (solid), `"secondary"` (2px outline) or
-  `"link"` (underlined, 44pt target). Choice sets use `<Chip>`; mood picks use `<MoodTile>`.
-  No hand-rolled `Pressable` buttons. Minimum font size 13.
-- **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts).
+- **Styling:** **all color comes from tokens in [src/constants/colors.ts](src/constants/colors.ts)** — never
+  hardcode hex. Semantic UI tokens (`background`, `surface`, `primary`, `textPrimary`…, `scrim`),
+  `stateColors[mood]` for mood colour, and `gardenColors` for the (decorative) garden illustration.
+  Palette is "Sunrise" (warm cream). **Contrast is enforced by
+  [__tests__/colors.test.ts](__tests__/colors.test.ts)** (text ≥4.5:1, UI ≥3:1) — add a pair there when
+  you add a text/UI token.
+- **Controls:** `<Button>` (`primary` / `secondary` / `link`), `<Chip>` for choice sets, `<MoodTile>` for
+  moods, `<ActionTile>` for the big log buttons, RN `Switch` for on/off settings. No hand-rolled
+  `Pressable` buttons in screens. Minimum font size 13; 44pt touch targets; every control labelled.
+- **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts). **No em dashes**
+  in user-facing text (enforced by `__tests__/noEmDash.test.ts`).
+- **Motion:** gentle only, and none when the phone asks for reduced motion (`useReduceMotion`).
 - **Side effects** (storage, telemetry, notifications) live in `src/services/`, never in `domain/`.
 
 ## Gotchas / known debt (do not "fix" silently)
 
-- `premium.ts` / `startCheckout` is a **stub** — Stripe is not wired.
 - Telemetry is a **no-op** unless `EXPO_PUBLIC_POSTHOG_API_KEY` is set.
+- Steps need a **development build** (stage 2); Expo Go can't read daily steps on Android.
+- Testers' phones may hold the old session app's tables; `db.dropLegacy()` clears them at launch.
 
 ## Doing work efficiently
 
-- To change **session logic** → `composer.ts` (+ its test) and/or `sessionStore.ts`. Nothing else.
+- To change **what the garden shows** → `src/domain/garden/garden.ts` (+ `__tests__/garden.test.ts`),
+  then the drawing in `src/components/garden/Garden.tsx`.
+- To change **the Changes sentences** → `changes.ts` + `CHANGES_COPY` (+ `__tests__/changes.test.ts`).
 - To change **the data model** → `src/services/db/` + `src/types/index.ts` + [DATABASE.md](DATABASE.md). Keep all three in sync.
-- To add **an exercise** → `src/data/exercises.ts` with the next free stable id.
 - To change **a screen** → `src/screens/**`; shared UI in `src/components/**`.
 - **Never** open `package-lock.json` or `node_modules/**` (excluded via `.claudeignore`).

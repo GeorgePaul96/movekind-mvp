@@ -1,10 +1,31 @@
 # MoveKind Roadmap
 
-> Where the product goes from here. Phases are sequential by default but items inside a
-> phase are independent. Every item must pass the anti-guilt filter (see Guardrails).
-> Status: written 2026-07-04, immediately after Phase 3A shipped.
+> Where the product goes from here. Every item must pass the anti-guilt filter (see Guardrails).
 
-## Where we are
+## Current: the Garden (pivot decided 2026-10-23)
+
+MoveKind no longer guides exercise. It is a calm tracker for water, workouts done anywhere,
+mood and steps, shown as a garden that grows (stream, grass, tree, flowers), plus a Changes tab
+that says in plain sentences what activity is changing. Design:
+`docs/superpowers/specs/2026-10-23-garden-pivot-design.md`.
+
+| Stage | What | Status |
+|---|---|---|
+| 1 | Garden home, water / workout / mood logging, Changes tab, Me (reminder off by default), simpler onboarding, guided sessions removed. Runs in Expo Go. | ✅ built 2026-10-23, **owner testing** |
+| 2 | Development build: real daily steps (Health Connect on Android, the iOS step counter on iPhone) so Android is never worse off. | next |
+| Tester week | 15 to 20 testers, one week, reminder off. **Success = most open the app on at least 5 of 7 days** (PostHog: distinct days with `app_opened` per person). Needs the owner's PostHog key. | after stage 2 |
+| Release 2 | Camera heart rate (finger on camera, FFT of brightness; morning resting reading + optional after-workout recovery reading, framed as a wellness estimate). More from Apple Health / Health Connect (automatic workouts, body composition from scales/watches people already own). | after validation |
+| Later | A creature living in the garden (owner designs it, likely in Rive). | after validation |
+
+**Not doing:** exercise instructions, calorie counting, weight/BMI, anything that judges bodies,
+targets, streaks, scores, public comparison.
+
+---
+
+> **History below.** Phases 3B to 6 and the Redesign describe the guided-session app that the
+> garden replaced. Kept for context; not current work.
+
+## Where we were (guided-session app)
 
 **Done (Phases 1–3A):**
 - Core adaptive loop: check-in → capacity state → composed session → guided player →
@@ -138,11 +159,13 @@ without a store review.
    red badges, no "you missed X". Points and gentle consistency signals are allowed, but
    rest counts, missing a day never resets progress, money is never tied to performance,
    and comparison is only to yourself or a small circle — never a public ranking.
-2. **The composer stays pure.** New signals enter as arguments; I/O stays in stores/services.
-   Bump `ENGINE_VERSION` on any composition change; test via `composer.test.ts`.
+2. **The garden logic stays pure.** `gardenState` / `weeklyChanges` take `now` as a parameter; I/O stays
+   in stores/services; test via `__tests__/garden.test.ts` and `__tests__/changes.test.ts`.
 3. **Explicit color contract.** Every interactive state gets an explicit color from the Sunrise
    tokens; contrast is enforced by `__tests__/colors.test.ts`. No conditionally-undefined styles.
 4. **Data-model changes touch three places:** `src/services/db/`, `src/types/index.ts`, `DATABASE.md`.
 5. **Verify with** `npm run typecheck` **and** `npm test` — there is no lint or build step.
 6. **Local-first.** User data never leaves the phone. Anything that needs a server (circles) is
    additive and optional — the core loop must keep working with no network and no account.
+7. **Only grows or rests.** Nothing in the garden ever dries, browns, wilts or dies; quieter weeks
+   are named kindly and never counted.

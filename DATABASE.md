@@ -9,45 +9,31 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 
 - **Engine:** AsyncStorage (works in Expo Go and dev/store builds). Each table is **one JSON
   document** under the key `@movekind/db/<table>`, cached in memory after the first read.
-- **Writes are serialized per table** (a promise chain), so overlapping async writes — e.g. a
-  block completing while another is skipped — never lose rows.
+- **Writes are serialized per table** (a promise chain), so overlapping async writes (five quick
+  taps on Water) never lose rows. The cache updates only after a write lands.
 - **Corrupt or unreadable data** falls back to an empty table instead of crashing launch.
-- **Size:** a few rows a day — years of use stay in the low hundreds of KB.
+- **Size:** a few rows a day; years of use stay in the low hundreds of KB.
 - **Backups:** iOS and Android device backups include app data. Uninstalling deletes it.
-  "Export my data" is a ROADMAP item.
 
 ## Tables
 
 | Key | Type | Notes |
 |---|---|---|
-| `profile` (single doc) | `Profile` | `id` (random install id — also the anonymous telemetry id and every row's `user_id`), `name` (optional, from onboarding), `is_premium`, `created_at`. Created on first read. |
-| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` (`good\|fair\|poor\|null`), `intention` (optional note), `engine_version`, `created_at`. **A day is one check-in:** re-picking today's mood updates the row. |
-| `water` | `WaterLog` | One row per glass: `id`, `created_at`. Feeds the garden's stream (glasses today). `db.water.remove` undoes a glass. |
-| `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the garden's tree. Editable and deletable. |
-| `sessions` | `Session` | `check_in_id` (null for the gentle reset), `state`, `status` (`generated\|started\|completed\|abandoned`), `engine_version`, `created_at`. |
-| `session_blocks` | `SessionBlock` | `session_id`, `exercise_id`, `block_order`, `target_duration` (s), `actual_duration` (s, nullable), `status` (`pending\|completed\|skipped\|swapped`), `created_at`. Read back joined to the exercise library (`BlockWithExercise`). |
-| `post_ratings` | `PostRating` | `session_id`, `rating_delta` −1…2, `notes`, `created_at`. |
-| `user_exercise_stats` | `UserExerciseStats` | Per exercise: `times_completed`, `average_energy_delta`, `last_completed_at`. **Written only by `db.ratings.add`.** |
+| `profile` (single doc) | `Profile` | `id` (random install id, also the anonymous telemetry id and every check-in's `user_id`), `name` (optional, from onboarding), `created_at` (install day, used for `app_opened.day_index`). Created on first read. |
+| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` and `intention` (unused, always null now), `engine_version` (`'garden-1'` for new rows), `created_at`. **A day is one check-in:** re-picking today's mood updates the row. Each becomes a flower. |
+| `water` | `WaterLog` | One row per glass: `id`, `created_at`. Glasses today fill the stream. `db.water.remove` undoes a glass. |
+| `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the tree. Editable and deletable. |
 
-## The exercise library
+**Legacy:** the guided-session app stored `sessions`, `session_blocks`, `post_ratings` and
+`user_exercise_stats`. `db.dropLegacy()` removes them at every launch (idempotent).
 
-Not stored: it ships in the app as [src/data/exercises.ts](src/data/exercises.ts). **Ids are stable**
-(`ex-<category>-<n>`) because stats are keyed by them — never renumber; add new exercises with the next
-free index.
+Settings (reminder on/off, reduce motion, onboarded) live separately under `@movekind/settings`
+([settingsStore](src/store/settingsStore.ts)).
 
-**Safety contract:** every exercise has `source` (authoritative page we cite — instructions are our own
-words), optional `cautions` (the source's skip-this-if advice, shown and spoken in the player) and
-`review`. Only `review: 'sourced'` exercises are returned by `db.exercises.all()` and can ever be
-composed; `pending_review` ones (awaiting a physiotherapist) are hidden. `exerciseById` still finds
-every entry so old history renders. Rationale and per-exercise sources:
-[docs/exercise-source-review.md](docs/exercise-source-review.md).
+## Derived, never stored
 
-## The stats engine
-
-`db.ratings.add()` saves the rating, then runs the pure
-[`applyRating`](src/domain/sessions/applyRating.ts) over that session's **completed** blocks — an
-exact port of the former Postgres trigger: first time → `n=1, avg=delta`; otherwise
-`avg = (avg·n + delta)/(n+1)`, `n+1`. The composer reads these stats to personalize sessions.
+The garden (`gardenState`) and the Changes sentences (`weeklyChanges`, `flowersByWeek`) are pure
+functions of the tables above. Nothing about the garden is persisted.
 
 ## Changing the data model
 
