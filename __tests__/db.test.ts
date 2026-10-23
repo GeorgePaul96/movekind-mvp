@@ -100,3 +100,49 @@ describe('local repository', () => {
     expect((await db.profile.get()).id).not.toBe(before.id);
   });
 });
+
+describe('water and workouts', () => {
+  it('water.add then since returns it', async () => {
+    const glass = await db.water.add();
+    __resetDbCacheForTests();
+    expect(await db.water.since(new Date(0).toISOString())).toEqual([glass]);
+  });
+
+  it('water.remove deletes one glass', async () => {
+    const a = await db.water.add();
+    const b = await db.water.add();
+    await db.water.remove(a.id);
+    expect((await db.water.since(new Date(0).toISOString())).map((g) => g.id)).toEqual([b.id]);
+  });
+
+  it('workouts add/update/remove round-trip', async () => {
+    const w = await db.workouts.add({ type: 'walk', minutes: 20 });
+    await db.workouts.update(w.id, { type: 'yoga', minutes: 30 });
+    __resetDbCacheForTests();
+    expect(await db.workouts.all()).toEqual([{ ...w, type: 'yoga', minutes: 30 }]);
+    await db.workouts.remove(w.id);
+    expect(await db.workouts.all()).toEqual([]);
+  });
+
+  it('workouts.all is newest first', async () => {
+    const first = await db.workouts.add({ type: 'run', minutes: 10 });
+    await new Promise((r) => setTimeout(r, 5));
+    const second = await db.workouts.add({ type: 'gym', minutes: 45 });
+    expect((await db.workouts.all()).map((w) => w.id)).toEqual([second.id, first.id]);
+  });
+
+  it('eraseAll clears water and workouts', async () => {
+    await db.water.add();
+    await db.workouts.add({ type: 'dance', minutes: 20 });
+    await db.eraseAll();
+    __resetDbCacheForTests();
+    expect(await db.water.since(new Date(0).toISOString())).toEqual([]);
+    expect(await db.workouts.all()).toEqual([]);
+  });
+
+  it('remove of an unknown id is a no-op', async () => {
+    const glass = await db.water.add();
+    await db.water.remove('nope');
+    expect(await db.water.since(new Date(0).toISOString())).toEqual([glass]);
+  });
+});

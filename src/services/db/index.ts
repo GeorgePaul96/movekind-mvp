@@ -6,6 +6,8 @@ import type {
   Session,
   SessionBlock,
   UserExerciseStats,
+  WaterLog,
+  Workout,
 } from '@/types';
 import { ACTIVE_EXERCISES, exerciseById } from '@/data/exercises';
 import { applyRating } from '@/domain/sessions/applyRating';
@@ -41,6 +43,8 @@ const sessionTable = createTable<Session>('sessions');
 const blockTable = createTable<SessionBlock>('session_blocks');
 const ratingTable = createTable<PostRating>('post_ratings');
 const statsTable = createTable<UserExerciseStats>('user_exercise_stats');
+const waterTable = createTable<WaterLog>('water');
+const workoutTable = createTable<Workout>('workouts');
 
 const userId = async () => (await profileDoc.get()).id;
 
@@ -65,6 +69,20 @@ export const db = {
     update: (id: string, patch: Partial<CheckIn>) => checkInTable.update(id, patch),
     all: async () => newestFirst(await checkInTable.all()),
     since: async (iso: string) => newestFirst((await checkInTable.all()).filter((c) => c.created_at >= iso)),
+  },
+
+  water: {
+    add: () => waterTable.insert({ id: newId(), created_at: nowIso() }),
+    since: async (iso: string) => (await waterTable.all()).filter((w) => w.created_at >= iso),
+    remove: (id: string) => waterTable.remove(id),
+  },
+
+  workouts: {
+    add: (input: Pick<Workout, 'type' | 'minutes'>) =>
+      workoutTable.insert({ ...input, id: newId(), created_at: nowIso() }),
+    all: async () => newestFirst(await workoutTable.all()),
+    update: (id: string, patch: Partial<Pick<Workout, 'type' | 'minutes'>>) => workoutTable.update(id, patch),
+    remove: (id: string) => workoutTable.remove(id),
   },
 
   sessions: {
@@ -164,6 +182,8 @@ export const db = {
       blockTable.clear(),
       ratingTable.clear(),
       statsTable.clear(),
+      waterTable.clear(),
+      workoutTable.clear(),
     ]);
   },
 };

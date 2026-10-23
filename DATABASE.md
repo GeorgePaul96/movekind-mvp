@@ -22,6 +22,8 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 |---|---|---|
 | `profile` (single doc) | `Profile` | `id` (random install id — also the anonymous telemetry id and every row's `user_id`), `name` (optional, from onboarding), `is_premium`, `created_at`. Created on first read. |
 | `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` (`good\|fair\|poor\|null`), `intention` (optional note), `engine_version`, `created_at`. **A day is one check-in:** re-picking today's mood updates the row. |
+| `water` | `WaterLog` | One row per glass: `id`, `created_at`. Feeds the garden's stream (glasses today). `db.water.remove` undoes a glass. |
+| `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the garden's tree. Editable and deletable. |
 | `sessions` | `Session` | `check_in_id` (null for the gentle reset), `state`, `status` (`generated\|started\|completed\|abandoned`), `engine_version`, `created_at`. |
 | `session_blocks` | `SessionBlock` | `session_id`, `exercise_id`, `block_order`, `target_duration` (s), `actual_duration` (s, nullable), `status` (`pending\|completed\|skipped\|swapped`), `created_at`. Read back joined to the exercise library (`BlockWithExercise`). |
 | `post_ratings` | `PostRating` | `session_id`, `rating_delta` −1…2, `notes`, `created_at`. |

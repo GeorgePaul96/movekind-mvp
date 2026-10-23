@@ -17,6 +17,22 @@ export interface CheckIn {
   created_at: string;
 }
 
+/** One glass of water, logged with a tap. */
+export interface WaterLog {
+  id: string;
+  created_at: string;
+}
+
+export type WorkoutType = 'walk' | 'run' | 'yoga' | 'gym' | 'cycle' | 'sport' | 'dance' | 'other';
+
+/** A workout the user did anywhere, logged by hand: what and roughly how long. */
+export interface Workout {
+  id: string;
+  type: WorkoutType;
+  minutes: number;
+  created_at: string;
+}
+
 export interface Exercise {
   id: string;
   name: string;

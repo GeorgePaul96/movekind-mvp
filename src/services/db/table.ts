@@ -70,6 +70,7 @@ export interface Table<T extends { id: string }> {
   insertMany(rows: T[]): Promise<T[]>;
   update(id: string, patch: Partial<T>): Promise<T | null>;
   replaceAll(rows: T[]): Promise<void>;
+  remove(id: string): Promise<void>;
   clear(): Promise<void>;
 }
 
@@ -86,6 +87,7 @@ export function createTable<T extends { id: string }>(name: string): Table<T> {
         return { next, result: updated };
       }),
     replaceAll: (rows) => store.mutate(() => ({ next: rows, result: undefined })),
+    remove: (id) => store.mutate((rows) => ({ next: rows.filter((r) => r.id !== id), result: undefined })),
     clear: () => store.clear(),
   };
 }
