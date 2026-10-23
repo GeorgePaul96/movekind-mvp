@@ -334,3 +334,32 @@ export const WORKOUT_COPY = {
   editA11y: (type: WorkoutType, m: number) => `Edit ${WORKOUT_COPY.entry(type, m)}`,
   deleteA11y: (type: WorkoutType, m: number) => `Delete ${WORKOUT_COPY.entry(type, m)}`,
 };
+
+const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+/** The Changes tab. Ups are celebrated; quieter weeks are named gently and never counted. */
+export const CHANGES_COPY = {
+  tag: 'Your garden over time',
+  title: 'Changes',
+  linesTitle: 'This week',
+  welcome: 'Your first week. Everything you log from here helps your garden grow.',
+  stepsUp: (perDay: number) => `You walked about ${perDay.toLocaleString()} more steps a day than last week.`,
+  stepsSame: 'Your steps are as steady as last week.',
+  stepsQuieter: 'A gentler week for walking. Your grass grows back every morning.',
+  workoutsUp: (n: number, more: number) =>
+    `You logged ${n} ${plural(n, 'workout', 'workouts')} this week, ${more} more than last week.`,
+  workoutsSame: 'Same number of workouts as last week. Steady counts.',
+  workoutsQuieter: 'A quieter week for workouts. Your tree keeps everything it has grown.',
+  waterUp: 'You drank more water this week than last.',
+  waterSame: 'Your water is as steady as last week.',
+  waterQuieter: 'A lighter week for water. Your stream keeps flowing.',
+  checkinsUp: (n: number) => `You checked in on ${n} ${plural(n, 'day', 'days')} this week, more than last week.`,
+  checkinsSame: 'You checked in as often as last week.',
+  checkinsQuieter: 'A quieter week for check-ins. Every flower you planted is still blooming.',
+  compareTitle: 'Look how it has grown',
+  then: 'A month ago',
+  now: 'Today',
+  flowerbedTitle: 'How your weeks felt',
+  weekOf: (d: Date) => `Week of ${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`,
+  emptyWeek: 'No flowers this week',
+} as const;

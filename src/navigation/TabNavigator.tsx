@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import GardenScreen from '@/screens/main/GardenScreen';
-import JourneyScreen from '@/screens/main/JourneyScreen';
+import ChangesScreen from '@/screens/main/ChangesScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import { colors } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
@@ -35,7 +35,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Changes"
-        component={JourneyScreen}
+        component={ChangesScreen}
         options={{
           tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌱" />,
         }}

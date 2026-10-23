@@ -10,6 +10,7 @@ import { MoodPicker } from '@/components/home/MoodPicker';
 import { colors, elevation } from '@/constants/colors';
 import { GARDEN_COPY, MOOD_COPY, WORKOUT_COPY } from '@/constants/copy';
 import { gardenState } from '@/domain/garden/garden';
+import { weeklyChanges } from '@/domain/garden/changes';
 import { isSameLocalDay } from '@/domain/garden/days';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
@@ -50,6 +51,7 @@ export default function GardenScreen() {
 
   const now = new Date();
   const garden = gardenState({ checkIns, water, workouts, stepsToday }, now);
+  const note = weeklyChanges({ checkIns, water, workouts, stepsToday }, now)[0]?.text ?? GARDEN_COPY.defaultNote;
   const glassesToday = water.filter((w) => isToday(w.created_at)).length;
   const todaysWorkouts = workouts.filter((w) => isToday(w.created_at));
   const quiet = (p: Promise<unknown>) => p.catch(() => {}); // the store keeps a calm error message
@@ -66,7 +68,7 @@ export default function GardenScreen() {
       <View style={styles.gardenCard}>
         <Garden state={garden} />
       </View>
-      <Text style={styles.note}>🌿 {GARDEN_COPY.defaultNote}</Text>
+      <Text style={styles.note}>🌿 {note}</Text>
 
       {!todayMood || pickingMood ? (
         <View style={styles.section}>
