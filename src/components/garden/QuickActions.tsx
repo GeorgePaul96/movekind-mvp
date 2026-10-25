@@ -2,18 +2,48 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ActionTile } from '@/components/ActionTile';
 import { Button } from '@/components/Button';
-import { GARDEN_COPY } from '@/constants/copy';
+import { GARDEN_COPY, STEPS_COPY } from '@/constants/copy';
+import type { StepsStatus } from '@/services/steps';
 
 interface Props {
   glassesToday: number;
   stepsToday: number | null;
+  stepsStatus?: StepsStatus | 'unknown';
   onWater: () => void;
   onUndoWater: () => void;
   onWorkout: () => void;
+  /** Tapped Steps: ask for access, or open the week once steps are shared. */
+  onSteps?: () => void;
 }
 
-/** Water (one tap), Workout (opens the log), Steps (counted by the phone in stage 2). */
-export function QuickActions({ glassesToday, stepsToday, onWater, onUndoWater, onWorkout }: Props) {
+function stepsTile(status: StepsStatus | 'unknown', steps: number | null): { detail: string; hint?: string } {
+  switch (status) {
+    case 'granted':
+      return { detail: STEPS_COPY.count(steps ?? 0), hint: STEPS_COPY.weekHint };
+    case 'ask':
+      return { detail: STEPS_COPY.allow, hint: STEPS_COPY.allowHint };
+    case 'denied':
+      return { detail: STEPS_COPY.off, hint: STEPS_COPY.offHint };
+    case 'unavailable':
+      return { detail: STEPS_COPY.unavailable, hint: STEPS_COPY.unavailableHint };
+    case 'needs-full-app':
+      return { detail: GARDEN_COPY.stepsSoon, hint: GARDEN_COPY.stepsHint };
+    default:
+      return { detail: STEPS_COPY.checking };
+  }
+}
+
+/** Water (one tap), Workout (opens the log), Steps (counted by the phone). */
+export function QuickActions({
+  glassesToday,
+  stepsToday,
+  stepsStatus = 'needs-full-app',
+  onWater,
+  onUndoWater,
+  onWorkout,
+  onSteps = () => {},
+}: Props) {
+  const steps = stepsTile(stepsStatus, stepsToday);
   return (
     <View>
       <View style={styles.row}>
@@ -34,10 +64,10 @@ export function QuickActions({ glassesToday, stepsToday, onWater, onUndoWater, o
         <ActionTile
           emoji="👣"
           label={GARDEN_COPY.steps}
-          detail={stepsToday === null ? GARDEN_COPY.stepsSoon : stepsToday.toLocaleString()}
+          detail={steps.detail}
           accessibilityLabel={GARDEN_COPY.steps}
-          accessibilityHint={GARDEN_COPY.stepsHint}
-          onPress={() => {}}
+          accessibilityHint={steps.hint}
+          onPress={onSteps}
         />
       </View>
       {glassesToday > 0 && (

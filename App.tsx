@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { disableDailyReminder } from '@/services/notifications';
 import { trackAppOpened } from '@/services/appOpens';
 import { db } from '@/services/db';
+import { useGardenStore } from '@/store/gardenStore';
 import { colors } from '@/constants/colors';
 
 export default function App() {
@@ -44,6 +45,8 @@ export default function App() {
     const sub = AppState.addEventListener('change', (state) => {
       const { profile } = useProfileStore.getState();
       if (state === 'active' && profile) trackAppOpened(profile.created_at);
+      // Steps keep counting while the app is closed; pick up the new total on return.
+      if (state === 'active') useGardenStore.getState().refreshSteps().catch(() => {});
     });
     return () => sub.remove();
   }, []);

@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Garden } from '@/components/garden/Garden';
 import { QuickActions } from '@/components/garden/QuickActions';
 import { WorkoutSheet } from '@/components/garden/WorkoutSheet';
+import { StepsWeekSheet } from '@/components/garden/StepsWeekSheet';
 import { MoodPicker } from '@/components/home/MoodPicker';
 import { colors, elevation } from '@/constants/colors';
 import { GARDEN_COPY, MOOD_COPY, WORKOUT_COPY } from '@/constants/copy';
@@ -32,6 +33,10 @@ export default function GardenScreen() {
   const water = useGardenStore((s) => s.water);
   const workouts = useGardenStore((s) => s.workouts);
   const stepsToday = useGardenStore((s) => s.stepsToday);
+  const stepsByDay = useGardenStore((s) => s.stepsByDay);
+  const stepsStatus = useGardenStore((s) => s.stepsStatus);
+  const refreshSteps = useGardenStore((s) => s.refreshSteps);
+  const allowSteps = useGardenStore((s) => s.allowSteps);
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
   const todayMood = useGardenStore((s) => s.todayMood)();
@@ -44,14 +49,19 @@ export default function GardenScreen() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Workout | null>(null);
   const [pickingMood, setPickingMood] = useState(false);
+  const [stepsOpen, setStepsOpen] = useState(false);
 
   useEffect(() => {
     if (!loaded) load();
   }, [loaded, load]);
 
+  useEffect(() => {
+    refreshSteps().catch(() => {}); // reads only if access was already given; never asks
+  }, [refreshSteps]);
+
   const now = new Date();
   const garden = gardenState({ checkIns, water, workouts, stepsToday }, now);
-  const note = weeklyChanges({ checkIns, water, workouts, stepsToday }, now)[0]?.text ?? GARDEN_COPY.defaultNote;
+  const note = weeklyChanges({ checkIns, water, workouts, stepsToday, stepsByDay: stepsStatus === 'granted' ? stepsByDay : undefined }, now)[0]?.text ?? GARDEN_COPY.defaultNote;
   const glassesToday = water.filter((w) => isToday(w.created_at)).length;
   const todaysWorkouts = workouts.filter((w) => isToday(w.created_at));
   const quiet = (p: Promise<unknown>) => p.catch(() => {}); // the store keeps a calm error message
@@ -84,6 +94,11 @@ export default function GardenScreen() {
       <QuickActions
         glassesToday={glassesToday}
         stepsToday={stepsToday}
+        stepsStatus={stepsStatus}
+        onSteps={() => {
+          if (stepsStatus === 'granted') setStepsOpen(true);
+          else if (stepsStatus === 'ask') quiet(allowSteps());
+        }}
         onWater={() => quiet(addGlass())}
         onUndoWater={() => quiet(removeLastGlassToday())}
         onWorkout={() => setSheetOpen(true)}
@@ -116,6 +131,8 @@ export default function GardenScreen() {
           ))}
         </View>
       )}
+
+      <StepsWeekSheet visible={stepsOpen} stepsByDay={stepsByDay} onClose={() => setStepsOpen(false)} />
 
       <WorkoutSheet
         visible={sheetOpen}

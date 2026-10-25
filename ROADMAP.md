@@ -12,7 +12,7 @@ that says in plain sentences what activity is changing. Design:
 | Stage | What | Status |
 |---|---|---|
 | 1 | Garden home, water / workout / mood logging, Changes tab, Me (reminder off by default), simpler onboarding, guided sessions removed. Runs in Expo Go. | ✅ built 2026-10-23, **owner testing** |
-| 2 | Development build: real daily steps (Health Connect on Android, the iOS step counter on iPhone) so Android is never worse off. | next |
+| 2 | Development build: real daily steps (Health Connect on Android, the iOS step counter on iPhone) so Android is never worse off. | ✅ code built 2026-10-25; **needs a development build to try on Android** |
 | Tester week | 15 to 20 testers, one week, reminder off. **Success = most open the app on at least 5 of 7 days** (PostHog: distinct days with `app_opened` per person). Needs the owner's PostHog key. | after stage 2 |
 | Release 2 | Camera heart rate (finger on camera, FFT of brightness; morning resting reading + optional after-workout recovery reading, framed as a wellness estimate). More from Apple Health / Health Connect (automatic workouts, body composition from scales/watches people already own). | after validation |
 | Later | A creature living in the garden (owner designs it, likely in Rive). | after validation |

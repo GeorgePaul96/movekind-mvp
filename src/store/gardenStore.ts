@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { db } from '@/services/db';
 import { telemetry } from '@/services/telemetry';
 import { friendlyErrorMessage } from '@/services/network';
+import { requestStepsAccess, stepsByDay, stepsStatus, type StepsStatus } from '@/services/steps';
 import { mapEnergyToState, moodToEnergy } from '@/domain/checkin/moods';
-import { isSameLocalDay, startOfLocalDay } from '@/domain/garden/days';
+import { isSameLocalDay, localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import type { GardenInput } from '@/domain/garden/garden';
 import type { CheckIn, UserState, WaterLog, Workout, WorkoutType } from '@/types';
 
@@ -11,17 +12,27 @@ import type { CheckIn, UserState, WaterLog, Workout, WorkoutType } from '@/types
 export const GARDEN_VERSION = 'garden-1';
 
 const HISTORY_DAYS = 60;
+/** Two weeks: this week and last, for the Changes comparison. */
+const STEP_DAYS = 14;
 
 interface GardenStoreState {
   checkIns: CheckIn[];
   water: WaterLog[];
   workouts: Workout[];
-  /** Today's steps; null until the step counter arrives (stage 2). */
+  /** Today's steps; null until the phone shares them (then the grass keeps a calm default). */
   stepsToday: number | null;
+  /** Daily steps for the last two weeks, keyed by localDayKey. */
+  stepsByDay: Record<string, number>;
+  /** Whether the phone shares steps ('unknown' until first checked). */
+  stepsStatus: StepsStatus | 'unknown';
   loaded: boolean;
   error: string | null;
 
   load: () => Promise<void>;
+  /** Re-reads steps if access was already given. Never asks for permission. */
+  refreshSteps: () => Promise<void>;
+  /** Asks the phone for step access (from a tap), then reads steps. */
+  allowSteps: () => Promise<void>;
   logMood: (mood: UserState) => Promise<void>;
   addGlass: () => Promise<void>;
   removeLastGlassToday: () => Promise<void>;
@@ -56,6 +67,8 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     water: [],
     workouts: [],
     stepsToday: null,
+    stepsByDay: {},
+    stepsStatus: 'unknown',
     loaded: false,
     error: null,
 
@@ -71,6 +84,21 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
       } catch (err) {
         set({ error: friendlyErrorMessage(err), loaded: true });
       }
+    },
+
+    refreshSteps: async () => {
+      const status = await stepsStatus();
+      if (status !== 'granted') {
+        set({ stepsStatus: status, stepsToday: null, stepsByDay: {} });
+        return;
+      }
+      const days = await stepsByDay(STEP_DAYS);
+      set({ stepsStatus: status, stepsByDay: days, stepsToday: days[localDayKey(new Date())] ?? null });
+    },
+
+    allowSteps: async () => {
+      await requestStepsAccess();
+      await get().refreshSteps();
     },
 
     logMood: (mood) =>

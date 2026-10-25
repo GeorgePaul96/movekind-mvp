@@ -11,6 +11,8 @@ There is no network API: every read and write goes through the local repository
 | `logMood(mood)` | `db.checkIns.update(todayId, {energy_score})` if today has one, else `db.checkIns.add(...)` |
 | `addGlass()` / `removeLastGlassToday()` | `db.water.add()` / `db.water.remove(id)` |
 | `addWorkout()` / `updateWorkout()` / `removeWorkout()` | `db.workouts.add` / `update` / `remove` |
+| `refreshSteps()` | no db: `stepsStatus()` then `stepsByDay(14)` from [steps](src/services/steps.ts), only if access was already given |
+| `allowSteps()` | `requestStepsAccess()` (from a tap) then `refreshSteps()` |
 
 Each log action also sends `telemetry.capture('logged', { kind })`, nothing else.
 

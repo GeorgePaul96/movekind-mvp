@@ -28,7 +28,7 @@
 
 | File | Owns |
 |---|---|
-| [gardenStore.ts](src/store/gardenStore.ts) | check-ins, water, workouts, `stepsToday`; `load`, `logMood`, `addGlass`, `removeLastGlassToday`, workout add/update/remove |
+| [gardenStore.ts](src/store/gardenStore.ts) | check-ins, water, workouts, steps (`stepsToday`, `stepsByDay`, `stepsStatus`, `refreshSteps`, `allowSteps`); `load`, `logMood`, `addGlass`, `removeLastGlassToday`, workout add/update/remove |
 | [profileStore.ts](src/store/profileStore.ts) | local profile (name, install id); `eraseAll` |
 | [settingsStore.ts](src/store/settingsStore.ts) | reminder on/off (default off), reduce motion, onboarded |
 
@@ -40,6 +40,7 @@
 | [telemetry.ts](src/services/telemetry.ts) / [telemetryPrivacy.ts](src/services/telemetryPrivacy.ts) | PostHog wrapper (no-op without a key) + property sanitizer |
 | [appOpens.ts](src/services/appOpens.ts) | `trackAppOpened` → `app_opened {day_index}` |
 | [notifications.ts](src/services/notifications.ts) | `enableDailyReminder` / `disableDailyReminder` (lazy expo-notifications; no-op in Expo Go Android) |
+| [steps.ts](src/services/steps.ts) | daily steps: iOS pedometer / Android Health Connect; `stepsStatus`, `requestStepsAccess`, `stepsByDay` |
 | [network.ts](src/services/network.ts) | `friendlyErrorMessage` (calm error copy) |
 
 ## `src/screens/`
@@ -56,6 +57,7 @@
 Garden: [garden/Garden](src/components/garden/Garden.tsx) (the SVG scene) ·
 [garden/QuickActions](src/components/garden/QuickActions.tsx) ·
 [garden/WorkoutSheet](src/components/garden/WorkoutSheet.tsx) (two-tap log) ·
+[garden/StepsWeekSheet](src/components/garden/StepsWeekSheet.tsx) (last 7 days) ·
 [home/MoodPicker](src/components/home/MoodPicker.tsx) (one-tap check-in).
 Primitives: [Button](src/components/Button.tsx) · [ActionTile](src/components/ActionTile.tsx) ·
 [MoodTile](src/components/MoodTile.tsx) · [Chip](src/components/Chip.tsx) · Card, Header, Screen, ErrorBoundary.

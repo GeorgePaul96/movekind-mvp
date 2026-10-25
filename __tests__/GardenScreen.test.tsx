@@ -6,6 +6,20 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 jest.mock('../src/services/telemetry', () => ({ telemetry: { capture: jest.fn() } }));
+let mockStatus = 'needs-full-app';
+const mockRequest = jest.fn(async () => true);
+jest.mock('../src/services/steps', () => ({
+  stepsStatus: async () => mockStatus,
+  requestStepsAccess: async () => {
+    mockStatus = 'granted';
+    return mockRequest();
+  },
+  stepsByDay: async () => {
+    const d = new Date();
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { [key]: 4321 };
+  },
+}));
 jest.mock('../src/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: any) => children,
@@ -16,12 +30,14 @@ import GardenScreen from '../src/screens/main/GardenScreen';
 import { useGardenStore } from '../src/store/gardenStore';
 import { useProfileStore } from '../src/store/profileStore';
 import { __resetDbCacheForTests } from '../src/services/db';
-import { GARDEN_COPY, MOOD_COPY, WORKOUT_COPY } from '../src/constants/copy';
+import { GARDEN_COPY, MOOD_COPY, STEPS_COPY, WORKOUT_COPY } from '../src/constants/copy';
 
 beforeEach(async () => {
+  mockStatus = 'needs-full-app';
+  mockRequest.mockClear();
   await AsyncStorage.clear();
   __resetDbCacheForTests();
-  useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, loaded: true, error: null });
+  useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, stepsByDay: {}, stepsStatus: 'unknown', loaded: true, error: null });
   useProfileStore.setState({
     profile: { id: 'p1', name: 'Sam', created_at: new Date().toISOString() },
   });
@@ -71,9 +87,27 @@ describe('<GardenScreen />', () => {
     expect(queryByLabelText(MOOD_COPY.activated.label)).toBeNull();
   });
 
-  it('steps shows the arrive-soon state', () => {
-    const { getByText } = render(<GardenScreen />);
-    expect(getByText(GARDEN_COPY.stepsSoon)).toBeTruthy();
+  it('steps shows the arrive-soon state where the phone cannot share them yet', async () => {
+    const { findByText } = render(<GardenScreen />);
+    expect(await findByText(GARDEN_COPY.stepsSoon)).toBeTruthy();
+  });
+
+  it('asks for step access only when Steps is tapped', async () => {
+    mockStatus = 'ask';
+    const { findByText, getByLabelText } = render(<GardenScreen />);
+    expect(await findByText(STEPS_COPY.allow)).toBeTruthy();
+    expect(mockRequest).not.toHaveBeenCalled();
+    fireEvent.press(getByLabelText(GARDEN_COPY.steps));
+    expect(await findByText((4321).toLocaleString())).toBeTruthy();
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("with access, Steps shows today's count and opens the week", async () => {
+    mockStatus = 'granted';
+    const { findByText, getByLabelText, getByText } = render(<GardenScreen />);
+    expect(await findByText((4321).toLocaleString())).toBeTruthy();
+    fireEvent.press(getByLabelText(GARDEN_COPY.steps));
+    expect(getByText(STEPS_COPY.weekTitle)).toBeTruthy();
   });
 
   it('shows the garden with a spoken summary', () => {

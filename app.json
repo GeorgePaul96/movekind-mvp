@@ -26,7 +26,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFF8EE"
       },
-      "package": "com.movekind.app"
+      "package": "com.movekind.app",
+      "permissions": [
+        "android.permission.health.READ_STEPS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -49,7 +52,24 @@
           "backgroundColor": "#FFF8EE"
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "MoveKind reads your step count so your garden's grass can grow. Steps stay on this phone."
+        }
+      ],
+      "react-native-health-connect"
     ]
   }
 }

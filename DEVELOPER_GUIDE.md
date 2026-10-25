@@ -35,6 +35,19 @@ There is no linter/build to run locally. The garden logic has the most valuable 
 Edit [changes.ts](src/domain/garden/changes.ts) and `CHANGES_COPY`. Quieter weeks are named gently and
 never state a shortfall (the test bans digits and "less / fewer / down / drop / missed" in them).
 
+### Try real steps on Android (development build)
+Expo Go can't read Android steps. Build the development app once with EAS (free account):
+
+```bash
+npm install -g eas-cli
+eas login
+npm run build:dev:android
+```
+
+Install the APK it links, then `npx expo start` (not `npm run go`) and open the project from the
+MoveKind dev app. The phone needs Health Connect (built into Android 14+, a Play Store app before
+that). iPhone steps already work in Expo Go.
+
 ### Add a field or table to the data model
 Change [src/services/db/](src/services/db/index.ts) + `src/types/index.ts` + [DATABASE.md](DATABASE.md)
 together. Rows already on people's phones lack the new field — make it optional or default it on read.

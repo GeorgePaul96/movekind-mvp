@@ -2,10 +2,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db, __resetDbCacheForTests } from '../src/services/db';
 import { useGardenStore } from '../src/store/gardenStore';
 import { telemetry } from '../src/services/telemetry';
+import { localDayKey } from '../src/domain/garden/days';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+const mockSteps = {
+  stepsStatus: jest.fn(async () => 'granted'),
+  requestStepsAccess: jest.fn(async () => true),
+  stepsByDay: jest.fn(async () => ({ [localDayKey(new Date())]: 4321, '2000-01-01': 10 })),
+};
+// Looked up at call time: imports run before mockSteps is initialised.
+jest.mock('../src/services/steps', () => ({
+  stepsStatus: () => mockSteps.stepsStatus(),
+  requestStepsAccess: () => mockSteps.requestStepsAccess(),
+  stepsByDay: () => mockSteps.stepsByDay(),
+}));
 jest.mock('../src/services/telemetry', () => ({
   telemetry: { capture: jest.fn(), identify: jest.fn(), reset: jest.fn() },
 }));
@@ -13,9 +25,10 @@ jest.mock('../src/services/telemetry', () => ({
 const store = () => useGardenStore.getState();
 
 beforeEach(async () => {
+  jest.clearAllMocks();
   await AsyncStorage.clear();
   __resetDbCacheForTests();
-  useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, loaded: false, error: null });
+  useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, stepsByDay: {}, stepsStatus: 'unknown', loaded: false, error: null });
   (telemetry.capture as jest.Mock).mockClear();
 });
 
@@ -87,5 +100,39 @@ describe('gardenStore', () => {
       ['logged', { kind: 'workout' }],
       ['logged', { kind: 'mood' }],
     ]);
+  });
+
+  it('gardenStore fills stepsToday after refreshSteps', async () => {
+    await store().refreshSteps();
+    expect(store().stepsStatus).toBe('granted');
+    expect(store().stepsToday).toBe(4321);
+    expect(store().gardenInput().stepsToday).toBe(4321);
+    expect(mockSteps.requestStepsAccess).not.toHaveBeenCalled();
+  });
+
+  it('never reads steps without access, and keeps the calm default', async () => {
+    mockSteps.stepsStatus.mockResolvedValueOnce('ask');
+    await store().refreshSteps();
+    expect(store().stepsStatus).toBe('ask');
+    expect(store().stepsToday).toBeNull();
+    expect(mockSteps.stepsByDay).not.toHaveBeenCalled();
+  });
+
+  it('allowSteps asks once, then reads the steps', async () => {
+    mockSteps.stepsStatus.mockResolvedValueOnce('ask');
+    await store().refreshSteps();
+    await store().allowSteps();
+    expect(mockSteps.requestStepsAccess).toHaveBeenCalledTimes(1);
+    expect(store().stepsToday).toBe(4321);
+  });
+
+  it('a refused request leaves steps off without an error', async () => {
+    mockSteps.stepsStatus.mockResolvedValueOnce('ask').mockResolvedValueOnce('denied');
+    mockSteps.requestStepsAccess.mockResolvedValueOnce(false);
+    await store().refreshSteps();
+    await store().allowSteps();
+    expect(store().stepsStatus).toBe('denied');
+    expect(store().stepsToday).toBeNull();
+    expect(store().error).toBeNull();
   });
 });

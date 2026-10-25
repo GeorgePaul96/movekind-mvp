@@ -30,6 +30,12 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 Settings (reminder on/off, reduce motion, onboarded) live separately under `@movekind/settings`
 ([settingsStore](src/store/settingsStore.ts)).
 
+## Steps are read, not stored
+
+Steps come from the phone's own counter each time (`src/services/steps.ts`: iOS pedometer,
+Android Health Connect) for the last 14 days. MoveKind keeps no copy, so revoking access in the
+phone's settings removes them from the app too.
+
 ## Derived, never stored
 
 The garden (`gardenState`) and the Changes sentences (`weeklyChanges`, `flowersByWeek`) are pure

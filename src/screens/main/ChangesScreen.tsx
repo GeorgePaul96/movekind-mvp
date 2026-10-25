@@ -19,6 +19,8 @@ export default function ChangesScreen() {
   const water = useGardenStore((s) => s.water);
   const workouts = useGardenStore((s) => s.workouts);
   const stepsToday = useGardenStore((s) => s.stepsToday);
+  const stepsByDay = useGardenStore((s) => s.stepsByDay);
+  const stepsStatus = useGardenStore((s) => s.stepsStatus);
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
 
@@ -30,7 +32,7 @@ export default function ChangesScreen() {
   const input = { checkIns, water, workouts, stepsToday };
   const monthAgo = new Date(now);
   monthAgo.setDate(monthAgo.getDate() - MONTH_DAYS);
-  const lines = weeklyChanges(input, now);
+  const lines = weeklyChanges({ ...input, stepsByDay: stepsStatus === 'granted' ? stepsByDay : undefined }, now);
   const weeks = flowersByWeek(checkIns, now);
 
   return (

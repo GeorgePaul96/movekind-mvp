@@ -71,8 +71,11 @@ Verify changes with `npm run typecheck` and `npm test`.
   access path. First launch → onboarding (optional name, then "how your garden grows") → Garden.
 - **Reminder is opt-in.** One 9am reminder, **off by default**, permission asked only when switched
   on in Me. Nothing is requested at launch.
-- **Steps (stage 2).** `stepsToday` is `null` until the development build adds Health Connect
-  (Android) / the iOS step counter; the grass keeps a calm default meanwhile.
+- **Steps.** [services/steps.ts](src/services/steps.ts) reads daily steps from the phone: the iOS
+  pedometer (works in Expo Go too) or Health Connect on Android (**development/store build only**;
+  Expo Go on Android reports `needs-full-app`). Never asked at launch: `refreshSteps()` reads only if
+  access was already given; `allowSteps()` asks, from a tap on Steps. Steps are not stored; with no
+  access `stepsToday` stays `null` and the grass keeps a calm default.
 
 ## Conventions
 
@@ -95,7 +98,8 @@ Verify changes with `npm run typecheck` and `npm test`.
 ## Gotchas / known debt (do not "fix" silently)
 
 - Telemetry is a **no-op** unless `EXPO_PUBLIC_POSTHOG_API_KEY` is set.
-- Steps need a **development build** (stage 2); Expo Go can't read daily steps on Android.
+- Android steps need a **development build** (`npm run build:dev:android`); Expo Go can't read daily
+  steps on Android. Use `npm run go` to keep testing everything else in Expo Go.
 - Testers' phones may hold the old session app's tables; `db.dropLegacy()` clears them at launch.
 
 ## Doing work efficiently
