@@ -4,6 +4,7 @@ import { Screen } from '@/components/Screen';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { Chip } from '@/components/Chip';
 import { Icon, type IconName } from '@/components/Icon';
 import { Garden } from '@/components/garden/Garden';
 import { QuickActions } from '@/components/garden/QuickActions';
@@ -11,12 +12,13 @@ import { WorkoutSheet } from '@/components/garden/WorkoutSheet';
 import { StepsWeekSheet } from '@/components/garden/StepsWeekSheet';
 import { MoodPicker } from '@/components/home/MoodPicker';
 import { colors, elevation } from '@/constants/colors';
-import { GARDEN_COPY, MOOD_COPY, WORKOUT_COPY } from '@/constants/copy';
+import { GARDEN_COPY, MOOD_COPY, UNWELL_COPY, WORKOUT_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { gardenState } from '@/domain/garden/garden';
 import { gardenBadges } from '@/domain/garden/badges';
 import { weeklyChanges } from '@/domain/garden/changes';
 import { isSameLocalDay } from '@/domain/garden/days';
+import { skyPhase } from '@/domain/garden/sky';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
 import type { Workout } from '@/types';
@@ -54,6 +56,8 @@ export default function GardenScreen() {
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
   const todayMood = useGardenStore((s) => s.todayMood)();
+  const todayUnwell = useGardenStore((s) => s.todayUnwell)();
+  const setUnwell = useGardenStore((s) => s.setUnwell);
   const addGlass = useGardenStore((s) => s.addGlass);
   const removeLastGlassToday = useGardenStore((s) => s.removeLastGlassToday);
   const addWorkout = useGardenStore((s) => s.addWorkout);
@@ -104,18 +108,35 @@ export default function GardenScreen() {
       <Header
         tag={firstWeek ? GARDEN_COPY.tagFirstWeek : GARDEN_COPY.tag}
         title={GARDEN_COPY.greeting(partOfDay(now), name)}
-        subtitle={garden.resting ? GARDEN_COPY.subtitleResting : GARDEN_COPY.subtitle}
+        subtitle={
+          garden.weather === 'rain' ? UNWELL_COPY.subtitle : garden.resting ? GARDEN_COPY.subtitleResting : GARDEN_COPY.subtitle
+        }
       />
 
       <View style={styles.gardenCard}>
-        <Garden state={garden} />
+        <Garden state={garden} phase={skyPhase(now)} />
         <View style={styles.badgesTop} pointerEvents="none">
-          <Badge icon={garden.resting ? 'weather-night' : 'weather-windy'} label={badges.sky} />
+          <Badge
+            icon={garden.weather === 'rain' ? 'weather-rainy' : garden.resting ? 'weather-night' : 'weather-windy'}
+            label={badges.sky}
+          />
           <Badge icon="leaf" label={badges.tree} />
         </View>
       </View>
 
-      {firstWeek ? (
+      {garden.weather === 'rain' ? (
+        <Card tone="soft" style={styles.noteGap}>
+          <View style={styles.welcomeHead}>
+            <View style={styles.welcomeIcon}>
+              <Icon name="weather-rainy" size={22} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.welcomeTitle}>{UNWELL_COPY.cardTitle}</Text>
+              <Text style={styles.welcomeBody}>{UNWELL_COPY.cardBody}</Text>
+            </View>
+          </View>
+        </Card>
+      ) : firstWeek ? (
         <Card style={styles.noteGap}>
           <View style={styles.welcomeHead}>
             <View style={styles.welcomeIcon}>
@@ -145,9 +166,15 @@ export default function GardenScreen() {
           <MoodPicker onPicked={() => setPickingMood(false)} />
         </View>
       ) : (
-        <View style={styles.moodRow}>
-          <Text style={styles.moodText}>{GARDEN_COPY.todayMood(MOOD_COPY[todayMood].label)}</Text>
-          <Button label={GARDEN_COPY.changeMood} variant="link" size="sm" onPress={() => setPickingMood(true)} />
+        <View>
+          <View style={styles.moodRow}>
+            <Text style={styles.moodText}>{GARDEN_COPY.todayMood(MOOD_COPY[todayMood].label)}</Text>
+            <Button label={GARDEN_COPY.changeMood} variant="link" size="sm" onPress={() => setPickingMood(true)} />
+          </View>
+          <View style={styles.unwellRow}>
+            <Chip label={UNWELL_COPY.toggle} selected={todayUnwell} // Read the live value: two quick taps must not both send the same answer.
+              onPress={() => quiet(setUnwell(!useGardenStore.getState().todayUnwell()))} />
+          </View>
         </View>
       )}
 
@@ -285,6 +312,7 @@ const styles = StyleSheet.create({
   sectionTitle: { ...font.bold, fontSize: 20, color: colors.textPrimary, marginTop: 12, marginBottom: 12 },
   moodRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 8 },
   moodText: { ...font.bold, fontSize: 16, color: colors.textPrimary },
+  unwellRow: { flexDirection: 'row', marginBottom: 8 },
   listTitle: { ...font.semibold, fontSize: 15, color: colors.textSecondary, marginBottom: 4 },
   workoutRow: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: colors.divider },
   workoutText: { ...font.medium, flex: 1, fontSize: 16, color: colors.textPrimary },

@@ -10,7 +10,7 @@ jest.mock('../src/hooks/useReduceMotion', () => ({
 
 import { Garden } from '../src/components/garden/Garden';
 
-const base: GardenState = { stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false };
+const base: GardenState = { stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false, weather: 'clear' };
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -91,5 +91,28 @@ describe('<Garden />', () => {
       jest.advanceTimersByTime(1500);
     });
     expect(tipX(tree)).toBeCloseTo(start, 5);
+  });
+
+  it('rain falls on an unwell day, and the summary says so kindly', () => {
+    const rainy = { ...base, weather: 'rain' as const };
+    const { queryAllByTestId, getByLabelText } = render(<Garden state={rainy} />);
+    expect(queryAllByTestId('rain').length).toBeGreaterThan(0);
+    expect(getByLabelText(GARDEN_COPY.a11ySummary(rainy))).toBeTruthy();
+    expect(GARDEN_COPY.a11ySummary(rainy)).toMatch(/gentle rain/i);
+  });
+
+  it('no rain on a clear day', () => {
+    expect(render(<Garden state={base} />).queryAllByTestId('rain')).toHaveLength(0);
+  });
+
+  it('night brings the moon and stars even when the garden is awake', () => {
+    const tree = render(<Garden state={base} phase="night" />);
+    expect(tree.queryAllByTestId('moon')).toHaveLength(1);
+    expect(tree.queryAllByTestId('sun')).toHaveLength(0);
+  });
+
+  it('dawn and dusk still have a sun', () => {
+    expect(render(<Garden state={base} phase="dawn" />).queryAllByTestId('sun')).toHaveLength(1);
+    expect(render(<Garden state={base} phase="dusk" />).queryAllByTestId('sun')).toHaveLength(1);
   });
 });

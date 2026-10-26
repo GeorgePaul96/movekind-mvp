@@ -105,11 +105,12 @@ export const GARDEN_COPY = {
   changeMood: 'Change',
   todayWorkouts: 'Today',
   /** What a screen reader says about the garden. Never negative, whatever the state. */
-  a11ySummary(s: { stream: number; grass: number; tree: number; flowers: unknown[]; resting: boolean }): string {
+  a11ySummary(s: { stream: number; grass: number; tree: number; flowers: unknown[]; resting: boolean; weather?: 'clear' | 'rain' }): string {
     const flowers =
       s.flowers.length === 0 ? '' : s.flowers.length === 1 ? ' One flower blooms.' : ` ${s.flowers.length} flowers bloom.`;
     const rest = s.resting ? 'Your garden is resting under the moon. ' : '';
-    return `${rest}${STREAM_LINE[s.stream]}, ${GRASS_LINE[s.grass - 1]}, and ${TREE_LINE[s.tree]}.${flowers}`;
+    const rain = s.weather === 'rain' ? 'Gentle rain is falling and the garden is drinking it in. ' : '';
+    return `${rain}${rest}${STREAM_LINE[s.stream]}, ${GRASS_LINE[s.grass - 1]}, and ${TREE_LINE[s.tree]}.${flowers}`;
   },
 } as const;
 
@@ -235,6 +236,7 @@ export const STEPS_COPY = {
 /** Small status pills on the garden card, and captions for the then-and-now cards. */
 export const BADGE_COPY = {
   resting: 'Resting under the moon',
+  rain: 'Gentle rain falling',
   stream: ['Soft breeze', 'Stream flowing', 'Ducks visiting', 'Ducks visiting', 'Stream sparkling'],
   tree: ['Young sprout', 'Sapling growing', 'Young tree', 'Birds nesting', 'In blossom', 'Fruit ripening', 'Two trees thriving'],
   caption: [
@@ -258,4 +260,12 @@ export const BADGE_COPY = {
   ],
   growthMore: 'This helps your tree grow a little more.',
   growthFull: 'This keeps your two trees thriving.',
+} as const;
+
+/** Feeling unwell: rest, never a shortfall. The garden gets gentle rain that day. */
+export const UNWELL_COPY = {
+  toggle: 'Feeling unwell today',
+  cardTitle: 'Rest is part of growing. Your garden is drinking the rain.',
+  cardBody: 'No logs needed today. Rest easy.',
+  subtitle: 'Today is for resting.',
 } as const;

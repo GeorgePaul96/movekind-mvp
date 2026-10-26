@@ -11,7 +11,7 @@ import { localDayKey, startOfLocalDay } from './days';
  */
 
 export interface GardenInput {
-  checkIns: { energy_score: number; created_at: string }[];
+  checkIns: { energy_score: number; created_at: string; unwell?: boolean }[];
   water: { created_at: string }[];
   workouts: { minutes: number; created_at: string }[];
   stepsToday: number | null;
@@ -25,6 +25,8 @@ export interface GardenState {
   birds: boolean;
   flowers: { day: string; mood: UserState }[];
   resting: boolean;
+  /** 'rain' when today's check-in says the person feels unwell: soft rain, never decay. */
+  weather: 'clear' | 'rain';
 }
 
 /** Cumulative workout minutes needed for each tree stage (sprout … second tree). */
@@ -85,7 +87,13 @@ export function gardenState(input: GardenInput, now: Date): GardenState {
   const awakeSince = since(startOfLocalDay(now, -(QUIET_DAYS_BEFORE_REST - 1)));
   const resting = everything.length > 0 && !everything.some(awakeSince);
 
+  const todayCheckIn = checkIns
+    .filter(since(todayStart))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  const weather = todayCheckIn?.unwell ? 'rain' : 'clear';
+
   return {
+    weather,
     stream,
     ducks: stream >= 2,
     grass: grassLevel(input.stepsToday),

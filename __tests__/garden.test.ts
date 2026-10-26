@@ -11,7 +11,7 @@ const glasses = (n: number, day = 20) => Array.from({ length: n }, (_, i) => ({ 
 describe('gardenState', () => {
   it('empty input is a calm sprout garden', () => {
     expect(gardenState(empty, NOW)).toEqual({
-      stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false,
+      stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false, weather: 'clear',
     });
   });
 
@@ -99,5 +99,28 @@ describe('gardenState', () => {
 describe('localDayKey', () => {
   it('is the local calendar day', () => {
     expect(localDayKey(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+  });
+});
+
+describe('weather', () => {
+  it('a clear day by default', () => {
+    expect(gardenState(empty, NOW).weather).toBe('clear');
+  });
+
+  it("gentle rain when today's check-in says unwell", () => {
+    const checkIns = [{ energy_score: 4, created_at: at(20, 9), unwell: true }];
+    expect(gardenState({ ...empty, checkIns }, NOW).weather).toBe('rain');
+  });
+
+  it('rain is only for today; yesterday being unwell leaves today clear', () => {
+    const checkIns = [{ energy_score: 2, created_at: at(19, 9), unwell: true }];
+    expect(gardenState({ ...empty, checkIns }, NOW).weather).toBe('clear');
+  });
+
+  it('rain changes nothing that has grown', () => {
+    const base = { ...empty, water: glasses(3), workouts: [{ minutes: 200, created_at: at(18) }] };
+    const sunny = gardenState({ ...base, checkIns: [{ energy_score: 4, created_at: at(20, 9) }] }, NOW);
+    const rainy = gardenState({ ...base, checkIns: [{ energy_score: 4, created_at: at(20, 9), unwell: true }] }, NOW);
+    expect({ ...rainy, weather: 'clear' }).toEqual(sunny);
   });
 });

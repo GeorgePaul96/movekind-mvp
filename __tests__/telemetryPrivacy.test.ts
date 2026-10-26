@@ -35,3 +35,10 @@ describe('sanitizeProperties', () => {
     expect(sanitizeProperties(kitchenSink)).toEqual({ sessionId: 'ok' });
   });
 });
+
+describe('health state', () => {
+  it('never sends whether someone feels unwell', () => {
+    const { sanitizeProperties } = require('../src/services/telemetryPrivacy');
+    expect(sanitizeProperties({ unwell: true, kind: 'mood' })).toEqual({ kind: 'mood' });
+  });
+});

@@ -1,7 +1,7 @@
 import { gardenBadges, treeCaption, workoutGrowthLine } from '../src/domain/garden/badges';
 import type { GardenState } from '../src/domain/garden/garden';
 
-const base: GardenState = { stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false };
+const base: GardenState = { stream: 0, ducks: false, grass: 1, tree: 0, birds: false, flowers: [], resting: false, weather: 'clear' };
 const banned = /dry|dead|dying|wilt|brown|missed|lost|behind|only|fail/i;
 
 describe('gardenBadges', () => {
@@ -50,5 +50,11 @@ describe('workoutGrowthLine', () => {
 
   it('the fullest garden still grows', () => {
     expect(workoutGrowthLine(5000, 30)).toBe('This keeps your two trees thriving.');
+  });
+});
+
+describe('rainy days', () => {
+  it('a rainy garden says the rain is gentle', () => {
+    expect(gardenBadges({ ...base, weather: 'rain', stream: 3 }).sky).toBe('Gentle rain falling');
   });
 });

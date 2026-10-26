@@ -4,6 +4,7 @@ import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, Path, Rect, Stop }
 import { gardenColors as c, stateColors } from '@/constants/colors';
 import { GARDEN_COPY } from '@/constants/copy';
 import type { GardenState } from '@/domain/garden/garden';
+import type { SkyPhase } from '@/domain/garden/sky';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const TICK_MS = 100; // gentle motion only: 10 updates a second is plenty
@@ -18,8 +19,21 @@ const STARS = [
   [24, 22], [62, 48], [104, 18], [148, 40], [186, 16], [272, 30], [204, 62], [40, 78], [120, 70],
 ] as const;
 
+const RAIN_DROPS = 22;
+
+/** Sky gradient, sun and hills for each light. Night is shared by "resting" and real night. */
+const SKIES = {
+  dawn: { top: c.dawnSky, low: c.dawnLow, sun: { x: 50, y: 98, fill: c.sun } },
+  day: { top: c.sky, low: c.skyLow, sun: { x: 232, y: 58, fill: c.sun } },
+  dusk: { top: c.duskSky, low: c.duskLow, sun: { x: 246, y: 100, fill: c.sunDusk } },
+  rain: { top: c.rainSky, low: c.rainLow, sun: null },
+  night: { top: c.skyRest, low: c.skyRestLow, sun: null },
+} as const;
+
 interface Props {
   state: GardenState;
+  /** Time of day from the phone's clock (only the light changes). Defaults to day. */
+  phase?: SkyPhase;
   /** No motion at all (small previews, e.g. the Changes then-and-now pair). */
   still?: boolean;
 }
@@ -29,7 +43,7 @@ interface Props {
  * (steps), tree (workouts), flowers (moods). It only grows or rests; resting turns day into a
  * quiet starry night and changes nothing that has grown. Holds still when asked for less motion.
  */
-export function Garden({ state, still = false }: Props) {
+export function Garden({ state, phase: skyTime = 'day', still = false }: Props) {
   const reduceMotion = useReduceMotion() || still;
   const [phase, setPhase] = useState(0);
 
@@ -40,7 +54,11 @@ export function Garden({ state, still = false }: Props) {
   }, [reduceMotion]);
 
   const t = reduceMotion ? 0 : phase;
-  const night = state.resting;
+  const night = state.resting || skyTime === 'night';
+  const rain = state.weather === 'rain';
+  const skyKey = night ? 'night' : rain ? 'rain' : skyTime;
+  const sky = SKIES[skyKey];
+  const gradientId = `sky-${skyKey}`; // shared by every garden in the same light: identical gradients
   const tuftHeight = 5 + state.grass * 4;
   const cloudDrift = Math.sin(t * 0.25) * 4;
 
@@ -54,13 +72,12 @@ export function Garden({ state, still = false }: Props) {
       {/* Keeps the scene's own proportions so nothing (sun, grass, flowers) is ever cropped. */}
       <Svg width="100%" height="100%" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
         <Defs>
-          {/* Named by day/night: several gardens on one screen then share identical gradients. */}
-          <LinearGradient id={night ? "skyNight" : "skyDay"} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={night ? c.skyRest : c.sky} />
-            <Stop offset="1" stopColor={night ? c.skyRestLow : c.skyLow} />
+          <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={sky.top} />
+            <Stop offset="1" stopColor={sky.low} />
           </LinearGradient>
         </Defs>
-        <Rect width={VIEW_W} height={VIEW_H} fill={night ? "url(#skyNight)" : "url(#skyDay)"} />
+        <Rect width={VIEW_W} height={VIEW_H} fill={`url(#${gradientId})`} />
 
         {night ? (
           <>
@@ -74,8 +91,12 @@ export function Garden({ state, still = false }: Props) {
           </>
         ) : (
           <>
-            <Circle cx="232" cy="58" r="32" fill={c.sunGlow} opacity={0.7} />
-            <Circle testID="sun" cx="232" cy="58" r="20" fill={c.sun} />
+            {sky.sun && (
+              <>
+                <Circle cx={sky.sun.x} cy={sky.sun.y} r="32" fill={c.sunGlow} opacity={0.7} />
+                <Circle testID="sun" cx={sky.sun.x} cy={sky.sun.y} r="20" fill={sky.sun.fill} />
+              </>
+            )}
             <G transform={`translate(${cloudDrift} 0)`}>
               <Ellipse cx="62" cy="52" rx="22" ry="10" fill={c.cloud} />
               <Ellipse cx="78" cy="46" rx="14" ry="10" fill={c.cloud} />
@@ -84,6 +105,15 @@ export function Garden({ state, still = false }: Props) {
               <Ellipse cx="160" cy="34" rx="16" ry="7" fill={c.cloud} opacity={0.9} />
             </G>
           </>
+        )}
+
+        {rain && (
+          <G transform={`translate(${cloudDrift} 0)`}>
+            <Ellipse cx="70" cy="40" rx="46" ry="16" fill={c.rainCloud} />
+            <Ellipse cx="110" cy="30" rx="30" ry="14" fill={c.rainCloud} />
+            <Ellipse cx="206" cy="46" rx="50" ry="17" fill={c.rainCloud} />
+            <Ellipse cx="250" cy="36" rx="28" ry="13" fill={c.rainCloud} />
+          </G>
         )}
 
         <Path d="M0 150 C60 128 120 136 170 150 S250 140 290 132 V250 H0Z" fill={night ? c.hillBackRest : c.hillBack} />
@@ -102,6 +132,12 @@ export function Garden({ state, still = false }: Props) {
             fill="none"
           />
         </G>
+        {rain && (
+          <G opacity={0.35 + 0.1 * Math.sin(t * 0.4)}>
+            <Ellipse cx="190" cy="186" rx="70" ry="9" fill={c.mist} />
+            <Ellipse cx="96" cy="214" rx="60" ry="8" fill={c.mist} />
+          </G>
+        )}
         {state.ducks && (
           <>
             <Duck x={168} y={190} />
@@ -140,6 +176,15 @@ export function Garden({ state, still = false }: Props) {
             </G>
           );
         })}
+        {rain && (
+          <G testID="rain">
+            {Array.from({ length: RAIN_DROPS }, (_, i) => {
+              const x = 8 + ((i * 37) % 280);
+              const y = 30 + ((i * 53 + t * 70) % 210);
+              return <Line key={i} x1={x} y1={y} x2={x - 2} y2={y + 9} stroke={c.rain} strokeWidth={1.4} strokeLinecap="round" opacity={0.75} />;
+            })}
+          </G>
+        )}
       </Svg>
     </View>
   );

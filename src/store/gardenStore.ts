@@ -40,6 +40,9 @@ interface GardenStoreState {
   updateWorkout: (id: string, patch: Partial<Pick<Workout, 'type' | 'minutes'>>) => Promise<void>;
   removeWorkout: (id: string) => Promise<void>;
   todayMood: () => UserState | null;
+  /** Marks today's check-in as feeling unwell (or not). Needs a mood picked today first. */
+  setUnwell: (unwell: boolean) => Promise<void>;
+  todayUnwell: () => boolean;
   gardenInput: () => GardenInput;
 }
 
@@ -154,6 +157,17 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
         await db.workouts.remove(id);
         set((s) => ({ workouts: s.workouts.filter((w) => w.id !== id) }));
       }),
+
+    setUnwell: (unwell) =>
+      guarded(async () => {
+        const today = get().checkIns.find((c) => isToday(c.created_at));
+        if (!today) return;
+        await db.checkIns.update(today.id, { unwell });
+        set((s) => ({ checkIns: s.checkIns.map((c) => (c.id === today.id ? { ...c, unwell } : c)) }));
+        // Deliberately no telemetry: how someone feels physically never leaves the phone.
+      }),
+
+    todayUnwell: () => !!get().checkIns.find((c) => isToday(c.created_at))?.unwell,
 
     todayMood: () => {
       const today = get().checkIns.find((c) => isToday(c.created_at));

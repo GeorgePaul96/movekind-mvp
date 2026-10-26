@@ -22,6 +22,7 @@ export const BLOCKED_PROPERTY_KEYS: readonly string[] = [
   'sleepQuality', 'sleep_quality',
   'ratingDelta', 'rating_delta',
   'notes',
+  'unwell',
   // Direct PII
   'email', 'name',
 ];

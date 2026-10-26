@@ -135,4 +135,36 @@ describe('gardenStore', () => {
     expect(store().stepsToday).toBeNull();
     expect(store().error).toBeNull();
   });
+
+  it("setUnwell marks today's check-in and survives a restart", async () => {
+    await store().logMood('regulated');
+    await store().setUnwell(true);
+    expect(store().todayUnwell()).toBe(true);
+    __resetDbCacheForTests();
+    await store().load();
+    expect(store().todayUnwell()).toBe(true);
+    expect((await db.checkIns.all())[0]!.unwell).toBe(true);
+    await store().setUnwell(false);
+    expect(store().todayUnwell()).toBe(false);
+  });
+
+  it('setUnwell does nothing before a mood is picked today', async () => {
+    await store().setUnwell(true);
+    expect(store().todayUnwell()).toBe(false);
+    expect(await db.checkIns.all()).toEqual([]);
+  });
+
+  it('re-picking the mood keeps today unwell', async () => {
+    await store().logMood('overloaded');
+    await store().setUnwell(true);
+    await store().logMood('regulated');
+    expect(store().todayUnwell()).toBe(true);
+  });
+
+  it('feeling unwell is never sent as telemetry', async () => {
+    await store().logMood('regulated');
+    (telemetry.capture as jest.Mock).mockClear();
+    await store().setUnwell(true);
+    expect(telemetry.capture).not.toHaveBeenCalled();
+  });
 });

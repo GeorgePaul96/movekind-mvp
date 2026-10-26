@@ -12,6 +12,8 @@ export interface CheckIn {
   energy_score: number; // 1 to 5
   sleep_quality: 'good' | 'fair' | 'poor' | null;
   intention: string | null; // optional one-line intention set at check-in
+  /** Feeling unwell today: the garden gets gentle rain. Absent on older rows. */
+  unwell?: boolean;
   engine_version: string;
   created_at: string;
 }

@@ -30,7 +30,7 @@ import GardenScreen from '../src/screens/main/GardenScreen';
 import { useGardenStore } from '../src/store/gardenStore';
 import { useProfileStore } from '../src/store/profileStore';
 import { __resetDbCacheForTests } from '../src/services/db';
-import { BADGE_COPY, GARDEN_COPY, MOOD_COPY, STEPS_COPY, WORKOUT_COPY } from '../src/constants/copy';
+import { BADGE_COPY, GARDEN_COPY, MOOD_COPY, STEPS_COPY, UNWELL_COPY, WORKOUT_COPY } from '../src/constants/copy';
 
 beforeEach(async () => {
   mockStatus = 'needs-full-app';
@@ -135,5 +135,26 @@ describe('<GardenScreen />', () => {
   it('shows the garden with a spoken summary', () => {
     const { getByLabelText } = render(<GardenScreen />);
     expect(getByLabelText(/trickle/)).toBeTruthy();
+  });
+
+  it('the unwell choice appears once a mood is picked, and brings gentle rain', async () => {
+    const { getByLabelText, queryByLabelText, findByLabelText, findByText, getByText } = render(<GardenScreen />);
+    expect(queryByLabelText(UNWELL_COPY.toggle)).toBeNull();
+    fireEvent.press(getByLabelText(MOOD_COPY.regulated.label));
+    fireEvent.press(await findByLabelText(UNWELL_COPY.toggle));
+    expect(await findByText(UNWELL_COPY.cardTitle)).toBeTruthy();
+    expect(getByText(UNWELL_COPY.cardBody)).toBeTruthy();
+    expect(getByText(BADGE_COPY.rain)).toBeTruthy();
+    expect(useGardenStore.getState().todayUnwell()).toBe(true);
+  });
+
+  it('turning unwell off brings the clear sky back', async () => {
+    const { getByLabelText, findByLabelText, findByText, queryByText } = render(<GardenScreen />);
+    fireEvent.press(getByLabelText(MOOD_COPY.regulated.label));
+    const toggle = await findByLabelText(UNWELL_COPY.toggle);
+    fireEvent.press(toggle);
+    await findByText(UNWELL_COPY.cardTitle);
+    fireEvent.press(await findByLabelText(UNWELL_COPY.toggle));
+    await waitFor(() => expect(queryByText(UNWELL_COPY.cardTitle)).toBeNull());
   });
 });

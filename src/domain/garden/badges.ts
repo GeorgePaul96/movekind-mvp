@@ -6,7 +6,7 @@ const MAX_STAGE = BADGE_COPY.tree.length - 1;
 /** The two pills on the garden card: what the sky/water and the tree are doing. */
 export function gardenBadges(s: GardenState): { sky: string; tree: string } {
   return {
-    sky: s.resting ? BADGE_COPY.resting : BADGE_COPY.stream[s.stream],
+    sky: s.weather === 'rain' ? BADGE_COPY.rain : s.resting ? BADGE_COPY.resting : BADGE_COPY.stream[s.stream],
     tree: BADGE_COPY.tree[s.tree],
   };
 }
