@@ -194,3 +194,31 @@ export const STEPS_COPY = {
   day: (d: Date) => d.toLocaleDateString(undefined, { weekday: 'long' }),
   count: (n: number) => n.toLocaleString(),
 } as const;
+
+/** Small status pills on the garden card, and captions for the then-and-now cards. */
+export const BADGE_COPY = {
+  resting: 'Resting under the moon',
+  stream: ['Soft breeze', 'Stream flowing', 'Ducks visiting', 'Ducks visiting', 'Stream sparkling'],
+  tree: ['Young sprout', 'Sapling growing', 'Young tree', 'Birds nesting', 'In blossom', 'Fruit ripening', 'Two trees thriving'],
+  caption: [
+    'A tiny sprout',
+    'A growing sapling',
+    'A young tree',
+    'A tree with birds',
+    'A tree in blossom',
+    'A tree full of fruit',
+    'Two trees, full of fruit',
+  ],
+  /** What logging a workout will grow (index = the stage it reaches). */
+  growth: [
+    '',
+    'This will turn your sprout into a sapling.',
+    'This will grow your sapling into a young tree.',
+    'This will bring birds to your tree.',
+    'This will make your tree blossom.',
+    'This will bring fruit to your tree.',
+    'This will grow a second tree.',
+  ],
+  growthMore: 'This helps your tree grow a little more.',
+  growthFull: 'This keeps your two trees thriving.',
+} as const;

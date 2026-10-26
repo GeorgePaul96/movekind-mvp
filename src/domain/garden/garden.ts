@@ -48,7 +48,7 @@ function grassLevel(steps: number | null): GardenState['grass'] {
   return 4;
 }
 
-function treeStage(minutes: number): GardenState['tree'] {
+export function treeStageFor(minutes: number): GardenState['tree'] {
   let stage = 0;
   TREE_STAGE_MINUTES.forEach((need, i) => {
     if (minutes >= need) stage = i;
@@ -67,7 +67,7 @@ export function gardenState(input: GardenInput, now: Date): GardenState {
   const since = (start: Date) => (r: { created_at: string }) => new Date(r.created_at) >= start;
 
   const stream = streamLevel(water.filter(since(todayStart)).length);
-  const tree = treeStage(workouts.reduce((sum, w) => sum + w.minutes, 0));
+  const tree = treeStageFor(workouts.reduce((sum, w) => sum + w.minutes, 0));
 
   // One flower per local day; the latest check-in that day decides its colour.
   const latestByDay = new Map<string, { at: string; energy: number }>();

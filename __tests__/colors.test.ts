@@ -15,7 +15,7 @@ function ratio(a: string, b: string): number {
 const TEXT = 4.5;
 const UI = 3;
 
-describe('Sunrise palette contrast', () => {
+describe('Sage palette contrast', () => {
   const textPairs: [string, string, string][] = [
     ['textPrimary on background', colors.textPrimary, colors.background],
     ['textSecondary on background', colors.textSecondary, colors.background],
@@ -32,6 +32,9 @@ describe('Sunrise palette contrast', () => {
     ['warning on background', colors.warning, colors.background],
     ['error on background', colors.error, colors.background],
     ['info on background', colors.info, colors.background],
+    ['onInverse on inverse (note card)', colors.onInverse, colors.inverse],
+    ['textSecondary on surface', colors.textSecondary, colors.surface],
+    ['primary text on primarySoft (active tab)', colors.primary, colors.primarySoft],
   ];
 
   it.each(textPairs)('%s clears 4.5:1', (_name, fg, bg) => {

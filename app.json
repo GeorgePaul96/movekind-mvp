@@ -69,7 +69,8 @@
           "motionPermission": "MoveKind reads your step count so your garden's grass can grow. Steps stay on this phone."
         }
       ],
-      "react-native-health-connect"
+      "react-native-health-connect",
+      "expo-font"
     ]
   }
 }

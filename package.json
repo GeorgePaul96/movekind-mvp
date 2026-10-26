@@ -21,6 +21,7 @@
     "ota": "eas update --branch production"
   },
   "dependencies": {
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",
@@ -30,6 +31,7 @@
     "expo-build-properties": "~57.0.22",
     "expo-constants": "~57.0.22",
     "expo-dev-client": "~57.0.20",
+    "expo-font": "~57.0.4",
     "expo-linear-gradient": "~57.0.2",
     "expo-notifications": "~57.0.23",
     "expo-sensors": "~57.0.3",

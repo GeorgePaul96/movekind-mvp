@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary": "#20684a", "primary-sage": "#599e7c", "primary-container": "#599e7c", "on-primary": "#ffffff", "on-primary-container": "#f5fff6", "primary-fixed": "#d8e2dc", "primary-fixed-dim": "#8fd5b0", "secondary": "#57615c", "secondary-container": "#d8e2dc", "on-secondary-container": "#5b6560", "secondary-fixed": "#dbe5df", "on-secondary-fixed": "#151d1a", "surface": "#f6faf5", "surface-bright": "#f6faf5", "surface-dim": "#d7dbd6", "surface-container-lowest": "#ffffff", "surface-container-low": "#f0f5f0", "surface-container": "#ebefea", "surface-container-high": "#e5e9e4", "surface-container-highest": "#dfe4df", "on-surface": "#181d1a", "on-surface-variant": "#404943", "outline": "#707972", "outline-variant": "#bfc9c1", "inverse-surface": "#2d322e", "inverse-on-surface": "#edf2ed" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter": "1rem", "margin": "1.25rem", "space-md": "1rem", "space-xl": "2rem" }, "fontFamily": { "body-md": ["Plus Jakarta Sans", "DM Sans", "sans-serif"], "body-lg": ["Plus Jakarta Sans", "DM Sans", "sans-serif"], "label-lg": ["Plus Jakarta Sans", "sans-serif"], "label-sm": ["Plus Jakarta Sans", "sans-serif"], "label-md": ["Plus Jakarta Sans", "sans-serif"], "headline-sm": ["Plus Jakarta Sans", "sans-serif"], "headline-xl": ["Plus Jakarta Sans", "sans-serif"], "headline-lg": ["Plus Jakarta Sans", "sans-serif"], "body-sm": ["Plus Jakarta Sans", "DM Sans", "sans-serif"], "headline-md": ["Plus Jakarta Sans", "sans-serif"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "700" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }], "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "headline-xl": ["32px", { "lineHeight": "40px", "fontWeight": "700" }], "headline-lg": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    
+    /* Spring Bottom Sheet Modal Entrance */
+    @keyframes sheetSpringUp {
+      0% {
+        transform: translateY(100%);
+        opacity: 0.85;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes backdropFade {
+      0% { opacity: 0; backdrop-filter: blur(0px); }
+      100% { opacity: 1; backdrop-filter: blur(8px); }
+    }
+    
+    .animate-sheet-spring {
+      animation: sheetSpringUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+    
+    .animate-backdrop-in {
+      animation: backdropFade 0.5s ease-out forwards;
+    }
+    
+    /* Staggered entrance cascades */
+    .cascade-item {
+      opacity: 0;
+      transform: translateY(14px);
+      animation: cascadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes cascadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .delay-1 { animation-delay: 0.12s; }
+    .delay-2 { animation-delay: 0.20s; }
+    .delay-3 { animation-delay: 0.28s; }
+    .delay-4 { animation-delay: 0.36s; }
+    .delay-5 { animation-delay: 0.44s; }
+
+    /* Breathing subtle pulse for the drag handle */
+    @keyframes handleBreath {
+      0%, 100% { opacity: 0.6; transform: scaleX(1); }
+      50% { opacity: 0.95; transform: scaleX(1.08); }
+    }
+    .animate-handle {
+      animation: handleBreath 3.2s ease-in-out infinite;
+    }
+
+    /* Sprout breathing & gentle sway */
+    @keyframes sproutFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      50% { transform: translateY(-2px) rotate(4deg) scale(1.05); }
+    }
+    .animate-sprout {
+      animation: sproutFloat 3.4s ease-in-out infinite;
+      display: inline-block;
+      transform-origin: bottom center;
+    }
+
+    /* Light sweep shimmering effect on primary button */
+    @keyframes lightSweep {
+      0% { transform: translateX(-150%) skewX(-20deg); }
+      35%, 100% { transform: translateX(250%) skewX(-20deg); }
+    }
+    .shimmer-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      animation: lightSweep 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Floating particle burst */
+    .leaf-particle {
+      position: absolute;
+      pointer-events: none;
+      font-size: 14px;
+      z-index: 50;
+      animation: floatUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes floatUpFade {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.6) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx, 0px), var(--ty, -38px)) scale(1.2) rotate(var(--tr, 30deg));
+      }
+    }
+
+    /* Badge pop scale */
+    .badge-pop {
+      animation: badgePop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes badgePop {
+      0% { transform: scale(0.85); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* Tap feedback bounce */
+    .active-scale:active {
+      transform: scale(0.94);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen antialiased selection:bg-secondary-container selection:text-primary"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go back" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-high active:scale-90 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="MoveKind Sprout Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XWgnYugZIg0E7IBt_nUuXD8CuxtG8V55Ig-n49STYyg4O-blLT1IWj0L7bvUUEunEVTv3LWCm54OQu6BjE6BNN3myfnl_7XX_fmIcE73LOybuc7SPMp6qFpzTGKUSOfGHtFqK2ZG6fLrN0KFolJtZej0uWSNgHHui7VfdTejLJ5QP3NBypi7m_0eByV4LQ-od_YysNZDjZtxZ8q1FkyxTO8KBFtCi9k70PYGJQ0cu6nyqIt8mew5MJFwQ"/><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Gentle Check In</h1></div><div class="w-8 h-8 rounded-full bg-primary-sage flex items-center justify-center shrink-0 shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full relative overflow-hidden select-none">
+<!-- Dimmed & Soft-Blurred Garden Backdrop Layer -->
+<div class="relative w-full h-44 overflow-hidden px-margin pt-4 flex flex-col justify-end">
+<!-- Stylized Garden Atmosphere Silhouette with entrance fade -->
+<div class="absolute inset-0 bg-inverse-surface/65 backdrop-blur-md z-10 animate-backdrop-in"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface via-transparent to-transparent z-10 opacity-70"></div>
+<!-- Gentle Bloom Art Preview in Background -->
+<div class="relative z-0 opacity-40 flex items-center justify-center h-full">
+<div class="w-32 h-32 rounded-full bg-primary-fixed/40 blur-xl absolute"></div>
+<svg class="w-24 h-28 transform -translate-y-2" fill="none" viewbox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+<path d="M50 110V46" stroke="#226a4b" stroke-linecap="round" stroke-width="6"></path>
+<path d="M50 78C38 78 30 68 30 54C42 54 50 64 50 78Z" fill="#8ed5af"></path>
+<path d="M50 62C62 62 70 52 70 38C58 38 50 48 50 62Z" fill="#a7efc8"></path>
+<circle cx="50" cy="34" fill="#ff7662" r="14"></circle>
+<circle cx="50" cy="34" fill="#ffdad4" r="7"></circle>
+</svg>
+</div>
+</div>
+<!-- Rounded Modal Sheet with Spring Entrance -->
+<div class="relative z-20 bg-surface-container-lowest rounded-t-xl px-margin pt-3.5 pb-6 shadow-[0_-12px_40px_rgba(0,0,0,0.18)] flex flex-col -mt-4 transition-all animate-sheet-spring">
+<!-- Drag Pill Handle with soft breathing hint -->
+<div class="w-10 h-1.5 rounded-full bg-surface-container-highest mx-auto mb-4 animate-handle"></div>
+<!-- Friendly Header Section (Cascade 1) -->
+<div class="flex flex-col mb-4 cascade-item delay-1">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">What did you do?</h2>
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#eaf4ee] text-primary-sage transition-transform hover:rotate-12 active:scale-90 cursor-pointer shadow-xs" title="Gentle mindfulness">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">spa</span>
+</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+        Any movement counts. Stretches, strolling, or dancing in your kitchen.
+      </p>
+</div>
+<!-- Activity Type Selection (Cascade 2) -->
+<div class="grid grid-cols-3 gap-2.5 cascade-item delay-2 relative" id="activity-grid">
+<!-- Walk (Initially Selected) -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-primary-sage text-on-primary shadow-[0_4px_14px_rgba(89,158,124,0.3)] relative overflow-hidden" data-activity="Walk" type="button">
+<span class="material-symbols-outlined text-[17px] activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text font-semibold">Walk</span>
+</button>
+<!-- Run -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Run" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Run</span>
+</button>
+<!-- Yoga -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Yoga" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Yoga</span>
+</button>
+<!-- Gym -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Gym" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Gym</span>
+</button>
+<!-- Cycle -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Cycle" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Cycle</span>
+</button>
+<!-- Sport -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Sport" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Sport</span>
+</button>
+<!-- Dance -->
+<button class="activity-chip col-span-1 min-h-[46px] py-3 px-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Dance" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Dance</span>
+</button>
+<!-- Other -->
+<button class="activity-chip col-span-2 min-h-[46px] py-3 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high relative overflow-hidden" data-activity="Other" type="button">
+<span class="material-symbols-outlined text-[17px] hidden activity-icon transition-transform duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+<span class="activity-text">Other gentle movement</span>
+</button>
+</div>
+<!-- Duration Section (Cascade 3) -->
+<div class="mt-6 cascade-item delay-3">
+<div class="flex items-center justify-between mb-3">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">About how many minutes?</h3>
+<span class="font-label-sm text-label-sm text-primary font-semibold px-3 py-1 rounded-full bg-[#dcece3] transition-transform duration-200 shadow-xs" id="duration-badge">20 mins</span>
+</div>
+<!-- Duration Chips Row -->
+<div class="flex items-center justify-between gap-2" id="duration-row">
+<button class="duration-chip flex-1 h-12 min-w-[44px] flex items-center justify-center rounded-lg font-label-md text-label-md transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-medium" data-minutes="10" type="button">
+          10
+        </button>
+<button class="duration-chip flex-1 h-12 min-w-[44px] flex items-center justify-center rounded-lg font-label-md text-label-md transition-all duration-200 active-scale bg-primary-sage text-on-primary shadow-[0_4px_14px_rgba(89,158,124,0.3)] font-semibold" data-minutes="20" type="button">
+          20
+        </button>
+<button class="duration-chip flex-1 h-12 min-w-[44px] flex items-center justify-center rounded-lg font-label-md text-label-md transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-medium" data-minutes="30" type="button">
+          30
+        </button>
+<button class="duration-chip flex-1 h-12 min-w-[44px] flex items-center justify-center rounded-lg font-label-md text-label-md transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-medium" data-minutes="45" type="button">
+          45
+        </button>
+<button class="duration-chip flex-1 h-12 min-w-[44px] flex items-center justify-center rounded-lg font-label-md text-label-md transition-all duration-200 active-scale bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-medium" data-minutes="60+" type="button">
+          60+
+        </button>
+</div>
+</div>
+<!-- Gentle Encouragement Note Card (Cascade 4) -->
+<div class="bg-surface-container-low rounded-lg p-3.5 flex items-center gap-3 mt-5 cascade-item delay-4 border border-[#e2eae4] cursor-pointer hover:bg-surface-container/60 active:scale-[0.99] transition-all relative overflow-hidden" id="encouragement-card">
+<div class="w-8 h-8 rounded-full bg-[#dcece3] flex items-center justify-center shrink-0">
+<span class="text-[17px] leading-none animate-sprout" id="sprout-emoji">🌱</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface flex-1">
+        Logging this will add fresh blossoms to your tree today.
+      </p>
+</div>
+<!-- Action Section (Cascade 5) -->
+<div class="flex flex-col mt-5 cascade-item delay-5">
+<!-- Primary Pill CTA with gentle light sweep & celebration particles -->
+<button class="w-full h-14 min-h-[56px] rounded-full bg-primary-sage text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-[0_10px_28px_rgba(89,158,124,0.32)] active:scale-[0.98] transition-all relative overflow-hidden" id="confirm-btn" type="button">
+<div class="shimmer-layer"></div>
+<span class="relative z-10 transition-transform duration-150">Add to my garden</span>
+<span class="material-symbols-outlined text-[20px] relative z-10" id="confirm-btn-icon">local_florist</span>
+</button>
+<!-- Dismiss Link -->
+<button class="w-full min-h-[44px] flex items-center justify-center text-center font-body-sm text-body-sm text-outline hover:text-on-surface active:scale-95 pt-2 pb-1 transition-all" onclick="history.back()" type="button">
+        Not now
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Particle spawner helper
+    function spawnParticles(originEl, emojis = ['🌸', '🍃', '✨', '🌿']) {
+      const rect = originEl.getBoundingClientRect();
+      const count = 6;
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('span');
+        particle.className = 'leaf-particle';
+        particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        
+        const startX = rect.left + rect.width / 2 + (Math.random() * 24 - 12);
+        const startY = rect.top + rect.height / 2 + (Math.random() * 12 - 6);
+        const tx = (Math.random() * 60 - 30) + 'px';
+        const ty = (-(Math.random() * 45 + 25)) + 'px';
+        const tr = (Math.random() * 90 - 45) + 'deg';
+
+        particle.style.left = startX + 'px';
+        particle.style.top = startY + 'px';
+        particle.style.setProperty('--tx', tx);
+        particle.style.setProperty('--ty', ty);
+        particle.style.setProperty('--tr', tr);
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 800);
+      }
+    }
+
+    // Activity Chips Selection Micro-Interactions
+    const activityChips = document.querySelectorAll('.activity-chip');
+    activityChips.forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        activityChips.forEach(c => {
+          c.classList.remove('bg-primary-sage', 'text-on-primary', 'shadow-[0_4px_14px_rgba(89,158,124,0.3)]');
+          c.classList.add('bg-surface-container', 'text-on-surface-variant');
+          const txt = c.querySelector('.activity-text');
+          if (txt) txt.classList.remove('font-semibold');
+          const icon = c.querySelector('.activity-icon');
+          if (icon) icon.classList.add('hidden');
+        });
+        
+        chip.classList.add('bg-primary-sage', 'text-on-primary', 'shadow-[0_4px_14px_rgba(89,158,124,0.3)]');
+        chip.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        const activeTxt = chip.querySelector('.activity-text');
+        if (activeTxt) activeTxt.classList.add('font-semibold');
+        const activeIcon = chip.querySelector('.activity-icon');
+        if (activeIcon) {
+          activeIcon.classList.remove('hidden');
+          activeIcon.style.transform = 'scale(0.5)';
+          requestAnimationFrame(() => {
+            activeIcon.style.transform = 'scale(1)';
+          });
+        }
+
+        // Particle burst
+        spawnParticles(chip, ['🌿', '🌱', '✨']);
+      });
+    });
+
+    // Duration Chips Selection
+    const durationChips = document.querySelectorAll('.duration-chip');
+    const badge = document.getElementById('duration-badge');
+    durationChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        durationChips.forEach(d => {
+          d.classList.remove('bg-primary-sage', 'text-on-primary', 'shadow-[0_4px_14px_rgba(89,158,124,0.3)]', 'font-semibold');
+          d.classList.add('bg-surface-container', 'text-on-surface-variant', 'font-medium');
+        });
+        chip.classList.add('bg-primary-sage', 'text-on-primary', 'shadow-[0_4px_14px_rgba(89,158,124,0.3)]', 'font-semibold');
+        chip.classList.remove('bg-surface-container', 'text-on-surface-variant', 'font-medium');
+        
+        const mins = chip.getAttribute('data-minutes');
+        if (badge) {
+          badge.textContent = mins === '60+' ? '60+ mins' : mins + ' mins';
+          badge.classList.remove('badge-pop');
+          void badge.offsetWidth; // trigger reflow
+          badge.classList.add('badge-pop');
+        }
+      });
+    });
+
+    // Encouragement Card Tap Sparkle
+    const encouragementCard = document.getElementById('encouragement-card');
+    const sproutEmoji = document.getElementById('sprout-emoji');
+    if (encouragementCard) {
+      encouragementCard.addEventListener('click', () => {
+        spawnParticles(sproutEmoji || encouragementCard, ['🌸', '✨', '🌱', '🌼']);
+        if (sproutEmoji) {
+          sproutEmoji.style.transform = 'scale(1.35) rotate(15deg)';
+          setTimeout(() => {
+            sproutEmoji.style.transform = '';
+          }, 350);
+        }
+      });
+    }
+
+    // Primary CTA Button with blossom celebration
+    const confirmBtn = document.getElementById('confirm-btn');
+    const confirmBtnIcon = document.getElementById('confirm-btn-icon');
+    let isSubmitting = false;
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        if (isSubmitting) return;
+        isSubmitting = true;
+
+        spawnParticles(confirmBtn, ['🌸', '🌺', '🌼', '✨', '🍃', '🌱']);
+        
+        confirmBtn.innerHTML = `
+          <div class="shimmer-layer"></div>
+          <span class="relative z-10 font-semibold tracking-wide">Sprouting blossoms...</span>
+          <span class="material-symbols-outlined text-[20px] relative z-10 animate-spin" style="font-variation-settings: 'FILL' 1;">eco</span>
+        `;
+        confirmBtn.classList.remove('shadow-[0_10px_28px_rgba(89,158,124,0.32)]');
+        confirmBtn.classList.add('bg-[#488366]', 'shadow-[0_4px_14px_rgba(72,131,102,0.4)]');
+
+        setTimeout(() => {
+          confirmBtn.innerHTML = `
+            <span class="relative z-10 font-semibold tracking-wide">Blossomed!</span>
+            <span class="material-symbols-outlined text-[20px] relative z-10" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+          `;
+          spawnParticles(confirmBtn, ['🌸', '🌺', '💖']);
+          setTimeout(() => {
+            history.back();
+          }, 450);
+        }, 650);
+      });
+    }
+  })();
+</script></main></body></html>
