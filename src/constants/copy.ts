@@ -23,6 +23,9 @@ export const ONBOARDING_COPY = {
   nameTitle: 'What should we call you?',
   nameSubtitle: 'Optional. It stays on this phone, and there are no accounts.',
   namePlaceholder: 'Your name',
+  reassureTitle: 'No streaks, no pressure',
+  reassureBody: 'Your garden grows whenever you arrive.',
+  skip: 'Skip for now',
 } as const;
 
 export const PROFILE_COPY = {
@@ -148,6 +151,8 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 export const CHANGES_COPY = {
   tag: 'Your garden over time',
   title: 'Changes',
+  subtitle: 'Gentle moments and growth over time.',
+  paceNote: 'Every pace is welcome here. Growth happens quietly beneath the surface.',
   linesTitle: 'This week',
   welcome: 'Your first week. Everything you log from here helps your garden grow.',
   stepsUp: (perDay: number) => `You walked about ${perDay.toLocaleString()} more steps a day than last week.`,
@@ -178,6 +183,15 @@ export const REMINDER_COPY = {
 /** The Me tab. */
 export const ME_COPY = {
   tag: 'Me',
+  hello: (name?: string | null) => (name ? `Hello, ${name}` : 'Hello'),
+  subtitle: 'Your personal quiet corner.',
+  nameTitle: 'What should we call you?',
+  save: 'Save',
+  saving: 'Saving',
+  localBadge: 'Local and private',
+  philosophyTitle: 'MoveKind philosophy',
+  philosophy:
+    'Movement is for joy, not for penance. Take your time, rest when you need, and let your garden flourish at its own pace.',
   reminderTitle: 'Daily reminder',
   reminderLabel: 'Daily reminder at 9am',
   reminderBody: 'One gentle note each morning. Off unless you turn it on.',
@@ -188,12 +202,14 @@ export const ME_COPY = {
 export const GARDEN_INTRO_COPY = {
   tag: 'Your garden',
   title: 'A garden that grows with you',
+  subtitle: 'Everything you do gently nurtures this space.',
   lines: [
-    { emoji: '💧', text: 'Water makes the stream flow' },
-    { emoji: '👣', text: 'Steps grow the grass' },
-    { emoji: '🌳', text: 'Workouts grow the tree' },
-    { emoji: '🌸', text: 'Each mood check-in plants a flower' },
+    { icon: 'water-outline', text: 'Water makes the stream flow', detail: 'Every glass makes it a little livelier.' },
+    { icon: 'shoe-print', text: 'Steps grow the grass', detail: 'Walks carpet the hills in green.' },
+    { icon: 'tree-outline', text: 'Workouts grow the tree', detail: 'Any movement you enjoy brings leaves, blossom and fruit.' },
+    { icon: 'flower-outline', text: 'Each mood check-in plants a flower', detail: 'Every feeling adds a colour to the meadow.' },
   ],
+  sanctuary: 'Gentle sanctuary',
   promise: 'Nothing ever wilts. If you are away, your garden simply rests until you are back.',
   start: 'Start my garden',
   next: 'Continue',
@@ -210,6 +226,7 @@ export const STEPS_COPY = {
   unavailableHint: "This phone doesn't share a step count with MoveKind.",
   weekHint: 'Opens your steps for the week',
   weekTitle: 'Your steps this week',
+  weekNote: 'Every day has its own rhythm. Days with fewer steps give space for rest.',
   close: 'Close',
   day: (d: Date) => d.toLocaleDateString(undefined, { weekday: 'long' }),
   count: (n: number) => n.toLocaleString(),

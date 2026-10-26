@@ -34,6 +34,7 @@ describe('Sage palette contrast', () => {
     ['info on background', colors.info, colors.background],
     ['onInverse on inverse (note card)', colors.onInverse, colors.inverse],
     ['textSecondary on surface', colors.textSecondary, colors.surface],
+    ['textPrimary on primarySoft (pace note)', colors.textPrimary, colors.primarySoft],
     ['primary text on primarySoft (active tab)', colors.primary, colors.primarySoft],
   ];
 

@@ -3,6 +3,8 @@ import { Modal, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { colors, elevation } from '@/constants/colors';
 import { STEPS_COPY } from '@/constants/copy';
+import { font } from '@/constants/typography';
+import { Icon } from '@/components/Icon';
 import { localDayKey, startOfLocalDay } from '@/domain/garden/days';
 
 interface Props {
@@ -19,6 +21,7 @@ export function StepsWeekSheet({ visible, stepsByDay, onClose }: Props) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
+          <View style={styles.handle} />
           <Text style={styles.title} accessibilityRole="header">{STEPS_COPY.weekTitle}</Text>
           {days.map((d) => (
             <View key={localDayKey(d)} style={styles.row}>
@@ -26,8 +29,12 @@ export function StepsWeekSheet({ visible, stepsByDay, onClose }: Props) {
               <Text style={styles.count}>{STEPS_COPY.count(stepsByDay[localDayKey(d)] ?? 0)}</Text>
             </View>
           ))}
+          <View style={styles.noteBox}>
+            <Icon name="leaf" size={18} color={colors.primary} />
+            <Text style={styles.note}>{STEPS_COPY.weekNote}</Text>
+          </View>
           <View style={{ height: 12 }} />
-          <Button label={STEPS_COPY.close} variant="secondary" onPress={onClose} />
+          <Button label={STEPS_COPY.close} onPress={onClose} />
         </View>
       </View>
     </Modal>
@@ -38,20 +45,26 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.scrim },
   sheet: {
     backgroundColor: colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 20,
+    paddingTop: 10,
     paddingBottom: 32,
     ...elevation.raised,
   },
-  title: { fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 8 },
+  handle: { alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: colors.divider, marginBottom: 14 },
+  title: { ...font.bold, fontSize: 24, color: colors.primary, marginBottom: 10 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 6,
   },
-  day: { fontSize: 16, color: colors.textPrimary },
-  count: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
+  day: { ...font.medium, fontSize: 16, color: colors.textPrimary },
+  count: { ...font.bold, fontSize: 16, color: colors.textPrimary },
+  noteBox: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.surfaceSecondary, borderRadius: 16, padding: 14, marginTop: 8 },
+  note: { ...font.regular, flex: 1, fontSize: 14, lineHeight: 20, color: colors.textSecondary },
 });

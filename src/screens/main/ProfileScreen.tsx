@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Screen } from '@/components/Screen';
-import { Header } from '@/components/Header';
+import { Icon } from '@/components/Icon';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
+import { font } from '@/constants/typography';
 import { ME_COPY, PROFILE_COPY } from '@/constants/copy';
 import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -65,28 +66,40 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <Header tag={ME_COPY.tag} title={profile?.name ? `Hello, ${profile.name}` : 'Hello'} />
+      <View style={styles.hero}>
+        <View style={styles.emblemRing}>
+          <View style={styles.emblem}>
+            <Icon name="sprout" size={40} color={colors.primary} />
+          </View>
+        </View>
+        <Text style={styles.hello} accessibilityRole="header">{ME_COPY.hello(profile?.name)}</Text>
+        <Text style={styles.subtitle}>{ME_COPY.subtitle}</Text>
+      </View>
 
-      <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>{PROFILE_COPY.nameLabel}</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          accessibilityLabel={PROFILE_COPY.nameLabel}
-          placeholder={PROFILE_COPY.namePlaceholder}
-          placeholderTextColor={colors.textMuted}
-          maxLength={40}
-          style={styles.input}
-        />
-
-        <View style={{ height: 12 }} />
-        <Button label={saving ? 'Saving…' : 'Save changes'} onPress={onSave} loading={saving} />
+      <Card style={styles.card}>
+        <Text style={styles.label}>{ME_COPY.nameTitle}</Text>
+        <View style={styles.nameRow}>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            accessibilityLabel={PROFILE_COPY.nameLabel}
+            placeholder={PROFILE_COPY.namePlaceholder}
+            placeholderTextColor={colors.textMuted}
+            maxLength={40}
+            style={styles.input}
+          />
+          <View style={styles.saveWrap}>
+            <Button label={saving ? ME_COPY.saving : ME_COPY.save} size="sm" onPress={onSave} loading={saving} />
+          </View>
+        </View>
       </Card>
 
-      <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>{ME_COPY.reminderTitle}</Text>
+      <Card style={styles.card}>
         <View style={styles.switchRow}>
-          <Text style={[styles.body, { flex: 1 }]}>{ME_COPY.reminderBody}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{ME_COPY.reminderTitle}</Text>
+            <Text style={styles.body}>{ME_COPY.reminderBody}</Text>
+          </View>
           <Switch
             value={reminderOn}
             onValueChange={(v) => {
@@ -100,35 +113,71 @@ export default function ProfileScreen() {
         {reminderDenied && <Text style={[styles.body, { marginTop: 8 }]}>{ME_COPY.reminderDenied}</Text>}
       </Card>
 
-      <Card style={{ marginBottom: 12 }}>
-        <Text style={styles.label}>{PROFILE_COPY.dataTitle}</Text>
+      <Card style={styles.card}>
+        <View style={styles.titleRow}>
+          <Icon name="shield-check-outline" size={22} color={colors.primary} />
+          <Text style={styles.cardTitle}>{PROFILE_COPY.dataTitle}</Text>
+        </View>
         <Text style={styles.body}>{PROFILE_COPY.localNote}</Text>
+        <View style={styles.dataFoot}>
+          <Button label={PROFILE_COPY.eraseButton} variant="link" size="sm" onPress={onErase} />
+          <Text style={styles.badge}>{ME_COPY.localBadge}</Text>
+        </View>
       </Card>
 
-      <Button label={PROFILE_COPY.eraseButton} variant="link" onPress={onErase} />
+      <Card tone="soft" style={styles.card}>
+        <View style={styles.titleRow}>
+          <View style={styles.philIcon}>
+            <Icon name="leaf" size={20} color={colors.primary} />
+          </View>
+          <Text style={styles.label}>{ME_COPY.philosophyTitle}</Text>
+        </View>
+        <Text style={styles.quote}>{ME_COPY.philosophy}</Text>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 6,
+  hero: { alignItems: 'center', marginTop: 8, marginBottom: 20 },
+  emblemRing: { padding: 10, borderRadius: 70, backgroundColor: colors.surfaceSecondary },
+  emblem: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  hello: { ...font.bold, fontSize: 30, color: colors.textPrimary, marginTop: 14 },
+  subtitle: { ...font.regular, fontSize: 16, color: colors.textSecondary, marginTop: 2 },
+  card: { marginBottom: 14 },
+  label: { ...font.semibold, fontSize: 13, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8 },
+  cardTitle: { ...font.bold, fontSize: 19, color: colors.textPrimary },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 },
   input: {
+    ...font.medium,
+    flex: 1,
+    minHeight: 50,
     backgroundColor: colors.surfaceSecondary,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 15,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    fontSize: 16,
     color: colors.textPrimary,
   },
-  body: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
+  saveWrap: { minWidth: 96 },
+  body: { ...font.regular, color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginTop: 2 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  dataFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
+  badge: { ...font.medium, fontSize: 13, color: colors.textMuted },
+  philIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quote: { ...font.medium, fontSize: 16, lineHeight: 25, color: colors.textPrimary, fontStyle: 'italic' },
 });
