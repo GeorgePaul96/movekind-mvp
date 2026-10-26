@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 import { localDayKey, startOfLocalDay } from '@/domain/garden/days';
 
 /**
@@ -14,7 +15,8 @@ export type StepsStatus = 'granted' | 'ask' | 'denied' | 'unavailable' | 'needs-
 type HealthConnect = typeof import('react-native-health-connect');
 type Sensors = typeof import('expo-sensors');
 
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+// Two checks: SDK 58's Expo Go doesn't always report itself through executionEnvironment.
+const isExpoGo = isRunningInExpoGo() || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 const STEPS_PERMISSION = [{ accessType: 'read', recordType: 'Steps' }] as const;
 
 function healthConnect(): HealthConnect | null {

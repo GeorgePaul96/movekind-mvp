@@ -33,6 +33,8 @@ const mockHC = {
   })),
 };
 jest.mock('react-native-health-connect', () => mockHC);
+let mockInExpoGo = false;
+jest.mock('expo', () => ({ isRunningInExpoGo: () => mockInExpoGo }));
 
 function load(os: string, env = 'bare') {
   mockOS = os;
@@ -46,7 +48,10 @@ function load(os: string, env = 'bare') {
 
 const NOW = new Date(2026, 9, 21, 15);
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockInExpoGo = false;
+});
 
 describe('steps on iPhone', () => {
   it("iOS reads today's steps from the pedometer", async () => {
@@ -105,6 +110,15 @@ describe('steps on Android', () => {
     const svc = load('android', 'storeClient');
     expect(await svc.stepsStatus()).toBe('needs-full-app');
     await expect(svc.stepsByDay(3, NOW)).resolves.toEqual({});
+    expect(mockHC.initialize).not.toHaveBeenCalled();
+  });
+});
+
+describe('steps in SDK 58 Expo Go', () => {
+  it('Expo Go reported only by isRunningInExpoGo still needs the full app on Android', async () => {
+    mockInExpoGo = true;
+    const svc = load('android', 'bare');
+    expect(await svc.stepsStatus()).toBe('needs-full-app');
     expect(mockHC.initialize).not.toHaveBeenCalled();
   });
 });

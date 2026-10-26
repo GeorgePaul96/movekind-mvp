@@ -1,20 +1,30 @@
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 import { REMINDER_COPY } from '@/constants/copy';
 
 type NotificationsModule = typeof import('expo-notifications');
 
 /**
- * Expo Go (SDK 53+) on Android throws as soon as `expo-notifications` is *imported*,
- * which would crash the app at launch before any try/catch runs. So the module is
- * required lazily and only where it works: dev builds, store builds, and iOS.
- * Everywhere else every function below is a quiet no-op.
+ * Expo Go on Android has no push-notification module: importing `expo-notifications` there throws
+ * at load ("runtime not ready"), which would crash launch. So the module is required lazily and
+ * only where it works: dev builds, store builds, and iOS. Expo Go is detected two ways because
+ * SDK 58's Expo Go doesn't always report itself through `executionEnvironment`, and the require
+ * is wrapped so an unexpected failure still leaves a working app. Elsewhere every function is a no-op.
  */
-const isExpoGoAndroid =
-  Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const isExpoGo = isRunningInExpoGo() || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-const Notifications: NotificationsModule | null =
-  Platform.OS === 'web' || isExpoGoAndroid ? null : (require('expo-notifications') as NotificationsModule);
+function loadNotifications(): NotificationsModule | null {
+  if (Platform.OS === 'web' || (Platform.OS === 'android' && isExpoGo)) return null;
+  try {
+    return require('expo-notifications') as NotificationsModule;
+  } catch (err) {
+    console.warn('Notifications are unavailable here:', err);
+    return null;
+  }
+}
+
+const Notifications = loadNotifications();
 
 export const notificationsAvailable = Notifications !== null;
 
