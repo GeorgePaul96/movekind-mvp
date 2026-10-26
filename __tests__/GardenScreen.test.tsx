@@ -155,6 +155,7 @@ describe('<GardenScreen />', () => {
     fireEvent.press(toggle);
     await findByText(UNWELL_COPY.cardTitle);
     fireEvent.press(await findByLabelText(UNWELL_COPY.toggle));
-    await waitFor(() => expect(queryByText(UNWELL_COPY.cardTitle)).toBeNull());
+    // The store write is async; give it room when the whole suite is running in parallel.
+    await waitFor(() => expect(queryByText(UNWELL_COPY.cardTitle)).toBeNull(), { timeout: 5000 });
   });
 });

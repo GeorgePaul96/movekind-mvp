@@ -57,6 +57,11 @@ Verify changes with `npm run typecheck` and `npm test`.
   Stream and grass reset each local morning and have a floor (a trickle, short grass); the tree
   grows from all-time workout minutes (`TREE_STAGE_MINUTES`) and **never shrinks**; one flower per
   day with a check-in (latest mood wins); `resting` after 3 quiet days (moon, nothing lost).
+- **Weather and light.** `gardenState().weather` is `'rain'` when today's check-in has `unwell: true`
+  (the "Feeling unwell today" choice, shown once a mood is picked): soft rain, grey clouds, mist, a
+  resting card; nothing grown changes, and `unwell` is never sent to telemetry. The sky follows the
+  phone clock via [skyPhase(now)](src/domain/garden/sky.ts) (dawn 5-8, day 8-17, dusk 17-20, night):
+  only the light changes. Resting always shows the night sky.
 - **Changes are gentle.** [weeklyChanges](src/domain/garden/changes.ts) compares this week so far
   with the *same stretch* of last week. Ups are celebrated; quieter weeks are named kindly and
   never state a shortfall (no numbers, no "less/fewer/missed").

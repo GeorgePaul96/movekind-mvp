@@ -23,9 +23,9 @@ const RAIN_DROPS = 22;
 
 /** Sky gradient, sun and hills for each light. Night is shared by "resting" and real night. */
 const SKIES = {
-  dawn: { top: c.dawnSky, low: c.dawnLow, sun: { x: 50, y: 98, fill: c.sun } },
+  dawn: { top: c.dawnSky, low: c.dawnLow, sun: { x: 186, y: 112, fill: c.sun } },
   day: { top: c.sky, low: c.skyLow, sun: { x: 232, y: 58, fill: c.sun } },
-  dusk: { top: c.duskSky, low: c.duskLow, sun: { x: 246, y: 100, fill: c.sunDusk } },
+  dusk: { top: c.duskSky, low: c.duskLow, sun: { x: 252, y: 106, fill: c.sunDusk } },
   rain: { top: c.rainSky, low: c.rainLow, sun: null },
   night: { top: c.skyRest, low: c.skyRestLow, sun: null },
 } as const;
@@ -97,6 +97,8 @@ export function Garden({ state, phase: skyTime = 'day', still = false }: Props) 
                 <Circle testID="sun" cx={sky.sun.x} cy={sky.sun.y} r="20" fill={sky.sun.fill} />
               </>
             )}
+            {!rain && (
+            <>
             <G transform={`translate(${cloudDrift} 0)`}>
               <Ellipse cx="62" cy="52" rx="22" ry="10" fill={c.cloud} />
               <Ellipse cx="78" cy="46" rx="14" ry="10" fill={c.cloud} />
@@ -104,6 +106,8 @@ export function Garden({ state, phase: skyTime = 'day', still = false }: Props) 
             <G transform={`translate(${-cloudDrift} 0)`}>
               <Ellipse cx="160" cy="34" rx="16" ry="7" fill={c.cloud} opacity={0.9} />
             </G>
+            </>
+            )}
           </>
         )}
 

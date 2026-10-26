@@ -20,7 +20,7 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 | Key | Type | Notes |
 |---|---|---|
 | `profile` (single doc) | `Profile` | `id` (random install id, also the anonymous telemetry id and every check-in's `user_id`), `name` (optional, from onboarding), `created_at` (install day, used for `app_opened.day_index`). Created on first read. |
-| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` and `intention` (unused, always null now), `engine_version` (`'garden-1'` for new rows), `created_at`. **A day is one check-in:** re-picking today's mood updates the row. Each becomes a flower. |
+| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` and `intention` (unused, always null now), `engine_version` (`'garden-1'` for new rows), `created_at`. **A day is one check-in:** re-picking today's mood updates the row. Each becomes a flower. Optional `unwell` (true = feeling unwell today, gentle rain in the garden; absent on older rows; never sent to analytics). |
 | `water` | `WaterLog` | One row per glass: `id`, `created_at`. Glasses today fill the stream. `db.water.remove` undoes a glass. |
 | `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the tree. Editable and deletable. |
 
