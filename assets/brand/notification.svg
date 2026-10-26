@@ -1,0 +1,6 @@
+<!-- Android notification icon: white sprout silhouette on transparent. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <path d="M478 860 C474 680 486 530 528 424" stroke="#FFFFFF" stroke-width="80" stroke-linecap="round" fill="none"/>
+  <path d="M494 600 C410 470 280 470 230 540 C320 640 420 650 494 600Z" fill="#FFFFFF"/>
+  <path d="M524 446 C570 300 730 280 790 340 C710 460 610 486 524 446Z" fill="#FFFFFF"/>
+</svg>

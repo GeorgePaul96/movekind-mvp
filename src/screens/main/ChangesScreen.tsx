@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
   caption: { ...font.regular, fontSize: 14, color: colors.textSecondary, marginTop: 2, textAlign: 'center' },
   week: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   weekLabel: { ...font.medium, width: 116, fontSize: 14, color: colors.textSecondary },
-  bed: { flex: 1, flexDirection: 'row', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' },
-  dot: { width: 20, height: 20, borderRadius: 10 },
+  bed: { flex: 1, flexDirection: 'row', gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  dot: { width: 16, height: 16, borderRadius: 8 },
   legend: {
     flexDirection: 'row',
     flexWrap: 'wrap',

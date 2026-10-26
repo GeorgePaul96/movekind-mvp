@@ -1,0 +1,9 @@
+<!-- MoveKind emblem: a sprout beside a curving stream (from the Stitch app-icon direction). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <ellipse cx="478" cy="770" rx="210" ry="36" fill="#20684A" opacity="0.14"/>
+  <path d="M812 330 C746 440 858 548 774 652 S700 800 736 872" stroke="#8ED3A8" stroke-width="62" stroke-linecap="round" fill="none"/>
+  <path d="M812 330 C746 440 858 548 774 652 S700 800 736 872" stroke="#D6F1E1" stroke-width="16" stroke-linecap="round" stroke-dasharray="70 90" fill="none"/>
+  <path d="M478 770 C474 650 486 530 528 424" stroke="#20684A" stroke-width="58" stroke-linecap="round" fill="none"/>
+  <path d="M494 584 C424 474 326 472 292 528 C356 602 432 614 494 584Z" fill="#3C8161"/>
+  <path d="M524 446 C566 326 692 314 736 356 C674 452 600 476 524 446Z" fill="#20684A"/>
+</svg>

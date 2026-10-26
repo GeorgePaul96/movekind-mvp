@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
   },
-  saveWrap: { minWidth: 96 },
+  saveWrap: { width: 88 },
   body: { ...font.regular, color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginTop: 2 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
   dataFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },

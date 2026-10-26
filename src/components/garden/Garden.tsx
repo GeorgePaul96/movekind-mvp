@@ -176,7 +176,7 @@ function Bird({ x, y, asleep, flip }: { x: number; y: number; asleep?: boolean; 
 function Tree({ stage }: { stage: GardenState['tree'] }) {
   if (stage === 0) {
     return (
-      <G testID="sprout">
+      <G testID="sprout" transform="translate(84 196) scale(1.7) translate(-84 -196)">
         <Ellipse cx="84" cy="196" rx="14" ry="3" fill={c.grass} opacity={0.35} />
         <Path d="M84 196 C84 188 85 182 86 176" stroke={c.leaf} strokeWidth="3" strokeLinecap="round" fill="none" />
         <Path d="M86 180 C78 176 74 178 72 182 C78 184 82 184 86 180Z" fill={c.leaf} />

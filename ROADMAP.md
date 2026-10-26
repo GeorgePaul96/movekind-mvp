@@ -35,6 +35,13 @@ that says in plain sentences what activity is changing. Design:
 - A "how are you feeling physically" option (e.g. unwell) alongside the four moods, to drive
   the weather above.
 
+### Green redesign (2026-10-26)
+
+Built from the owner's Stitch designs: sage palette, Plus Jakarta Sans, pill tab bar, garden status
+pills, welcome card, honest workout growth line, night scene sign-up, new app icon. Next from the
+Stitch set: **Feeling unwell** (a fifth check-in; a gentle rainy garden) and **time-of-day skies**
+(dawn / day / dusk / night; what has grown stays grown).
+
 **Not doing:** exercise instructions, calorie counting, weight/BMI, anything that judges bodies,
 targets, streaks, scores, public comparison.
 

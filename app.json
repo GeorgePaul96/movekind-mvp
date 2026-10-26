@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "scheme": "movekind",
     "userInterfaceStyle": "light",
-    "primaryColor": "#245C43",
+    "primaryColor": "#20684A",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -24,7 +24,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFF8EE"
+        "backgroundColor": "#EAF4EC"
       },
       "package": "com.movekind.app",
       "permissions": [
@@ -39,7 +39,8 @@
       [
         "expo-notifications",
         {
-          "color": "#245C43"
+          "color": "#20684A",
+          "icon": "./assets/notification-icon.png"
         }
       ],
       "expo-status-bar",
@@ -49,7 +50,7 @@
           "image": "./assets/splash.png",
           "resizeMode": "contain",
           "imageWidth": 200,
-          "backgroundColor": "#FFF8EE"
+          "backgroundColor": "#F6FAF5"
         }
       ],
       "expo-asset",

@@ -222,7 +222,7 @@ export const STEPS_COPY = {
   allowHint: 'Lets MoveKind read your step count from this phone. Steps stay on this phone.',
   off: 'Off',
   offHint: 'Step access is off. You can turn on Motion and Fitness for MoveKind in your phone settings.',
-  unavailable: 'Not on this phone',
+  unavailable: 'Not available',
   unavailableHint: "This phone doesn't share a step count with MoveKind.",
   weekHint: 'Opens your steps for the week',
   weekTitle: 'Your steps this week',

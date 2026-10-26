@@ -40,8 +40,8 @@ export function NightHero() {
         <Path d="M30 118 C90 100 160 104 236 92" stroke={c.trunk} strokeWidth="5" strokeLinecap="round" fill="none" />
         <Ellipse cx="200" cy="90" rx="9" ry="4" fill={c.leaf} transform="rotate(-25 200 90)" />
         <Ellipse cx="74" cy="104" rx="8" ry="3.5" fill={c.leafLight} transform="rotate(20 74 104)" />
-        <SleepyBird x={128} y={92} body={c.leafLight} wing={c.leaf} />
-        <SleepyBird x={156} y={90} body={c.bird} wing={c.birdWing} flip />
+        <SleepyBird x={122} y={93} body={c.leafLight} wing={c.leaf} />
+        <SleepyBird x={164} y={90} body={c.bird} wing={c.birdWing} flip />
       </Svg>
     </View>
   );

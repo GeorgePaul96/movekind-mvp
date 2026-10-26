@@ -34,13 +34,13 @@ export function ActionTile({ icon, title, value, unit, note, onPress, accessibil
     >
       <View style={styles.head}>
         <View style={styles.iconWrap}>
-          <Icon name={icon} size={18} color={colors.primary} />
+          <Icon name={icon} size={15} color={colors.primary} />
         </View>
         <Text style={styles.title} numberOfLines={1}>{title}</Text>
       </View>
-      <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-      {unit ? <Text style={styles.unit} numberOfLines={1}>{unit}</Text> : null}
-      {note ? <Text style={styles.note} numberOfLines={1}>{note}</Text> : null}
+      <Text style={styles.value} numberOfLines={2}>{value}</Text>
+      {unit ? <Text style={styles.unit} numberOfLines={2}>{unit}</Text> : null}
+      {note ? <Text style={styles.note} numberOfLines={2}>{note}</Text> : null}
     </Pressable>
   );
 }
@@ -53,21 +53,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.ring,
     backgroundColor: colors.surface,
-    padding: 12,
+    padding: 10,
     ...elevation.card,
   },
   pressed: { backgroundColor: colors.primarySoft, transform: [{ scale: 0.97 }] },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },
   iconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: { ...font.semibold, fontSize: 13, color: colors.textSecondary, flexShrink: 1 },
-  value: { ...font.bold, fontSize: 22, color: colors.textPrimary },
+  value: { ...font.bold, fontSize: 19, lineHeight: 24, color: colors.textPrimary },
   unit: { ...font.regular, fontSize: 13, color: colors.textSecondary },
   note: { ...font.semibold, fontSize: 13, color: colors.primary, marginTop: 4 },
 });

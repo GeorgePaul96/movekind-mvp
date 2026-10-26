@@ -84,11 +84,15 @@ Verify changes with `npm run typecheck` and `npm test`.
 - **Styling:** **all color comes from tokens in [src/constants/colors.ts](src/constants/colors.ts)** — never
   hardcode hex. Semantic UI tokens (`background`, `surface`, `primary`, `textPrimary`…, `scrim`),
   `stateColors[mood]` for mood colour, and `gardenColors` for the (decorative) garden illustration.
-  Palette is "Sunrise" (warm cream). **Contrast is enforced by
+  Palette is "Sage" (misty green, from the Stitch designs in `design/`, kept out of git): deep forest
+  green `primary` for actions, `sage` for decoration only (white text on it fails). **Contrast is enforced by
   [__tests__/colors.test.ts](__tests__/colors.test.ts)** (text ≥4.5:1, UI ≥3:1) — add a pair there when
   you add a text/UI token.
-- **Controls:** `<Button>` (`primary` / `secondary` / `link`), `<Chip>` for choice sets, `<MoodTile>` for
-  moods, `<ActionTile>` for the big log buttons, RN `Switch` for on/off settings. No hand-rolled
+- **Type:** Plus Jakarta Sans, loaded in `App.tsx`. Pick weights with `...font.bold` etc. from
+  [typography.ts](src/constants/typography.ts), never `fontWeight` (Android ignores it for custom fonts).
+- **Controls:** `<Button>` (pill: `primary` / `secondary` / `link`), `<Chip>` for choice sets, `<MoodTile>` for
+  moods, `<ActionTile>` for the big log cards, RN `Switch` for on/off settings, `<Icon>` (decorative
+  MaterialCommunityIcons) instead of emoji. No hand-rolled
   `Pressable` buttons in screens. Minimum font size 13; 44pt touch targets; every control labelled.
 - **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts). **No em dashes**
   in user-facing text (enforced by `__tests__/noEmDash.test.ts`).
