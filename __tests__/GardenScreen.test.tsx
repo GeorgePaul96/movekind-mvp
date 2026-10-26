@@ -30,7 +30,7 @@ import GardenScreen from '../src/screens/main/GardenScreen';
 import { useGardenStore } from '../src/store/gardenStore';
 import { useProfileStore } from '../src/store/profileStore';
 import { __resetDbCacheForTests } from '../src/services/db';
-import { GARDEN_COPY, MOOD_COPY, STEPS_COPY, WORKOUT_COPY } from '../src/constants/copy';
+import { BADGE_COPY, GARDEN_COPY, MOOD_COPY, STEPS_COPY, WORKOUT_COPY } from '../src/constants/copy';
 
 beforeEach(async () => {
   mockStatus = 'needs-full-app';
@@ -47,7 +47,8 @@ describe('<GardenScreen />', () => {
   it('water tap adds a glass and updates the count', async () => {
     const { getByLabelText, findByText } = render(<GardenScreen />);
     fireEvent.press(getByLabelText(GARDEN_COPY.waterA11y(0)));
-    expect(await findByText(GARDEN_COPY.glasses(1))).toBeTruthy();
+    expect(await findByText(GARDEN_COPY.waterNote)).toBeTruthy();
+    expect(getByLabelText(GARDEN_COPY.waterA11y(1))).toBeTruthy();
     expect(useGardenStore.getState().water).toHaveLength(1);
   });
 
@@ -70,6 +71,27 @@ describe('<GardenScreen />', () => {
     fireEvent.press(getByLabelText(WORKOUT_COPY.save));
     expect(await findByText(WORKOUT_COPY.entry('yoga', 30))).toBeTruthy();
     await waitFor(() => expect(queryByText(WORKOUT_COPY.title)).toBeNull());
+  });
+
+  it('the workout sheet says honestly what this workout will grow', () => {
+    const { getByLabelText, getByText, queryByText } = render(<GardenScreen />);
+    fireEvent.press(getByLabelText(GARDEN_COPY.workoutA11y));
+    expect(getByText(WORKOUT_COPY.subtitle)).toBeTruthy();
+    expect(queryByText(BADGE_COPY.growth[1])).toBeNull();
+    fireEvent.press(getByText(WORKOUT_COPY.types.walk));
+    fireEvent.press(getByLabelText(WORKOUT_COPY.durationA11y(10)));
+    expect(getByText(BADGE_COPY.growth[1])).toBeTruthy();
+  });
+
+  it('a first-week garden shows the welcome card', () => {
+    const { getByText } = render(<GardenScreen />);
+    expect(getByText(GARDEN_COPY.welcomeTitle)).toBeTruthy();
+    expect(getByText(GARDEN_COPY.welcomeNoStreaks)).toBeTruthy();
+  });
+
+  it('the garden card names what is growing', () => {
+    const { getByText } = render(<GardenScreen />);
+    expect(getByText(BADGE_COPY.tree[0])).toBeTruthy();
   });
 
   it('deleting a workout removes it', async () => {

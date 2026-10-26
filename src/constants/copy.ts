@@ -6,11 +6,12 @@ export const ERROR_FALLBACK = {
   action: 'Start fresh',
 } as const;
 
-export const MOOD_COPY: Record<UserState, { label: string; emoji: string }> = {
-  overloaded: { label: 'Running on empty', emoji: '😮‍💨' },
-  recovering: { label: 'A bit low', emoji: '🌱' },
-  regulated: { label: 'Steady', emoji: '🙂' },
-  activated: { label: 'Buzzing', emoji: '⚡' },
+/** The four moods. `flavor` is the small word in the tile's corner; every mood is equally welcome. */
+export const MOOD_COPY: Record<UserState, { label: string; flavor: string }> = {
+  overloaded: { label: 'Running on empty', flavor: 'rest' },
+  recovering: { label: 'A bit low', flavor: 'gentle' },
+  regulated: { label: 'Steady', flavor: 'calm' },
+  activated: { label: 'Buzzing', flavor: 'bright' },
 };
 
 export const CHECKIN_COPY = {
@@ -68,11 +69,29 @@ export const GARDEN_COPY = {
   greeting: (partOfDay: string, name?: string | null) =>
     name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
   title: 'Your garden',
+  brand: 'MoveKind',
+  tag: 'Garden haven',
+  tagFirstWeek: 'A quiet start',
+  subtitle: 'Your garden is growing',
+  subtitleResting: 'Your garden rested while you were away. Welcome back.',
+  welcomeTitle: 'Welcome to your beginning',
+  welcomeNoStreaks: 'No daily minimums or streaks. Log what you did, whenever you like.',
+  moodTitle: 'How are you feeling?',
+  moodAside: 'Check-in',
+  careTitle: "Today's care",
   defaultNote: 'Everything you log helps your garden grow.',
   water: 'Water',
   glasses: (n: number) => (n === 1 ? '1 glass' : `${n} glasses`),
   waterA11y: (n: number) => `Add a glass of water. ${n === 1 ? '1 glass' : `${n} glasses`} today.`,
   undoGlass: 'Undo last glass',
+  glassesUnit: (n: number) => (n === 1 ? 'glass' : 'glasses'),
+  waterTap: 'Tap to add one',
+  waterNote: 'Nourished',
+  workoutUnit: 'Any movement',
+  workoutToday: (minutes: number) => `${minutes} min`,
+  workoutTodayUnit: 'today',
+  workoutNote: 'Tree growing',
+  stepsUnit: 'steps',
   workout: 'Workout',
   logOne: 'Log one',
   workoutA11y: 'Log a workout',
@@ -93,6 +112,7 @@ export const GARDEN_COPY = {
 
 export const WORKOUT_COPY = {
   title: 'What did you do?',
+  subtitle: 'Any movement counts. Stretches, strolling, or dancing in your kitchen.',
   lengthTitle: 'About how many minutes?',
   save: 'Add to my garden',
   update: 'Save changes',

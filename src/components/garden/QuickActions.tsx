@@ -7,6 +7,8 @@ import type { StepsStatus } from '@/services/steps';
 
 interface Props {
   glassesToday: number;
+  /** Minutes of workouts logged today (0 = none yet). */
+  workoutMinutesToday?: number;
   stepsToday: number | null;
   stepsStatus?: StepsStatus | 'unknown';
   onWater: () => void;
@@ -16,26 +18,27 @@ interface Props {
   onSteps?: () => void;
 }
 
-function stepsTile(status: StepsStatus | 'unknown', steps: number | null): { detail: string; hint?: string } {
+function stepsTile(status: StepsStatus | 'unknown', steps: number | null): { value: string; unit?: string; hint?: string } {
   switch (status) {
     case 'granted':
-      return { detail: STEPS_COPY.count(steps ?? 0), hint: STEPS_COPY.weekHint };
+      return { value: STEPS_COPY.count(steps ?? 0), unit: GARDEN_COPY.stepsUnit, hint: STEPS_COPY.weekHint };
     case 'ask':
-      return { detail: STEPS_COPY.allow, hint: STEPS_COPY.allowHint };
+      return { value: STEPS_COPY.allow, hint: STEPS_COPY.allowHint };
     case 'denied':
-      return { detail: STEPS_COPY.off, hint: STEPS_COPY.offHint };
+      return { value: STEPS_COPY.off, hint: STEPS_COPY.offHint };
     case 'unavailable':
-      return { detail: STEPS_COPY.unavailable, hint: STEPS_COPY.unavailableHint };
+      return { value: STEPS_COPY.unavailable, hint: STEPS_COPY.unavailableHint };
     case 'needs-full-app':
-      return { detail: GARDEN_COPY.stepsSoon, hint: GARDEN_COPY.stepsHint };
+      return { value: GARDEN_COPY.stepsSoon, hint: GARDEN_COPY.stepsHint };
     default:
-      return { detail: STEPS_COPY.checking };
+      return { value: STEPS_COPY.checking };
   }
 }
 
 /** Water (one tap), Workout (opens the log), Steps (counted by the phone). */
 export function QuickActions({
   glassesToday,
+  workoutMinutesToday = 0,
   stepsToday,
   stepsStatus = 'needs-full-app',
   onWater,
@@ -48,23 +51,28 @@ export function QuickActions({
     <View>
       <View style={styles.row}>
         <ActionTile
-          emoji="💧"
-          label={GARDEN_COPY.water}
-          detail={GARDEN_COPY.glasses(glassesToday)}
+          icon="water-outline"
+          title={GARDEN_COPY.water}
+          value={String(glassesToday)}
+          unit={GARDEN_COPY.glassesUnit(glassesToday)}
+          note={glassesToday > 0 ? GARDEN_COPY.waterNote : GARDEN_COPY.waterTap}
           accessibilityLabel={GARDEN_COPY.waterA11y(glassesToday)}
           onPress={onWater}
         />
         <ActionTile
-          emoji="🏃"
-          label={GARDEN_COPY.workout}
-          detail={GARDEN_COPY.logOne}
+          icon="run"
+          title={GARDEN_COPY.workout}
+          value={workoutMinutesToday > 0 ? GARDEN_COPY.workoutToday(workoutMinutesToday) : GARDEN_COPY.logOne}
+          unit={workoutMinutesToday > 0 ? GARDEN_COPY.workoutTodayUnit : GARDEN_COPY.workoutUnit}
+          note={workoutMinutesToday > 0 ? GARDEN_COPY.workoutNote : undefined}
           accessibilityLabel={GARDEN_COPY.workoutA11y}
           onPress={onWorkout}
         />
         <ActionTile
-          emoji="👣"
-          label={GARDEN_COPY.steps}
-          detail={steps.detail}
+          icon="shoe-print"
+          title={GARDEN_COPY.steps}
+          value={steps.value}
+          unit={steps.unit}
           accessibilityLabel={GARDEN_COPY.steps}
           accessibilityHint={steps.hint}
           onPress={onSteps}
@@ -78,5 +86,5 @@ export function QuickActions({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 8 },
+  row: { flexDirection: 'row', gap: 10 },
 });

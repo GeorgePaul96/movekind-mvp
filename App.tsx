@@ -13,9 +13,25 @@ import { trackAppOpened } from '@/services/appOpens';
 import { db } from '@/services/db';
 import { useGardenStore } from '@/store/gardenStore';
 import { colors } from '@/constants/colors';
+import {
+  useFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
+  // Bundled with the app (no network). If a font ever fails, the phone's font is used instead.
+  const [fontsLoaded, fontError] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
 
   useEffect(() => {
     async function prepare() {
@@ -51,7 +67,7 @@ export default function App() {
     return () => sub.remove();
   }, []);
 
-  if (!isReady) {
+  if (!isReady || (!fontsLoaded && !fontError)) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />

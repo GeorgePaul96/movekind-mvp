@@ -1,14 +1,16 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform } from 'react-native';
 import GardenScreen from '@/screens/main/GardenScreen';
 import ChangesScreen from '@/screens/main/ChangesScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
-import { colors } from '@/constants/colors';
+import { colors, elevation } from '@/constants/colors';
 import { TabIcon } from './TabIcon';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+/** Height the floating bar covers; screens pad their bottom by this much (see Screen). */
+export const TAB_BAR_SPACE = 104;
 
 export default function TabNavigator() {
   return (
@@ -17,14 +19,21 @@ export default function TabNavigator() {
         headerShown: false,
         // Tabs stay mounted; freezing the hidden ones stops the garden animating off screen.
         freezeOnBlur: true,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: { fontSize: 13, fontWeight: '500' },
+        tabBarShowLabel: false,
         tabBarStyle: {
+          position: 'absolute',
+          left: 16,
+          right: 16,
+          bottom: 18,
+          height: 72,
+          paddingTop: 12,
+          paddingBottom: 12,
+          borderRadius: 999,
+          borderTopWidth: 0,
+          borderWidth: 1,
+          borderColor: colors.ring,
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 86 : 64,
-          paddingTop: 6,
+          ...elevation.raised,
         },
       }}
     >
@@ -32,21 +41,24 @@ export default function TabNavigator() {
         name="Garden"
         component={GardenScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌳" />,
+          tabBarAccessibilityLabel: 'Garden',
+          tabBarIcon: (p) => <TabIcon focused={p.focused} icon="sprout" label="Garden" />,
         }}
       />
       <Tab.Screen
         name="Changes"
         component={ChangesScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🌱" />,
+          tabBarAccessibilityLabel: 'Changes',
+          tabBarIcon: (p) => <TabIcon focused={p.focused} icon="creation" label="Changes" />,
         }}
       />
       <Tab.Screen
         name="Me"
         component={ProfileScreen}
         options={{
-          tabBarIcon: (p) => <TabIcon focused={p.focused} emoji="🙂" />,
+          tabBarAccessibilityLabel: 'Me',
+          tabBarIcon: (p) => <TabIcon focused={p.focused} icon="account-circle-outline" label="Me" />,
         }}
       />
     </Tab.Navigator>

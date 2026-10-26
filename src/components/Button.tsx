@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
+import { font } from '@/constants/typography';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'link';
 
@@ -80,7 +81,7 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  base: { borderRadius: 14, paddingVertical: 14, paddingHorizontal: 18, minHeight: 50, justifyContent: 'center' },
+  base: { borderRadius: 999, paddingVertical: 15, paddingHorizontal: 22, minHeight: 54, justifyContent: 'center' },
   sm: { paddingVertical: 10, minHeight: 44 },
   primary: {
     backgroundColor: colors.primary,
@@ -91,13 +92,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   primaryPressed: { backgroundColor: colors.primaryPressed },
-  secondary: { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.primary },
-  secondaryPressed: { backgroundColor: colors.primarySoft },
+  secondary: { backgroundColor: colors.primarySoft, borderWidth: 2, borderColor: colors.primary },
+  secondaryPressed: { backgroundColor: colors.surface },
   link: { backgroundColor: 'transparent', minHeight: 44, paddingVertical: 10 },
   linkPressed: { opacity: 0.6 },
   disabled: { opacity: 0.45 },
   inner: { alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 16, fontWeight: '700' },
+  label: { ...font.bold, fontSize: 16 },
   labelSm: { fontSize: 15 },
-  linkLabel: { textDecorationLine: 'underline', fontWeight: '600' },
+  linkLabel: { ...font.semibold, textDecorationLine: 'underline' },
 });

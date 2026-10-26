@@ -30,5 +30,6 @@ export function Screen({ children, scroll = true, contentContainerStyle }: Props
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: 20, paddingBottom: 40 },
+  // Bottom space clears the floating tab bar (TAB_BAR_SPACE in TabNavigator).
+  scrollContent: { padding: 20, paddingBottom: 124 },
 });

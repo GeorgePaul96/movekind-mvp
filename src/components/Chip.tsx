@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { colors } from '@/constants/colors';
+import { font } from '@/constants/typography';
 
 interface Props {
   label: string;
@@ -9,7 +10,7 @@ interface Props {
   accessibilityLabel?: string;
 }
 
-/** A small selectable option in a row (e.g. sleep quality). Outlined until chosen, solid once chosen. */
+/** A selectable pill in a row of choices. Outlined until chosen, solid green once chosen. */
 export function Chip({ label, selected, onPress, accessibilityLabel }: Props) {
   return (
     <Pressable
@@ -27,8 +28,8 @@ export function Chip({ label, selected, onPress, accessibilityLabel }: Props) {
 const styles = StyleSheet.create({
   chip: {
     flex: 1,
-    minHeight: 44,
-    borderRadius: 12,
+    minHeight: 46,
+    borderRadius: 999,
     borderWidth: 1.5,
     borderColor: colors.primary,
     backgroundColor: colors.surface,
@@ -37,6 +38,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   selected: { backgroundColor: colors.primary },
-  label: { fontSize: 14, fontWeight: '600', color: colors.primary },
+  label: { ...font.semibold, fontSize: 14, color: colors.primary },
   labelSelected: { color: colors.onPrimary },
 });

@@ -1,8 +1,17 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
-import { stateColors } from '@/constants/colors';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, stateColors } from '@/constants/colors';
 import { MOOD_COPY } from '@/constants/copy';
+import { font } from '@/constants/typography';
+import { Icon, type IconName } from '@/components/Icon';
 import type { UserState } from '@/types';
+
+const MOOD_ICON: Record<UserState, IconName> = {
+  overloaded: 'weather-night',
+  recovering: 'sprout-outline',
+  regulated: 'white-balance-sunny',
+  activated: 'lightning-bolt-outline',
+};
 
 interface Props {
   mood: UserState;
@@ -11,7 +20,7 @@ interface Props {
   disabled?: boolean;
 }
 
-/** One tap = one check-in. Pastel fill, but a dark ink border so it always reads as tappable. */
+/** One tap = one check-in. Pastel fill, an icon in a white circle, a tick once chosen. */
 export function MoodTile({ mood, onPress, selected, disabled }: Props) {
   const c = stateColors[mood];
   const copy = MOOD_COPY[mood];
@@ -24,23 +33,37 @@ export function MoodTile({ mood, onPress, selected, disabled }: Props) {
       accessibilityState={{ selected: !!selected, disabled: !!disabled }}
       style={({ pressed }) => [
         styles.tile,
-        { backgroundColor: c.soft, borderColor: c.ink },
-        selected && styles.selected,
+        { backgroundColor: c.soft, borderColor: selected ? c.ink : 'transparent' },
         pressed && !disabled && styles.pressed,
       ]}
     >
-      <Text style={styles.emoji} importantForAccessibility="no" accessibilityElementsHidden>
-        {copy.emoji}
-      </Text>
+      <View style={styles.top}>
+        <View style={styles.iconWrap}>
+          <Icon name={MOOD_ICON[mood]} size={20} color={c.ink} />
+        </View>
+        {selected ? (
+          <Icon name="check" size={20} color={c.ink} />
+        ) : (
+          <Text style={[styles.flavor, { color: c.ink }]}>{copy.flavor}</Text>
+        )}
+      </View>
       <Text style={[styles.label, { color: c.ink }]}>{copy.label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  tile: { flex: 1, minHeight: 104, borderRadius: 18, borderWidth: 1.5, padding: 14, justifyContent: 'flex-end' },
-  selected: { borderWidth: 3 },
+  tile: { flex: 1, minHeight: 112, borderRadius: 20, borderWidth: 2, padding: 14, justifyContent: 'space-between' },
   pressed: { transform: [{ scale: 0.97 }] },
-  emoji: { fontSize: 28, marginBottom: 6 },
-  label: { fontSize: 15, fontWeight: '700', lineHeight: 19 },
+  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flavor: { ...font.medium, fontSize: 13 },
+  label: { ...font.bold, fontSize: 16, lineHeight: 21, marginTop: 10 },
 });

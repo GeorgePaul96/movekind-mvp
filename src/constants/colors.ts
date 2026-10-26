@@ -19,6 +19,7 @@ export const colors = {
   surfaceSecondary: '#EEF4EF',  // inputs, wells, nested surfaces
   inverse: '#2D322E',           // the dark note card
   onInverse: '#FFFFFF',
+  onInverseSoft: 'rgba(255,255,255,0.12)', // icon circle on the dark note card
 
   // ---- Text --------------------------------------------------------------
   textPrimary: '#181D1A',       // 16:1 on background
