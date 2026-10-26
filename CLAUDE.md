@@ -15,7 +15,7 @@ No streaks, no targets, no guilt: the garden only grows or rests.
 
 ## Tech stack
 
-Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict) · **local-first: all
+Expo SDK 58 · React Native 0.88 · React 19.3 · TypeScript 6 (strict) · **local-first: all
 data on the device (AsyncStorage via `src/services/db`), no backend, no accounts** · Zustand (state) ·
 React Navigation 6 · react-native-svg (the garden) · NativeWind 4 · PostHog (optional, anonymous) ·
 Jest + Testing Library.

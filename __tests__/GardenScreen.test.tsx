@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, waitForElementToBeRemoved } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -98,7 +98,7 @@ describe('<GardenScreen />', () => {
     await useGardenStore.getState().addWorkout('run', 20);
     const { getByLabelText, queryByText } = render(<GardenScreen />);
     fireEvent.press(getByLabelText(WORKOUT_COPY.deleteA11y('run', 20)));
-    await waitFor(() => expect(queryByText(WORKOUT_COPY.entry('run', 20))).toBeNull());
+    await waitForElementToBeRemoved(() => queryByText(WORKOUT_COPY.entry('run', 20)));
     expect(useGardenStore.getState().workouts).toEqual([]);
   });
 
@@ -156,6 +156,6 @@ describe('<GardenScreen />', () => {
     await findByText(UNWELL_COPY.cardTitle);
     fireEvent.press(await findByLabelText(UNWELL_COPY.toggle));
     // The store write is async; give it room when the whole suite is running in parallel.
-    await waitFor(() => expect(queryByText(UNWELL_COPY.cardTitle)).toBeNull(), { timeout: 5000 });
+    await waitForElementToBeRemoved(() => queryByText(UNWELL_COPY.cardTitle), { timeout: 5000 });
   });
 });

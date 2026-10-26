@@ -30,7 +30,7 @@ npx expo start          # or: npm run go  (forces Expo Go)
 
 Press `i` for iOS Simulator, `a` for an Android emulator, or scan the QR code with the Expo Go app.
 
-> Requires the Expo SDK 57 toolchain (React Native 0.86, React 19.2). Node version is pinned in `.nvmrc`.
+> Requires the Expo SDK 58 toolchain (React Native 0.88, React 19.3). Node version is pinned in `.nvmrc`.
 
 ## Data & privacy
 

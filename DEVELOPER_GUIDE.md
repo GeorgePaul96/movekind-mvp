@@ -10,7 +10,7 @@ npx expo start             # no backend, no keys needed — data lives on the de
 # optional: cp .env.example .env and set EXPO_PUBLIC_POSTHOG_API_KEY
 ```
 
-Node version is pinned in `.nvmrc`. Requires the Expo SDK 57 toolchain (RN 0.86 / React 19.2).
+Node version is pinned in `.nvmrc`. Requires the Expo SDK 58 toolchain (RN 0.88 / React 19.3).
 
 ## Verification (run before claiming done)
 
