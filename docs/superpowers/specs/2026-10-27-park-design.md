@@ -1,6 +1,6 @@
 # MoveKind Park: design
 
-Date: 2026-10-27 · Status: draft for owner approval · Replaces the garden card on the home screen.
+Date: 2026-10-27 · Status: approved · Replaces the garden card on the home screen.
 
 ## Intent and why
 
