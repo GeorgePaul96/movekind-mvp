@@ -1,19 +1,29 @@
 import React, { useMemo } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
+import { Image as Picture } from 'react-native';
 import Svg, { Circle, G, Image, Line, Path } from 'react-native-svg';
-import { parkColors as p, stateColors, gardenColors as g } from '@/constants/colors';
+import { parkColors as p } from '@/constants/colors';
 import type { GardenState } from '@/domain/garden/garden';
+import type { UserState } from '@/types';
 import type { ParkLayout } from '@/domain/park/layout';
 import { parkCourses, smoothPath } from '@/domain/park/shapes';
-import { Duck } from '@/components/garden/Garden';
 import type { ParkLight } from './ParkLayers';
 import { ParkTree } from './ParkTree';
-import { Breathe, Ripple, Sway, useLoop } from './Motion';
+import { Ripple, Sway, useLoop } from './Motion';
+import { Bob, Butterflies, Cat } from './Creatures';
 
 /** Paintings from design/park/layers (checkerboard cut out, resized). */
 const GROUND = require('../../../assets/park/ground.png');
 const BED = { src: require('../../../assets/park/bed.png'), w: 768, h: 399 };
 const HAMMOCK = require('../../../assets/park/hammock.png');
+const DUCK = { src: require('../../../assets/park/duck.png'), w: 256, h: 120 };
+/** One painted flower per mood, matched to the mood's colour. */
+const FLOWER: Record<UserState, { src: number; w: number; h: number }> = {
+  overloaded: { src: require('../../../assets/park/flower-0.png'), w: 49, h: 96 }, // lilac
+  regulated: { src: require('../../../assets/park/flower-1.png'), w: 75, h: 96 }, // gold
+  activated: { src: require('../../../assets/park/flower-2.png'), w: 75, h: 96 }, // coral
+  recovering: { src: require('../../../assets/park/flower-3.png'), w: 49, h: 96 }, // teal
+};
 
 const PER_ROW = 7;
 /** The middle row fills first, then the back, then the front (fractions of the soil's depth). */
@@ -25,20 +35,6 @@ interface Props {
   light: ParkLight;
   /** Objects not yet tended today: each one moves a little to invite a tap. */
   untended?: Set<string>;
-}
-
-/** A small five-petal flower in its mood's colour. */
-function Flower({ x, y, color, stem }: { x: number; y: number; color: string; stem: string }) {
-  return (
-    <G testID="flower">
-      <Line x1={x} y1={y + 2} x2={x} y2={y + 9} stroke={stem} strokeWidth={1.5} strokeLinecap="round" />
-      {[0, 1, 2, 3, 4].map((i) => {
-        const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
-        return <Circle key={i} cx={x + Math.cos(a) * 2.8} cy={y + Math.sin(a) * 2.8} r={2.5} fill={color} />;
-      })}
-      <Circle cx={x} cy={y} r={1.7} fill={g.flowerHeart} />
-    </G>
-  );
 }
 
 /** Two dashed glints on the river that cross-fade, so the water seems to flow. */
@@ -107,12 +103,9 @@ export function ParkWorld({ layout, state, light, untended = new Set() }: Props)
       <RiverGlint d={smoothPath(courses.river.slice(3))} W={W} H={H} color={p.river[light].flow} strength={Math.min(0.15 + state.stream * 0.15, 0.8)} fast={riverCue} />
       {riverCue && <Ripple testID="cue-river" x={duck[0]} y={duck[1] + 6} size={70} />}
       {state.ducks && (
-        <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
-          <G transform={`translate(${duck[0]} ${duck[1]}) scale(1.5) translate(-168 -190)`}>
-            <Duck x={168} y={190} />
-            {state.stream >= 3 && <Duck x={150} y={198} />}
-          </G>
-        </Svg>
+        <Bob x={duck[0] - 30} y={duck[1] - 22}>
+          <Picture testID="duck" source={DUCK.src} style={{ width: 60, height: (60 * DUCK.h) / DUCK.w }} />
+        </Bob>
       )}
 
       <ParkTree stage={state.tree} birds={state.birds} asleep={night || state.resting} cue={untended.has('tree')} x={tree.x + tree.w / 2} y={tree.y + tree.h} width={tree.h * 1.4} />
@@ -129,17 +122,21 @@ export function ParkWorld({ layout, state, light, untended = new Set() }: Props)
       </View>
 
       <View testID={untended.has('flowerbed') ? 'cue-flowerbed' : undefined} pointerEvents="none" style={StyleSheet.absoluteFill}>
-        <Breathe testID="flowerbed-art" source={BED.src} box={bed} active={untended.has('flowerbed')} />
-        <Svg style={{ position: 'absolute', left: bed.x, top: bed.y }} width={bed.width} height={bed.height}>
-          {flowers.map((f, i) => {
-            const row = Math.floor(i / PER_ROW);
-            const col = i % PER_ROW;
-            const x = soil.cx + (col / (PER_ROW - 1) - 0.5) * soil.rx * (row ? 1.4 : 1.7) + (row % 2 ? soil.rx * 0.08 : 0);
-            const y = soil.cy + ROW_Y[row]! * soil.ry - 5;
-            return <Flower key={f.day} x={x} y={y} color={stateColors[f.mood].tint} stem={p.foliage[light].shade} />;
-          })}
-        </Svg>
+        <Picture testID="flowerbed-art" source={BED.src} style={{ position: 'absolute', left: bed.x, top: bed.y, width: bed.width, height: bed.height }} />
+        {flowers.map((f, i) => {
+          const row = Math.floor(i / PER_ROW);
+          const col = i % PER_ROW;
+          const x = soil.cx + (col / (PER_ROW - 1) - 0.5) * soil.rx * (row ? 1.4 : 1.7) + (row % 2 ? soil.rx * 0.08 : 0);
+          const y = soil.cy + ROW_Y[row]! * soil.ry;
+          const art = FLOWER[f.mood];
+          const fh = 22;
+          const fw = (fh * art.w) / art.h;
+          return <Picture key={f.day} testID="flower" source={art.src} style={{ position: 'absolute', left: bed.x + x - fw / 2, top: bed.y + y - fh * 0.85, width: fw, height: fh }} />;
+        })}
+        {untended.has('flowerbed') && <Butterflies cx={bed.x + soil.cx} cy={bed.y + soil.cy - 14} spread={bed.width} />}
       </View>
+
+      <Cat path={courses.walkway} worldH={H} asleep={night || state.resting} />
 
       {tint && <View testID="light-tint" pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: tint.color, opacity: tint.opacity }]} />}
 

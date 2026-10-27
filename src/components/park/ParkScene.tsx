@@ -14,6 +14,9 @@ export interface ParkScrollHandle {
   scrollTo(options: { x: number; y?: number; animated?: boolean }): void;
 }
 
+/** Painted clouds (design/park/layers 2/clouds.jpg) that drift across the sky by day. */
+const CLOUDS = require('../../../assets/park/clouds.png');
+
 const OBJECTS: ParkObject[] = ['flowerbed', 'tree', 'river', 'path', 'hammock'];
 
 interface Props {
@@ -36,6 +39,7 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
   const light: ParkLight = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
   const range = Math.max(1, layout.worldW - width);
   const breeze = useLoop(40000); // the sky drifts a few points over forty seconds
+  const clouds = useLoop(90000); // and the clouds a little further, more slowly
 
   /** A background layer `factor` as fast as the foreground: wide enough to cover its travel. */
   const layer = (factor: number) => ({
@@ -59,6 +63,21 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
         <Animated.View style={{ marginLeft: -20, transform: [{ translateX: breeze.interpolate({ inputRange: [0, 1], outputRange: [-14, 14] }) }] }}>
           <SkyLayer width={sky.width + 40} height={height} light={light} />
         </Animated.View>
+        {light !== 'night' && (
+          <Animated.Image
+            testID="clouds"
+            source={CLOUDS}
+            style={{
+              position: 'absolute',
+              left: -40,
+              top: -height * 0.06,
+              width: sky.width + 80,
+              height: sky.width + 80,
+              opacity: light === 'rain' ? 0.55 : 0.9,
+              transform: [{ translateX: clouds.interpolate({ inputRange: [0, 1], outputRange: [-36, 36] }) }],
+            }}
+          />
+        )}
       </Animated.View>
       <Animated.View style={far.style} pointerEvents="none">
         <HillLayer width={far.width} height={height} light={light} depth="far" />

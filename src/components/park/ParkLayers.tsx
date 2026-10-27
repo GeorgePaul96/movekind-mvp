@@ -21,6 +21,11 @@ export function useDrift(): number {
 
 /** The painted daytime sky (design/park/layers/layer 1.jpg). Night keeps its own stars and moon. */
 const SKY_ART = require('../../../assets/park/sky.png');
+/** Painted distant ranges (design/park/layers 2), and where their ridgelines sit in the image. */
+const HILL_ART = {
+  far: { src: require('../../../assets/park/far.png'), ridge: 0.28, at: 0.15, fade: 0.52 },
+  mid: { src: require('../../../assets/park/mid.png'), ridge: 0.2, at: 0.25, fade: 0.7 },
+};
 
 const STARS = Array.from({ length: 26 }, (_, i) => [((i * 97) % 100) / 100, ((i * 53) % 45) / 100] as const);
 
@@ -78,30 +83,38 @@ export function HillLayer({
   depth: 'far' | 'mid';
 }) {
   const t = useDrift();
-  const top = depth === 'far' ? 0.22 : 0.27; // ridges peek over the painted hilltop (about 0.32 to 0.38)
-  const fill = depth === 'far' ? p.far[light] : p.mid[light];
-  const humps = depth === 'far' ? 5 : 4;
-  let d = `M0 ${height * (top + 0.06)}`;
-  for (let i = 0; i < humps; i++) {
-    const x0 = (i / humps) * width;
-    const x1 = ((i + 1) / humps) * width;
-    const peak = height * (top + (i % 2 ? 0.05 : 0) - (depth === 'far' ? 0.02 : 0));
-    d += ` C${x0 + (x1 - x0) * 0.3} ${peak} ${x0 + (x1 - x0) * 0.7} ${peak} ${x1} ${height * (top + 0.06)}`;
-  }
-  d += ` L${width} ${height} L0 ${height}Z`;
+  const art = HILL_ART[depth];
+  // The square painting spans the layer's width; its ridgeline lands at `at` of the screen height,
+  // above the painted hilltop of the ground (about 0.32 to 0.38).
+  const size = width;
+  const imgY = height * art.at - size * art.ridge;
+  const top = art.at + 0.06;
+  const tint = light === 'day' ? null : p.tint[light];
+  // The wash fades in below the peaks and out where the painting fades, so it leaves no edges.
+  const tintTop = height * (art.at - 0.04);
+  const tintBottom = imgY + size * art.fade;
   const mistShift = Math.sin(t * 0.3 + (depth === 'far' ? 0 : 1.7)) * 6;
   const mistId = `park-mist-${depth}-${light}`;
   const mistY = height * (top + 0.04);
   return (
     <Svg width={width} height={height}>
       <Defs>
+        {tint && (
+          <LinearGradient id={`${mistId}-tint`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={tint.color} stopOpacity={0} />
+            <Stop offset="0.3" stopColor={tint.color} stopOpacity={tint.opacity} />
+            <Stop offset="0.85" stopColor={tint.color} stopOpacity={tint.opacity} />
+            <Stop offset="1" stopColor={tint.color} stopOpacity={0} />
+          </LinearGradient>
+        )}
         <LinearGradient id={mistId} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={p.mistTint} stopOpacity={0} />
           <Stop offset="0.5" stopColor={p.mistTint} stopOpacity={p.mist[light]} />
           <Stop offset="1" stopColor={p.mistTint} stopOpacity={0} />
         </LinearGradient>
       </Defs>
-      <Path d={d} fill={fill} />
+      <Image testID={`${depth}-art`} href={art.src} x={0} y={imgY} width={size} height={size} />
+      {tint && <Rect x={0} y={tintTop} width={width} height={tintBottom - tintTop} fill={`url(#${mistId}-tint)`} />}
       <G testID="mist" transform={`translate(${mistShift} 0)`}>
         <Rect x={-20} y={mistY} width={width + 40} height={height * 0.09} fill={`url(#${mistId})`} />
       </G>

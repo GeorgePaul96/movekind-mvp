@@ -1,8 +1,6 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Svg, { G } from 'react-native-svg';
+import { Image, StyleSheet, View } from 'react-native';
 import type { GardenState } from '@/domain/garden/garden';
-import { Bird } from '@/components/garden/Garden';
 import { Sway } from './Motion';
 
 /** The painted growth stages (cut from design/park/layers/layer 5.jpg), with their pixel sizes. */
@@ -15,6 +13,8 @@ const ART = [
   { src: require('../../../assets/park/tree-5.png'), w: 512, h: 459 }, // with fruit
 ] as const;
 const YOUNG = { src: require('../../../assets/park/tree-young.png'), w: 512, h: 478 };
+/** Two robins on a twig (design/park/layers 2/birds.jpg). */
+const BIRDS = { src: require('../../../assets/park/birds.png'), w: 256, h: 209 };
 
 /** In every painting the trunk meets the ground this far down the image. */
 const FOOT = 0.94;
@@ -50,12 +50,11 @@ export function ParkTree({ stage, birds, asleep, cue, x, y, width }: Props) {
       {stage >= 6 && <Sway testID="second-tree" source={YOUNG.src} box={box(YOUNG, x + width * 0.55, y - 6, width * 0.6)} degrees={0.8} period={5600} />}
       <Sway testID={`tree-stage-${s}`} source={art.src} box={main} degrees={cue ? 2.2 : 0.6} period={cue ? 3200 : 5200} />
       {birds && stage >= 3 && (
-        <Svg style={{ position: 'absolute', left: x - 40, top: main.y + main.height * 0.06 - 20 }} width={80} height={30}>
-          <G transform="translate(40 18) scale(0.9)">
-            <Bird x={-22} y={4} asleep={asleep} />
-            <Bird x={20} y={0} asleep={asleep} flip />
-          </G>
-        </Svg>
+        <Image
+          testID="birds"
+          source={BIRDS.src}
+          style={{ position: 'absolute', left: x + width * 0.12, top: main.y + main.height * 0.42, width: width * 0.22, height: (width * 0.22 * BIRDS.h) / BIRDS.w, opacity: asleep ? 0.85 : 1 }}
+        />
       )}
     </View>
   );

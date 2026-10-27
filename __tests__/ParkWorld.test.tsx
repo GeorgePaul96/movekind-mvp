@@ -8,8 +8,14 @@ import type { ParkLight } from '../src/components/park/ParkLayers';
 
 const base: GardenState = { stream: 1, ducks: false, grass: 2, tree: 3, birds: true, flowers: [], resting: false, weather: 'clear' };
 const layout = parkLayout(412, 915);
-const world = (state: Partial<GardenState> = {}, light: ParkLight = 'day') =>
-  render(<ParkWorld layout={layout} state={{ ...base, ...state }} light={light} />);
+let mockReduce = false;
+jest.mock('../src/hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduce }));
+beforeEach(() => {
+  mockReduce = false;
+});
+
+const world = (state: Partial<GardenState> = {}, light: ParkLight = 'day', untended: Set<string> = new Set()) =>
+  render(<ParkWorld layout={layout} state={{ ...base, ...state }} light={light} untended={untended} />);
 
 describe('<ParkWorld />', () => {
   it('the painted ground is the base of the park', () => {
@@ -26,8 +32,26 @@ describe('<ParkWorld />', () => {
   });
 
   it('birds come with the tree once workouts bring them', () => {
-    expect(world({ tree: 3, birds: true }).queryAllByTestId('bird')).toHaveLength(2);
-    expect(world({ tree: 3, birds: false }).queryAllByTestId('bird')).toHaveLength(0);
+    expect(world({ tree: 3, birds: true }).queryAllByTestId('birds')).toHaveLength(1);
+    expect(world({ tree: 3, birds: false }).queryAllByTestId('birds')).toHaveLength(0);
+  });
+
+  it('a duck floats on the river once water brings it', () => {
+    expect(world({ ducks: true }).queryAllByTestId('duck')).toHaveLength(1);
+    expect(world({ ducks: false }).queryAllByTestId('duck')).toHaveLength(0);
+  });
+
+  it('a cat walks the path by day, sleeps at night, and sits still with Reduce Motion', () => {
+    expect(world({}, 'day').queryAllByTestId('cat-walking')).toHaveLength(1);
+    expect(world({}, 'night').queryAllByTestId('cat-sleeping')).toHaveLength(1);
+    expect(world({ resting: true }, 'day').queryAllByTestId('cat-sleeping')).toHaveLength(1);
+    mockReduce = true;
+    expect(world({}, 'day').queryAllByTestId('cat-sitting')).toHaveLength(1);
+  });
+
+  it('butterflies visit the flowerbed until the day has a check-in', () => {
+    expect(world({}, 'day', new Set(['flowerbed'])).queryAllByTestId('butterfly')).toHaveLength(2);
+    expect(world({}, 'day', new Set()).queryAllByTestId('butterfly')).toHaveLength(0);
   });
 
   it('the flowerbed is there before any flowers, then holds one per day', () => {

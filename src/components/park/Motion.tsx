@@ -50,20 +50,6 @@ export function Sway({ source, box, degrees, period, testID }: { source: ImageSo
   );
 }
 
-/** A painting that swells very slightly, as if breathing. */
-export function Breathe({ source, box, active, testID }: { source: ImageSourcePropType; box: Box; active: boolean; testID?: string }) {
-  const t = useLoop(3200, active);
-  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] });
-  return (
-    <Animated.Image
-      testID={testID}
-      source={source}
-      resizeMode="stretch"
-      style={[styles.abs, { left: box.x, top: box.y, width: box.width, height: box.height, transform: [{ scale }] }]}
-    />
-  );
-}
-
 /** Soft rings spreading on the water: "something to do here". A still ring with Reduce Motion. */
 export function Ripple({ x, y, size, testID }: { x: number; y: number; size: number; testID?: string }) {
   const reduce = useReduceMotion();
