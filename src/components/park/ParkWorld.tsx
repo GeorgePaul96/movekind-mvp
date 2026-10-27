@@ -1,10 +1,12 @@
-import React from 'react';
-import Svg, { Circle, Ellipse, G, Line, Path, Rect } from 'react-native-svg';
+import React, { useMemo } from 'react';
+import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import { parkColors as p, stateColors, gardenColors as g } from '@/constants/colors';
 import type { GardenState } from '@/domain/garden/garden';
 import type { ParkLayout } from '@/domain/park/layout';
-import { Bird, Duck, Tree } from '@/components/garden/Garden';
+import { parkCourses, ribbon, smoothPath, type Pt } from '@/domain/park/shapes';
+import { Duck } from '@/components/garden/Garden';
 import type { ParkLight } from './ParkLayers';
+import { ParkTree } from './ParkTree';
 
 interface Props {
   layout: ParkLayout;
@@ -12,121 +14,142 @@ interface Props {
   light: ParkLight;
 }
 
-/** The garden's tree is drawn around (84, 198) in its own 290×250 space; this maps it onto the park. */
-function placeTree(rect: { x: number; y: number; w: number; h: number }) {
-  const scale = rect.h / 110;
-  const tx = rect.x + rect.w / 2 - 84 * scale;
-  const ty = rect.y + rect.h - 198 * scale;
-  return `translate(${tx} ${ty}) scale(${scale})`;
+const PER_ROW = 7;
+/** The middle row fills first, then the back, then the front (as fractions of the bed's depth). */
+const ROW_Y = [0, -0.42, 0.42];
+
+/** A five-petal flower in its mood's colour. */
+function Flower({ x, y, color, stem }: { x: number; y: number; color: string; stem: string }) {
+  return (
+    <G testID="flower">
+      <Line x1={x} y1={y + 2} x2={x} y2={y + 10} stroke={stem} strokeWidth={1.6} strokeLinecap="round" />
+      {[0, 1, 2, 3, 4].map((i) => {
+        const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        return <Circle key={i} cx={x + Math.cos(a) * 3.2} cy={y + Math.sin(a) * 3.2} r={2.8} fill={color} />;
+      })}
+      <Circle cx={x} cy={y} r={2} fill={g.flowerHeart} />
+    </G>
+  );
 }
 
 /**
- * The foreground: ground, river, tree, flowerbed, grassy path and the hammock trees, all placed
- * from the shared layout. Static by design (no timers) so panning stays smooth.
+ * The foreground: one rolling back hill, the river rising on its crest, the walkway down from the
+ * hammock, the tree, the flowerbed and the grass, all placed from the shared layout. Static by
+ * design (no timers) so panning stays smooth.
  */
 export function ParkWorld({ layout, state, light }: Props) {
   const { worldW: W, worldH: H, objects } = layout;
+  const courses = useMemo(() => parkCourses(layout), [layout]);
   const ground = p.ground[light];
   const river = p.river[light];
   const night = light === 'night';
-  const r = objects.river;
-  const riverPath =
-    `M${W * 0.5} ${H * 0.5} C${W * 0.46} ${H * 0.55} ${W * 0.37} ${H * 0.57} ${r.x + r.w / 2} ${r.y + r.h / 2} ` +
-    `S${W * 0.36} ${H * 0.86} ${W * 0.3} ${H * 1.02}`;
-  const pathRect = objects.path;
-  const walkway =
-    `M${W * 0.5} ${H * 0.66} C${W * 0.56} ${H * 0.72} ${pathRect.x} ${pathRect.y} ${pathRect.x + pathRect.w / 2} ${pathRect.y + pathRect.h / 2} ` +
-    `S${W * 0.7} ${H * 0.95} ${W * 0.74} ${H * 1.02}`;
-  const tuftH = 6 + state.grass * 4;
+  const at = (u: number, v: number): Pt => [u * W, v * H];
+
+  const backHill = `${smoothPath(courses.hill)} L${W * 1.02} ${H} L${-0.02 * W} ${H} Z`;
+  const frontGround = `${smoothPath([at(-0.02, 0.74), at(0.25, 0.7), at(0.5, 0.73), at(0.75, 0.69), at(1.02, 0.72)])} L${W * 1.02} ${H} L${-0.02 * W} ${H} Z`;
+  const riverNear = 22 + state.stream * 8;
+  const walkNear = Math.max(34, W * 0.07);
+  const duck = courses.river[3]!; // where the river has widened
+  const tree = objects.tree;
+
   const hm = objects.hammock;
-  const leftTreeX = hm.x + hm.w * 0.12;
-  const rightTreeX = hm.x + hm.w * 0.88;
-  const canopyY = hm.y - hm.h * 0.9;
+  const groundY = hm.y + hm.h;
+  const posts = [hm.x + hm.w * 0.12, hm.x + hm.w * 0.88];
+  const crownW = hm.w * 0.26;
+  const crownTop = hm.y - hm.h * 1.55;
+  const crownBottom = hm.y + hm.h * 0.15;
+  const tie = hm.y + hm.h * 0.3;
+  const sagL = posts[0]! + hm.w * 0.1;
+  const sagR = posts[1]! - hm.w * 0.1;
+  const sagY = hm.y + hm.h * 0.48;
+
+  const fb = objects.flowerbed;
+  const bedX = fb.x + fb.w / 2;
+  const bedY = fb.y + fb.h * 0.55;
+  const rx = fb.w / 2;
+  const ry = fb.h * 0.36;
+  const flowers = state.flowers.slice(-(ROW_Y.length * PER_ROW));
+  const tuftH = 6 + state.grass * 4;
 
   return (
     <Svg width={W} height={H}>
-      {/* Left hill with the tree, right hill with the hammock, and the near ground. */}
-      <Path d={`M0 ${H * 0.5} C${W * 0.12} ${H * 0.44} ${W * 0.3} ${H * 0.46} ${W * 0.46} ${H * 0.58} L${W * 0.46} ${H} L0 ${H}Z`} fill={ground.back} />
-      <Path d={`M${W * 0.5} ${H * 0.62} C${W * 0.64} ${H * 0.5} ${W * 0.84} ${H * 0.46} ${W} ${H * 0.5} L${W} ${H} L${W * 0.5} ${H}Z`} fill={ground.back} />
-      <Path d={`M0 ${H * 0.72} C${W * 0.25} ${H * 0.66} ${W * 0.6} ${H * 0.74} ${W} ${H * 0.68} L${W} ${H} L0 ${H}Z`} fill={ground.front} />
+      <Path d={backHill} fill={ground.back} />
+      <Path d={frontGround} fill={ground.front} />
 
-      {/* River: never dry; each glass widens it. */}
+      {/* River: rises thin on the far crest and widens as it nears; never dry. */}
       <G testID="river">
-        <Path d={riverPath} stroke={river.water} strokeWidth={14 + state.stream * 6} strokeLinecap="round" fill="none" />
-        <Path d={riverPath} stroke={river.flow} strokeWidth={2} strokeDasharray="14 22" strokeLinecap="round" fill="none" opacity={0.8} />
+        <Path d={ribbon(courses.river, 5, riverNear + 10)} fill={ground.fore} opacity={0.45} />
+        <Path testID="river-water" d={ribbon(courses.river, 2, riverNear)} fill={river.water} />
+        <Path d={smoothPath(courses.river.slice(2))} stroke={river.flow} strokeWidth={2} strokeDasharray="12 20" strokeLinecap="round" fill="none" opacity={0.75} />
       </G>
       {state.ducks && (
-        <G transform={`translate(${r.x + r.w * 0.45} ${r.y + r.h * 0.35}) scale(1.6) translate(-168 -190)`}>
+        <G transform={`translate(${duck[0]} ${duck[1]}) scale(1.6) translate(-168 -190)`}>
           <Duck x={168} y={190} />
           {state.stream >= 3 && <Duck x={150} y={198} />}
         </G>
       )}
 
-      {/* Grassy walkway toward the hammock. */}
-      <Path d={walkway} stroke={p.path[light]} strokeWidth={Math.max(26, W * 0.05)} strokeLinecap="round" fill="none" />
+      {/* Walkway from the hammock down toward you. */}
+      <Path d={ribbon(courses.walkway, 10, walkNear + 8)} fill={ground.fore} opacity={0.3} />
+      <Path testID="walkway" d={ribbon(courses.walkway, 6, walkNear)} fill={p.path[light]} />
 
-      {/* Tree on the left hill, with birds once workouts bring them. */}
-      <G transform={placeTree(objects.tree)}>
-        <Tree stage={state.tree} />
-        {state.birds && (
-          <>
-            <Bird x={70} y={92} asleep={night || state.resting} />
-            <Bird x={98} y={96} asleep={night || state.resting} flip />
-          </>
-        )}
-      </G>
+      <ParkTree
+        stage={state.tree}
+        birds={state.birds}
+        asleep={night || state.resting}
+        light={light}
+        x={tree.x + tree.w / 2}
+        y={tree.y + tree.h}
+        height={tree.h * 1.1}
+      />
 
-      {/* Two slim trees and the hammock between them. */}
+      {/* Two slim cypress trees and the hammock between them, at the top of the walkway. */}
       <G testID="hammock">
-        {[leftTreeX, rightTreeX].map((x, i) => {
-          const groundY = hm.y + hm.h;
-          const crownW = hm.w * 0.2;
-          const crownTop = canopyY - hm.h * 0.7;
-          const crownBottom = hm.y + hm.h * 0.05;
-          // A slim teardrop crown (like the Gemini art) with the trunk running up into it.
+        {posts.map((x, i) => {
+          const mid = crownTop + (crownBottom - crownTop) * 0.4;
           const crown =
-            `M${x} ${crownTop} C${x + crownW * 0.75} ${crownTop + (crownBottom - crownTop) * 0.35} ${x + crownW * 0.6} ${crownBottom} ${x} ${crownBottom} ` +
-            `C${x - crownW * 0.6} ${crownBottom} ${x - crownW * 0.75} ${crownTop + (crownBottom - crownTop) * 0.35} ${x} ${crownTop}Z`;
+            `M${x} ${crownTop} C${x + crownW * 0.8} ${mid - (crownBottom - crownTop) * 0.05} ${x + crownW * 0.62} ${crownBottom} ${x} ${crownBottom} ` +
+            `C${x - crownW * 0.62} ${crownBottom} ${x - crownW * 0.8} ${mid - (crownBottom - crownTop) * 0.05} ${x} ${crownTop}Z`;
+          const lit =
+            `M${x} ${crownTop} C${x - crownW * 0.8} ${mid} ${x - crownW * 0.55} ${crownBottom - 6} ${x - 2} ${crownBottom - 4} ` +
+            `C${x - crownW * 0.2} ${mid} ${x - crownW * 0.1} ${crownTop + 20} ${x} ${crownTop}Z`;
           return (
             <G key={i}>
-              <Rect x={x - 3.5} y={crownTop + (crownBottom - crownTop) * 0.4} width={7} height={groundY - (crownTop + (crownBottom - crownTop) * 0.4)} rx={3} fill={g.trunk} />
-              <Path d={crown} fill={i ? g.leafLight : g.leaf} />
-              <Path d={`M${x} ${crownBottom - 6} L${x} ${crownTop + 26}`} stroke={g.trunk} strokeWidth={2} opacity={0.5} />
+              <Ellipse cx={x} cy={groundY + 1} rx={crownW * 0.7} ry={4} fill={ground.fore} opacity={0.5} />
+              <Path d={`M${x - 5} ${groundY + 1} L${x - 3} ${mid} L${x + 3} ${mid} L${x + 5} ${groundY + 1} Z`} fill={g.trunk} />
+              <Path d={crown} fill={p.foliage[light].shade} />
+              <Path d={lit} fill={p.foliage[light].leaf} />
             </G>
           );
         })}
-        {/* The hammock: ropes to each trunk and a cloth that sags between them. */}
         <Path
-          d={
-            `M${leftTreeX} ${hm.y + hm.h * 0.3} L${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48} ` +
-            `Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.98} ${rightTreeX - hm.w * 0.1} ${hm.y + hm.h * 0.48} L${rightTreeX} ${hm.y + hm.h * 0.3}`
-          }
+          d={`M${posts[0]} ${tie} L${sagL} ${sagY} M${sagR} ${sagY} L${posts[1]} ${tie}`}
           stroke={g.trunk}
           strokeWidth={2}
           fill="none"
         />
         <Path
-          d={
-            `M${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 1.0} ${rightTreeX - hm.w * 0.1} ${hm.y + hm.h * 0.48} ` +
-            `Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.78} ${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48}Z`
-          }
-          fill={p.ground[light].fore}
+          d={`M${sagL} ${sagY} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 1.02} ${sagR} ${sagY} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.78} ${sagL} ${sagY}Z`}
+          fill={p.hammock.cloth}
+          opacity={night ? 0.7 : 1}
         />
+        <Path d={`M${sagL + 6} ${sagY + 3} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.9} ${sagR - 6} ${sagY + 3}`} stroke={p.hammock.stripe} strokeWidth={2} fill="none" opacity={night ? 0.6 : 1} />
       </G>
 
-      {/* Mood flowers in the flowerbed (one per day, its mood's colour). */}
+      {/* The flowerbed: a soil bed edged with stones, one flower per day with a check-in. */}
       <G testID="flowerbed">
-        {state.flowers.slice(-21).map((f, i) => {
-          const fb = objects.flowerbed;
-          const x = fb.x + 10 + ((i * 37) % Math.max(1, fb.w - 20));
-          const y = fb.y + fb.h * 0.35 + (i % 3) * (fb.h * 0.2);
-          return (
-            <G key={f.day} testID="flower">
-              <Line x1={x} y1={y} x2={x} y2={y + 9} stroke={ground.fore} strokeWidth={1.5} />
-              <Circle cx={x} cy={y} r={4.5} fill={stateColors[f.mood].tint} />
-              <Circle cx={x} cy={y} r={1.8} fill={g.flowerHeart} />
-            </G>
-          );
+        <Ellipse cx={bedX} cy={bedY + 3} rx={rx + 6} ry={ry + 5} fill={ground.fore} opacity={0.4} />
+        <Ellipse testID="flowerbed-soil" cx={bedX} cy={bedY} rx={rx} ry={ry} fill={p.soil[light]} />
+        {Array.from({ length: 16 }, (_, i) => {
+          const a = (i / 16) * Math.PI * 2;
+          return <Ellipse key={i} cx={bedX + Math.cos(a) * rx} cy={bedY + Math.sin(a) * ry} rx={5} ry={3.4} fill={p.stone[light]} />;
+        })}
+        {flowers.map((f, i) => {
+          const row = Math.floor(i / PER_ROW);
+          const col = i % PER_ROW;
+          const x = bedX + (col / (PER_ROW - 1) - 0.5) * rx * (row ? 1.2 : 1.45) + (row % 2 ? rx * 0.08 : 0);
+          const y = bedY + ROW_Y[row]! * ry - 6;
+          return <Flower key={f.day} x={x} y={y} color={stateColors[f.mood].tint} stem={p.foliage[light].shade} />;
         })}
       </G>
 

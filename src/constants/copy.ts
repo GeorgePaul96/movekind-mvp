@@ -307,7 +307,6 @@ export const SHEET_COPY = {
 export const DRAWER_COPY = {
   openLabel: 'Today in your park. Opens the drawer.',
   closeLabel: 'Close the drawer',
-  peekTitle: 'Today',
   todayTitle: 'Today in your park',
   changesTitle: 'Changes',
   meTitle: 'You',

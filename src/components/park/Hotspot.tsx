@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { parkColors } from '@/constants/colors';
 import type { ParkObject, Rect } from '@/domain/park/layout';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
@@ -17,14 +18,15 @@ interface Props {
 /** An invisible, accessible button laid over a park object. The drawing is the visual. */
 export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) {
   const reduce = useReduceMotion();
-  const pulse = useRef(new Animated.Value(0.06)).current;
+  const pulse = useRef(new Animated.Value(0.2)).current;
+  const glow = Math.min(rect.w, rect.h); // a round halo, whatever the object's shape
 
   useEffect(() => {
     if (!shimmer || reduce) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 0.26, duration: 2200, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0.06, duration: 2200, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.8, duration: 2200, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.2, duration: 2200, useNativeDriver: true }),
       ]),
     );
     loop.start();
@@ -43,8 +45,19 @@ export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) 
         <Animated.View
           testID={`shimmer-${object}`}
           pointerEvents="none"
-          style={[styles.glow, { opacity: reduce ? 0.18 : pulse }]}
-        />
+          style={{ width: glow, height: glow, opacity: reduce ? 0.5 : pulse }}
+        >
+          <Svg width={glow} height={glow}>
+            <Defs>
+              <RadialGradient id={`glow-${object}`} cx="50%" cy="50%" r="50%">
+                <Stop offset="0" stopColor={parkColors.shimmer} stopOpacity={0.7} />
+                <Stop offset="0.5" stopColor={parkColors.shimmer} stopOpacity={0.25} />
+                <Stop offset="1" stopColor={parkColors.shimmer} stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <Circle cx={glow / 2} cy={glow / 2} r={glow / 2} fill={`url(#glow-${object})`} />
+          </Svg>
+        </Animated.View>
       )}
     </Pressable>
   );
@@ -52,15 +65,4 @@ export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) 
 
 const styles = StyleSheet.create({
   target: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-  // A soft halo of light, not an outline: the object glows gently as if catching the sun.
-  glow: {
-    width: '60%',
-    height: '60%',
-    borderRadius: 999,
-    backgroundColor: parkColors.shimmer,
-    shadowColor: parkColors.shimmer,
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
-  },
 });

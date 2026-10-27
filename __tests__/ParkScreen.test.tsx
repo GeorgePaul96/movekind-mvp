@@ -73,6 +73,13 @@ describe('<ParkScreen />', () => {
     expect(getByText(DRAWER_COPY.todayTitle)).toBeTruthy();
   });
 
+  it('closed, the drawer is only an arrow over the park', () => {
+    const { getByLabelText, queryByText } = render(<ParkScreen />);
+    expect(getByLabelText(DRAWER_COPY.openLabel)).toBeTruthy();
+    expect(queryByText(WATER_COPY.count(0))).toBeNull();
+    expect(queryByText('Today')).toBeNull();
+  });
+
   it('every kind of care can be logged from the drawer', () => {
     const { getByLabelText, getAllByLabelText } = render(<ParkScreen />);
     fireEvent.press(getByLabelText(DRAWER_COPY.openLabel));

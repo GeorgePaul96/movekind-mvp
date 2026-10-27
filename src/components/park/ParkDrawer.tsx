@@ -14,7 +14,7 @@ import { useGardenStore } from '@/store/gardenStore';
 import ChangesView from '@/screens/main/ChangesView';
 import MeView from '@/screens/main/MeView';
 
-const PEEK = 88;
+const PEEK = 56;
 
 interface Props {
   height: number;
@@ -50,8 +50,8 @@ function Row({ icon, title, value, action, onPress, primary }: {
 }
 
 /**
- * The drawer over the park. Collapsed it peeks with today at a glance; tap it or swipe up to
- * open: plain log buttons (also the screen-reader path), the gentle note, Changes and Me.
+ * The drawer over the park. Closed it is only a light arrow, so the park stays whole; tap it or
+ * swipe up to open: plain log buttons (also the screen-reader path), the gentle note, Changes and Me.
  */
 export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: Props) {
   const reduce = useReduceMotion();
@@ -81,10 +81,15 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
   )[0]?.text;
 
   const moveTo = (next: boolean) => {
-    setOpen(next);
     const toValue = next ? openY : closedY;
-    if (reduce) y.setValue(toValue);
-    else Animated.spring(y, { toValue, useNativeDriver: true, damping: 22, stiffness: 180 }).start();
+    // Opening shows the panel at once; closing keeps it until it has slid away.
+    if (next) setOpen(true);
+    if (reduce) {
+      y.setValue(toValue);
+      setOpen(next);
+    } else {
+      Animated.spring(y, { toValue, useNativeDriver: true, damping: 22, stiffness: 180 }).start(() => setOpen(next));
+    }
   };
 
   const pan = useMemo(
@@ -102,7 +107,7 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
 
   return (
     <Animated.View
-      style={[styles.drawer, { height: height - openY, transform: [{ translateY: y }] }]}
+      style={[styles.drawer, open && styles.panel, { height: height - openY, transform: [{ translateY: y }] }]}
       {...pan.panHandlers}
     >
       <Pressable
@@ -111,14 +116,7 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
         onPress={() => moveTo(!open)}
         style={styles.peek}
       >
-        <View style={styles.handle} />
-        <View style={styles.peekRow}>
-          <Text style={styles.peekTitle}>{DRAWER_COPY.peekTitle}</Text>
-          <View style={styles.chips}>
-            <Text style={styles.chip}>{WATER_COPY.count(glasses)}</Text>
-            {todayMood && <Text style={styles.chip}>{MOOD_COPY[todayMood].label}</Text>}
-          </View>
-        </View>
+        <Icon name={open ? 'chevron-down' : 'chevron-up'} size={36} color={open ? colors.textSecondary : colors.onInverse} />
       </Pressable>
 
       {open && (
@@ -158,27 +156,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
+    paddingHorizontal: 20,
+  },
+  panel: {
     backgroundColor: colors.background,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    paddingHorizontal: 20,
     ...elevation.raised,
   },
-  peek: { height: PEEK, justifyContent: 'center' },
-  handle: { alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: colors.border, marginBottom: 12 },
-  peekRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  peekTitle: { ...font.bold, fontSize: 18, color: colors.textPrimary },
-  chips: { flexDirection: 'row', gap: 6, flexShrink: 1 },
-  chip: {
-    ...font.semibold,
-    fontSize: 13,
-    color: colors.primary,
-    backgroundColor: colors.primarySoft,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    overflow: 'hidden',
-  },
+  peek: { height: PEEK, alignSelf: 'center', minWidth: 88, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: { ...font.bold, fontSize: 20, color: colors.textPrimary, marginTop: 18, marginBottom: 10 },
   note: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.inverse, borderRadius: 20, padding: 14, marginBottom: 10 },
   noteText: { ...font.medium, flex: 1, fontSize: 15, lineHeight: 22, color: colors.onInverse },

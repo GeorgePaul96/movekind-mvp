@@ -57,6 +57,7 @@
 Park: [park/ParkScene](src/components/park/ParkScene.tsx) (panning scroll + parallax) ·
 [park/ParkLayers](src/components/park/ParkLayers.tsx) (sky, hills, mist, rain; the only animated layers) ·
 [park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
+[park/ParkTree](src/components/park/ParkTree.tsx) (the tree's growth stages) · shapes from [domain/park/shapes](src/domain/park/shapes.ts) (hill, river and walkway courses) ·
 [park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
 [park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·
 [park/ParkTour](src/components/park/ParkTour.tsx) (first visit) · [park/Sheet](src/components/park/Sheet.tsx) ·
@@ -85,7 +86,7 @@ Primitives: [Button](src/components/Button.tsx) · [MoodTile](src/components/Moo
 ## `__tests__/`
 
 Domain: `garden`, `changes`, `moods`. Data: `db`, `gardenStore`, `profileStore`, `settingsStore`.
-Park: `parkLayout`, `tending`, `ParkScene`, `parkSheets`, `ParkScreen`, `ParkTour`.
+Park: `parkLayout`, `parkShapes`, `tending`, `ParkScene`, `ParkWorld`, `parkSheets`, `ParkScreen`, `ParkTour`.
 Screens/components: `ChangesView`, `MeView`, `OnboardingScreen`, `Garden`,
 `homeComponents`, `Button`, `ErrorBoundary`. Services: `reminder`, `notificationsExpoGo`, `appOpens`,
 `appLaunch`, `telemetryPrivacy`, `network`. Rules: `colors` (contrast), `noEmDash`.
