@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Screen } from '@/components/Screen';
-import { Header } from '@/components/Header';
 import { Card } from '@/components/Card';
 import { Icon, type IconName } from '@/components/Icon';
 import { Garden } from '@/components/garden/Garden';
@@ -29,7 +27,8 @@ function CardTitle({ icon, title }: { icon: IconName; title: string }) {
 }
 
 /** What the user's activity is changing: plain sentences, then and now, the mood flowerbed. */
-export default function ChangesScreen() {
+/** Changes, shown inside the park drawer. */
+export default function ChangesView() {
   const checkIns = useGardenStore((s) => s.checkIns);
   const water = useGardenStore((s) => s.water);
   const workouts = useGardenStore((s) => s.workouts);
@@ -53,8 +52,7 @@ export default function ChangesScreen() {
   const today = gardenState(input, now);
 
   return (
-    <Screen>
-      <Header tag={CHANGES_COPY.tag} title={CHANGES_COPY.title} subtitle={CHANGES_COPY.subtitle} />
+    <View>
 
       <Card style={styles.card}>
         <CardTitle icon="sprout" title={CHANGES_COPY.linesTitle} />
@@ -122,7 +120,7 @@ export default function ChangesScreen() {
         <Icon name="heart-outline" size={20} color={colors.primary} />
         <Text style={styles.paceText}>{CHANGES_COPY.paceNote}</Text>
       </View>
-    </Screen>
+    </View>
   );
 }
 

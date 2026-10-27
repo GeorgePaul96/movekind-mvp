@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import { Screen } from '@/components/Screen';
 import { Icon } from '@/components/Icon';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
@@ -11,7 +10,8 @@ import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { disableDailyReminder, enableDailyReminder } from '@/services/notifications';
 
-export default function ProfileScreen() {
+/** Me (name, reminder, data), shown inside the park drawer. */
+export default function MeView() {
   const profile = useProfileStore((s) => s.profile);
   const saveName = useProfileStore((s) => s.setName);
   const eraseAll = useProfileStore((s) => s.eraseAll);
@@ -65,7 +65,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <Screen>
+    <View>
       <View style={styles.hero}>
         <View style={styles.emblemRing}>
           <View style={styles.emblem}>
@@ -134,7 +134,7 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.quote}>{ME_COPY.philosophy}</Text>
       </Card>
-    </Screen>
+    </View>
   );
 }
 

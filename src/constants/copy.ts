@@ -302,3 +302,28 @@ export const SHEET_COPY = {
   stepsTitle: 'Your steps',
   stepsSubtitle: 'Steps grow the grass.',
 } as const;
+
+/** The pull-up drawer over the park: today at a glance, plain log buttons, Changes and Me. */
+export const DRAWER_COPY = {
+  openLabel: 'Today in your park. Opens the drawer.',
+  closeLabel: 'Close the drawer',
+  peekTitle: 'Today',
+  todayTitle: 'Today in your park',
+  changesTitle: 'Changes',
+  meTitle: 'You',
+  rows: {
+    water: { title: 'Water', action: '+1 glass' },
+    workout: { title: 'Workouts', action: 'Log a workout' },
+    mood: { title: 'Mood', action: 'Check in' },
+    steps: { title: 'Steps', action: 'See your steps' },
+  },
+  noMoodYet: 'Not yet today',
+  noWorkoutYet: 'Not yet today',
+  minutesToday: (m: number) => `${m} min today`,
+} as const;
+
+/** Stage 1: the hammock is there, sleep logging arrives in the next update. */
+export const SLEEP_SOON_COPY = {
+  title: 'The hammock',
+  body: 'Rest between the trees. Logging your sleep arrives in the next update.',
+} as const;

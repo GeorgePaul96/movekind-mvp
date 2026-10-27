@@ -11,7 +11,7 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
-import ChangesScreen from '../src/screens/main/ChangesScreen';
+import ChangesScreen from '../src/screens/main/ChangesView';
 import { useGardenStore } from '../src/store/gardenStore';
 import { CHANGES_COPY } from '../src/constants/copy';
 

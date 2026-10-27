@@ -16,7 +16,7 @@ jest.mock('../src/services/notifications', () => ({
   disableDailyReminder: () => mockDisable(),
 }));
 
-import ProfileScreen from '../src/screens/main/ProfileScreen';
+import ProfileScreen from '../src/screens/main/MeView';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { useProfileStore } from '../src/store/profileStore';
 import { ME_COPY } from '../src/constants/copy';
