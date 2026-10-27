@@ -220,6 +220,7 @@ export const GARDEN_INTRO_COPY = {
 export const STEPS_COPY = {
   checking: 'Checking',
   allow: 'Tap to allow',
+  allowButton: 'Allow steps',
   allowHint: 'Lets MoveKind read your step count from this phone. Steps stay on this phone.',
   off: 'Off',
   offHint: 'Step access is off. You can turn on Motion and Fitness for MoveKind in your phone settings.',
@@ -282,4 +283,22 @@ export const PARK_COPY = {
   greeting: (partOfDay: string, name?: string | null) =>
     name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
   sceneLabel: 'Your park. Swipe left or right to look around.',
+} as const;
+
+/** The river's water sheet. One drop per glass; there is never an "out of". */
+export const WATER_COPY = {
+  title: 'Water',
+  subtitle: 'A cool sip from the river',
+  add: '+1 glass',
+  remove: 'Undo last glass',
+  count: (n: number) => (n === 0 ? 'Nothing yet today' : n === 1 ? '1 glass today' : `${n} glasses today`),
+  note: 'Drink when you are thirsty. Tea and other drinks count too.',
+} as const;
+
+export const SHEET_COPY = {
+  close: 'Close',
+  moodTitle: 'How are you feeling?',
+  moodSubtitle: 'Each mood plants a flower.',
+  stepsTitle: 'Your steps',
+  stepsSubtitle: 'Steps grow the grass.',
 } as const;

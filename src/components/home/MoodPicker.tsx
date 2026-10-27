@@ -10,7 +10,7 @@ import { useGardenStore } from '@/store/gardenStore';
 import type { UserState } from '@/types';
 
 /** The whole check-in: one tap on a tile plants today's flower. */
-export function MoodPicker({ onPicked }: { onPicked?: () => void }) {
+export function MoodPicker({ onPicked, hideTitle }: { onPicked?: () => void; hideTitle?: boolean }) {
   const logMood = useGardenStore((s) => s.logMood);
   const [picked, setPicked] = useState<UserState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -32,10 +32,12 @@ export function MoodPicker({ onPicked }: { onPicked?: () => void }) {
 
   return (
     <View>
+      {!hideTitle && (
       <View style={styles.head}>
         <Text style={styles.prompt} accessibilityRole="header">{GARDEN_COPY.moodTitle}</Text>
         <Text style={styles.aside}>{GARDEN_COPY.moodAside}</Text>
       </View>
+      )}
       <View style={styles.grid}>
         {[0, 2].map((row) => (
           <View key={row} style={styles.row}>
