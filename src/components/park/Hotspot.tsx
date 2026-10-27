@@ -9,7 +9,7 @@ interface Props {
   rect: Rect;
   label: string;
   hint: string;
-  /** Not yet tended today: a soft glow that breathes (a still ring with Reduce Motion). */
+  /** Not yet tended today: a soft glow that breathes (a still glow with Reduce Motion). */
   shimmer: boolean;
   onPress: (o: ParkObject) => void;
 }
@@ -17,14 +17,14 @@ interface Props {
 /** An invisible, accessible button laid over a park object. The drawing is the visual. */
 export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) {
   const reduce = useReduceMotion();
-  const pulse = useRef(new Animated.Value(0.35)).current;
+  const pulse = useRef(new Animated.Value(0.06)).current;
 
   useEffect(() => {
     if (!shimmer || reduce) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 0.85, duration: 1800, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0.35, duration: 1800, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.26, duration: 2200, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.06, duration: 2200, useNativeDriver: true }),
       ]),
     );
     loop.start();
@@ -43,7 +43,7 @@ export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) 
         <Animated.View
           testID={`shimmer-${object}`}
           pointerEvents="none"
-          style={[styles.glow, { opacity: reduce ? 0.6 : pulse }]}
+          style={[styles.glow, { opacity: reduce ? 0.18 : pulse }]}
         />
       )}
     </Pressable>
@@ -52,11 +52,15 @@ export function Hotspot({ object, rect, label, hint, shimmer, onPress }: Props) 
 
 const styles = StyleSheet.create({
   target: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  // A soft halo of light, not an outline: the object glows gently as if catching the sun.
   glow: {
-    width: '70%',
-    height: '70%',
+    width: '60%',
+    height: '60%',
     borderRadius: 999,
-    borderWidth: 2,
-    borderColor: parkColors.shimmer,
+    backgroundColor: parkColors.shimmer,
+    shadowColor: parkColors.shimmer,
+    shadowOpacity: 0.9,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
   },
 });

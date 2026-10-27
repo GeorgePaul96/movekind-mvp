@@ -78,18 +78,39 @@ export function ParkWorld({ layout, state, light }: Props) {
 
       {/* Two slim trees and the hammock between them. */}
       <G testID="hammock">
-        {[leftTreeX, rightTreeX].map((x, i) => (
-          <G key={i}>
-            <Rect x={x - 3} y={canopyY + hm.h * 0.5} width={6} height={hm.y + hm.h - canopyY - hm.h * 0.5} rx={3} fill={g.trunk} />
-            <Ellipse cx={x} cy={canopyY} rx={hm.w * 0.12} ry={hm.h * 0.75} fill={i ? g.leafLight : g.leaf} />
-          </G>
-        ))}
+        {[leftTreeX, rightTreeX].map((x, i) => {
+          const groundY = hm.y + hm.h;
+          const crownW = hm.w * 0.2;
+          const crownTop = canopyY - hm.h * 0.7;
+          const crownBottom = hm.y + hm.h * 0.05;
+          // A slim teardrop crown (like the Gemini art) with the trunk running up into it.
+          const crown =
+            `M${x} ${crownTop} C${x + crownW * 0.75} ${crownTop + (crownBottom - crownTop) * 0.35} ${x + crownW * 0.6} ${crownBottom} ${x} ${crownBottom} ` +
+            `C${x - crownW * 0.6} ${crownBottom} ${x - crownW * 0.75} ${crownTop + (crownBottom - crownTop) * 0.35} ${x} ${crownTop}Z`;
+          return (
+            <G key={i}>
+              <Rect x={x - 3.5} y={crownTop + (crownBottom - crownTop) * 0.4} width={7} height={groundY - (crownTop + (crownBottom - crownTop) * 0.4)} rx={3} fill={g.trunk} />
+              <Path d={crown} fill={i ? g.leafLight : g.leaf} />
+              <Path d={`M${x} ${crownBottom - 6} L${x} ${crownTop + 26}`} stroke={g.trunk} strokeWidth={2} opacity={0.5} />
+            </G>
+          );
+        })}
+        {/* The hammock: ropes to each trunk and a cloth that sags between them. */}
         <Path
-          d={`M${leftTreeX} ${hm.y + hm.h * 0.35} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.9} ${rightTreeX} ${hm.y + hm.h * 0.35}`}
+          d={
+            `M${leftTreeX} ${hm.y + hm.h * 0.3} L${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48} ` +
+            `Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.98} ${rightTreeX - hm.w * 0.1} ${hm.y + hm.h * 0.48} L${rightTreeX} ${hm.y + hm.h * 0.3}`
+          }
           stroke={g.trunk}
-          strokeWidth={5}
+          strokeWidth={2}
           fill="none"
-          strokeLinecap="round"
+        />
+        <Path
+          d={
+            `M${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48} Q${hm.x + hm.w / 2} ${hm.y + hm.h * 1.0} ${rightTreeX - hm.w * 0.1} ${hm.y + hm.h * 0.48} ` +
+            `Q${hm.x + hm.w / 2} ${hm.y + hm.h * 0.78} ${leftTreeX + hm.w * 0.1} ${hm.y + hm.h * 0.48}Z`
+          }
+          fill={p.ground[light].fore}
         />
       </G>
 
