@@ -7,6 +7,7 @@ import { PARALLAX, parkLayout, type ParkObject } from '@/domain/park/layout';
 import { HillLayer, RainLayer, SkyLayer, type ParkLight } from './ParkLayers';
 import { ParkWorld } from './ParkWorld';
 import { Hotspot } from './Hotspot';
+import { useLoop } from './Motion';
 
 /** What the tour needs from the park's scroll view. */
 export interface ParkScrollHandle {
@@ -34,6 +35,7 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
   const scrollX = useRef(new Animated.Value(layout.startX)).current;
   const light: ParkLight = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
   const range = Math.max(1, layout.worldW - width);
+  const breeze = useLoop(40000); // the sky drifts a few points over forty seconds
 
   /** A background layer `factor` as fast as the foreground: wide enough to cover its travel. */
   const layer = (factor: number) => ({
@@ -54,7 +56,9 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
   return (
     <View style={{ width, height }} accessibilityLabel={PARK_COPY.sceneLabel}>
       <Animated.View style={sky.style} pointerEvents="none">
-        <SkyLayer width={sky.width} height={height} light={light} />
+        <Animated.View style={{ marginLeft: -20, transform: [{ translateX: breeze.interpolate({ inputRange: [0, 1], outputRange: [-14, 14] }) }] }}>
+          <SkyLayer width={sky.width + 40} height={height} light={light} />
+        </Animated.View>
       </Animated.View>
       <Animated.View style={far.style} pointerEvents="none">
         <HillLayer width={far.width} height={height} light={light} depth="far" />
@@ -73,7 +77,7 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
         style={StyleSheet.absoluteFill}
       >
         <View testID="park-world" style={{ width: layout.worldW, height }}>
-          <ParkWorld layout={layout} state={state} light={light} />
+          <ParkWorld layout={layout} state={state} light={light} untended={untended} />
           {OBJECTS.map((o) => (
             <Hotspot
               key={o}
@@ -81,7 +85,6 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
               rect={layout.objects[o]}
               label={PARK_COPY.objects[o].label}
               hint={PARK_COPY.objects[o].hint}
-              shimmer={untended.has(o)}
               onPress={onObject}
             />
           ))}

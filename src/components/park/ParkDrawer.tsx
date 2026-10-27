@@ -12,6 +12,7 @@ import type { ParkObject } from '@/domain/park/layout';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useGardenStore } from '@/store/gardenStore';
 import ChangesView from '@/screens/main/ChangesView';
+import { useLoop } from '@/components/park/Motion';
 import MeView from '@/screens/main/MeView';
 
 const PEEK = 56;
@@ -59,6 +60,7 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
   const closedY = height - PEEK - bottomInset;
   const openY = Math.round(height * 0.1);
   const y = useRef(new Animated.Value(closedY)).current;
+  const bob = useLoop(1800, !open); // the closed arrow bounces softly: "pull me up"
 
   const checkIns = useGardenStore((s) => s.checkIns);
   const water = useGardenStore((s) => s.water);
@@ -116,7 +118,9 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
         onPress={() => moveTo(!open)}
         style={styles.peek}
       >
-        <Icon name={open ? 'chevron-down' : 'chevron-up'} size={36} color={open ? colors.textSecondary : colors.onInverse} />
+        <Animated.View style={{ transform: [{ translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) }] }}>
+          <Icon name={open ? 'chevron-down' : 'chevron-up'} size={40} color={open ? colors.textSecondary : colors.onInverse} />
+        </Animated.View>
       </Pressable>
 
       {open && (

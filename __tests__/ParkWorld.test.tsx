@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import type { GardenState } from '../src/domain/garden/garden';
 import { parkLayout } from '../src/domain/park/layout';
 import { ParkWorld } from '../src/components/park/ParkWorld';
@@ -38,7 +39,7 @@ describe('<ParkWorld />', () => {
   });
 
   it('more water makes the river sparkle more', () => {
-    const glints = (stream: number) => world({ stream: stream as GardenState['stream'] }).getByTestId('river-glint').props.opacity;
+    const glints = (stream: number) => StyleSheet.flatten(world({ stream: stream as GardenState['stream'] }).getByTestId('river-glint').props.style).opacity as number;
     expect(glints(3)).toBeGreaterThan(glints(0));
   });
 

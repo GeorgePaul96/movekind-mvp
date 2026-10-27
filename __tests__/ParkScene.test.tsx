@@ -45,10 +45,18 @@ describe('<ParkScene />', () => {
     expect(onObject).toHaveBeenCalledWith('tree');
   });
 
-  it('untended objects shimmer, tended ones do not', () => {
-    const { queryAllByTestId } = scene({ untended: new Set(['river']) });
-    expect(queryAllByTestId('shimmer-river').length).toBeGreaterThan(0);
-    expect(queryAllByTestId('shimmer-tree')).toHaveLength(0);
+  it('untended objects move to invite a tap, tended ones rest; no white haze', () => {
+    const { queryAllByTestId } = scene({ untended: new Set(['river', 'tree']) });
+    expect(queryAllByTestId('cue-river')).toHaveLength(1);
+    expect(queryAllByTestId('cue-tree')).toHaveLength(1);
+    expect(queryAllByTestId('cue-flowerbed')).toHaveLength(0);
+    expect(queryAllByTestId(/^shimmer-/)).toHaveLength(0);
+  });
+
+  it('with Reduce Motion nothing moves, but untended objects still show a still cue', () => {
+    mockReducedMotion = true;
+    const { queryAllByTestId } = scene({ untended: new Set(['tree']) });
+    expect(queryAllByTestId('cue-tree')).toHaveLength(1);
   });
 
   it('rain and night still draw', () => {

@@ -36,7 +36,7 @@ const PLACES: Record<ParkObject, { cx: number; cy: number; w: number; h: number 
   tree: { cx: 0.16, cy: 0.41, w: 0.28, h: 0.22 },
   river: { cx: 0.4, cy: 0.7, w: 0.28, h: 0.12 },
   path: { cx: 0.73, cy: 0.64, w: 0.28, h: 0.1 },
-  hammock: { cx: 0.88, cy: 0.48, w: 0.3, h: 0.16 },
+  hammock: { cx: 0.84, cy: 0.42, w: 0.3, h: 0.18 },
 };
 
 export function parkLayout(screenW: number, screenH: number): ParkLayout {

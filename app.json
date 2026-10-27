@@ -72,6 +72,9 @@
       ],
       "react-native-health-connect",
       "expo-font"
-    ]
+    ],
+    "androidNavigationBar": {
+      "enforceContrast": false
+    }
   }
 }
