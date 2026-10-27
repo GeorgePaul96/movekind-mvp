@@ -269,3 +269,17 @@ export const UNWELL_COPY = {
   cardBody: 'No logs needed today. Rest easy.',
   subtitle: 'Today is for resting.',
 } as const;
+
+/** The full-screen park: what each object is called and opens, for taps and screen readers. */
+export const PARK_COPY = {
+  objects: {
+    river: { label: 'River', hint: 'Opens water. Each glass makes the river livelier.' },
+    tree: { label: 'Tree', hint: 'Opens the workout log. Workouts grow the tree.' },
+    flowerbed: { label: 'Flowerbed', hint: 'Opens your mood check-in. Each mood plants a flower.' },
+    hammock: { label: 'Hammock', hint: 'Opens sleep. Rest between the trees.' },
+    path: { label: 'Grass and path', hint: 'Opens your steps. Steps grow the grass.' },
+  },
+  greeting: (partOfDay: string, name?: string | null) =>
+    name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
+  sceneLabel: 'Your park. Swipe left or right to look around.',
+} as const;

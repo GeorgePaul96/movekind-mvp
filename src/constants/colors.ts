@@ -128,3 +128,59 @@ export const elevation = {
     elevation: 4,
   },
 } as const;
+
+type ParkLight = 'dawn' | 'day' | 'dusk' | 'night' | 'rain';
+
+/**
+ * The full-screen park (src/components/park). Decorative only, like `gardenColors`: no text sits
+ * on these. Matches the Gemini concept art in design/park: layered hills, mist, four lights.
+ */
+export const parkColors: {
+  sky: Record<ParkLight, { top: string; low: string }>;
+  far: Record<ParkLight, string>;
+  mid: Record<ParkLight, string>;
+  ground: Record<ParkLight, { back: string; front: string; fore: string }>;
+  path: Record<ParkLight, string>;
+  river: Record<ParkLight, { water: string; flow: string }>;
+  mist: Record<ParkLight, number>;
+  sun: { dawn: string; day: string; dusk: string };
+  moon: string;
+  star: string;
+  firefly: string;
+  shimmer: string;
+  cloud: string;
+  mistTint: string;
+} = {
+  sky: {
+    dawn: { top: '#C9B5DE', low: '#FBD9C4' },
+    day: { top: '#9FD6CB', low: '#E2F3EA' },
+    dusk: { top: '#5E5A84', low: '#F2A06A' },
+    night: { top: '#16233B', low: '#2B3E57' },
+    rain: { top: '#B4C3BE', low: '#DCE5E1' },
+  },
+  far: { dawn: '#B9C4BA', day: '#A3CDB9', dusk: '#8E8A80', night: '#2E4552', rain: '#AABAB3' },
+  mid: { dawn: '#97B2A0', day: '#83BA9D', dusk: '#6E7563', night: '#24394A', rain: '#91A79D' },
+  ground: {
+    dawn: { back: '#86AC93', front: '#73A086', fore: '#5F8E73' },
+    day: { back: '#74AE8A', front: '#5F9F78', fore: '#4E8C68' },
+    dusk: { back: '#64735A', front: '#596A50', fore: '#4C5D45' },
+    night: { back: '#2F4A45', front: '#2A443F', fore: '#223A35' },
+    rain: { back: '#76A288', front: '#668F78', fore: '#577F69' },
+  },
+  path: { dawn: '#AFC9AC', day: '#A4D0A9', dusk: '#8F9472', night: '#3E5B52', rain: '#98B79E' },
+  river: {
+    dawn: { water: '#B9C8DE', flow: '#E8EEF6' },
+    day: { water: '#9FD3E6', flow: '#E3F4FA' },
+    dusk: { water: '#C9A98F', flow: '#F2D2B8' },
+    night: { water: '#4C6E8C', flow: '#8FAECB' },
+    rain: { water: '#93B4C2', flow: '#D1E0E6' },
+  },
+  mist: { dawn: 0.45, day: 0.35, dusk: 0.3, night: 0.14, rain: 0.5 },
+  sun: { dawn: '#FFE3B0', day: '#FFF1BF', dusk: '#FFC77A' },
+  moon: '#F6E7B5',
+  star: '#F4F1E8',
+  firefly: '#F5E58A',
+  shimmer: '#FFFFFF',
+  cloud: '#FFFFFF',
+  mistTint: '#FFFFFF',
+};

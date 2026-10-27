@@ -194,7 +194,7 @@ export function Garden({ state, phase: skyTime = 'day', still = false }: Props) 
   );
 }
 
-function Duck({ x, y }: { x: number; y: number }) {
+export function Duck({ x, y }: { x: number; y: number }) {
   return (
     <G testID="duck">
       <Ellipse cx={x} cy={y} rx={7} ry={4} fill={c.duck} />
@@ -205,7 +205,7 @@ function Duck({ x, y }: { x: number; y: number }) {
 }
 
 /** A small round bird perched on the canopy; eyes closed at night. */
-function Bird({ x, y, asleep, flip }: { x: number; y: number; asleep?: boolean; flip?: boolean }) {
+export function Bird({ x, y, asleep, flip }: { x: number; y: number; asleep?: boolean; flip?: boolean }) {
   const d = flip ? -1 : 1;
   return (
     <G testID="bird">
@@ -222,7 +222,7 @@ function Bird({ x, y, asleep, flip }: { x: number; y: number; asleep?: boolean; 
 }
 
 /** Sprout → sapling → tree → (birds) → blossom → fruit → a second tree. */
-function Tree({ stage }: { stage: GardenState['tree'] }) {
+export function Tree({ stage }: { stage: GardenState['tree'] }) {
   if (stage === 0) {
     return (
       <G testID="sprout" transform="translate(84 196) scale(1.7) translate(-84 -196)">
