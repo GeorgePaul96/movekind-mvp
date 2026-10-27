@@ -6,10 +6,13 @@ interface SettingsState {
   notificationsEnabled: boolean;
   reduceMotion: boolean;
   onboarded: boolean;
+  /** The first-visit park tour has been seen (or skipped). */
+  parkTourSeen: boolean;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  markParkTourSeen: () => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -20,12 +23,14 @@ interface PersistedSettings {
   notificationsEnabled: boolean;
   reduceMotion: boolean;
   onboarded: boolean;
+  parkTourSeen: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
   notificationsEnabled: false,
   reduceMotion: false,
   onboarded: false,
+  parkTourSeen: false,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -38,6 +43,7 @@ async function read(): Promise<PersistedSettings> {
       notificationsEnabled: v.notificationsEnabled ?? DEFAULTS.notificationsEnabled,
       reduceMotion: v.reduceMotion ?? DEFAULTS.reduceMotion,
       onboarded: v.onboarded ?? DEFAULTS.onboarded,
+      parkTourSeen: v.parkTourSeen ?? DEFAULTS.parkTourSeen,
     };
   } catch {
     return DEFAULTS;
@@ -56,6 +62,7 @@ const persisted = (s: PersistedSettings): PersistedSettings => ({
   notificationsEnabled: s.notificationsEnabled,
   reduceMotion: s.reduceMotion,
   onboarded: s.onboarded,
+  parkTourSeen: s.parkTourSeen,
 });
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -77,6 +84,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   completeOnboarding: async () => {
     set({ onboarded: true });
+    await write(persisted(get()));
+  },
+
+  markParkTourSeen: async () => {
+    set({ parkTourSeen: true });
     await write(persisted(get()));
   },
 

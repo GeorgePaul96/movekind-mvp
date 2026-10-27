@@ -7,19 +7,20 @@
 │ App.tsx          bootstrap: hydrate settings + profile, drop   │
 │                  legacy tables, count the app open; no prompts │
 ├──────────────────────────────────────────────────────────────┤
-│ navigation/      RootNavigator → Onboarding | Main (tabs:      │
-│                  Garden · Changes · Me), gated by `onboarded`  │
+│ navigation/      RootNavigator → Onboarding | Main (the park,  │
+│                  no tab bar), gated by `onboarded`             │
 ├──────────────────────────────────────────────────────────────┤
-│ screens/         GardenScreen · ChangesScreen · ProfileScreen  │
-│                  (Me) · OnboardingScreen — thin, read stores    │
-│ components/      garden/* (Garden, QuickActions, WorkoutSheet) │
-│                  · home/MoodPicker · ActionTile · Button · Chip │
+│ screens/         ParkScreen (home) · ChangesView · MeView (in   │
+│                  the drawer) · OnboardingScreen — thin          │
+│ components/      park/* (scene, hotspots, drawer, sheets, tour) │
+│                  · garden/* · home/MoodPicker · Button · Chip   │
 ├──────────────────────────────────────────────────────────────┤
 │ store/ (Zustand) gardenStore · profileStore · settingsStore    │
 │                  own all async + db calls                      │
 ├──────────────────────────────────────────────────────────────┤
 │ domain/          PURE: garden/garden · garden/changes ·         │
-│                  garden/days · checkin/moods                   │
+│                  garden/days · park/layout · park/tending ·    │
+│                  checkin/moods                                 │
 │ services/        db (local repository) · telemetry · appOpens · │
 │                  notifications · network  (all side effects)    │
 ├──────────────────────────────────────────────────────────────┤

@@ -327,3 +327,17 @@ export const SLEEP_SOON_COPY = {
   title: 'The hammock',
   body: 'Rest between the trees. Logging your sleep arrives in the next update.',
 } as const;
+
+/** The first-visit tour: one gentle line per park object, then the drawer. */
+export const TOUR_COPY = {
+  steps: {
+    flowerbed: 'This flowerbed holds your moods. Each check-in plants a flower.',
+    tree: 'Workouts grow this tree: leaves, then birds, blossom and fruit.',
+    river: 'Water fills the river. Each glass makes it a little livelier.',
+    path: 'Your steps grow the grass along this path.',
+    drawer: 'Pull up from the bottom any time for today, your changes and settings.',
+  },
+  next: 'Next',
+  done: 'Start exploring',
+  skip: 'Skip the tour',
+} as const;

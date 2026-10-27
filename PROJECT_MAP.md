@@ -48,25 +48,29 @@
 | File | Purpose |
 |---|---|
 | [onboarding/OnboardingScreen.tsx](src/screens/onboarding/OnboardingScreen.tsx) | optional name → "how your garden grows" |
-| [main/GardenScreen.tsx](src/screens/main/GardenScreen.tsx) | home: garden, one note, today's mood, Water / Workout / Steps, today's workouts |
-| [main/ChangesScreen.tsx](src/screens/main/ChangesScreen.tsx) | change sentences, a month ago vs today, mood flowerbed |
-| [main/ProfileScreen.tsx](src/screens/main/ProfileScreen.tsx) | the **Me** tab: name, daily reminder switch, local data note, erase |
+| [main/ParkScreen.tsx](src/screens/main/ParkScreen.tsx) | home: the full-screen park, a fading greeting, the first-visit tour, the drawer, one sheet at a time |
+| [main/ChangesView.tsx](src/screens/main/ChangesView.tsx) | (in the drawer) change sentences, a month ago vs today, mood flowerbed |
+| [main/MeView.tsx](src/screens/main/MeView.tsx) | (in the drawer) **Me**: name, daily reminder switch, local data note, erase |
 
 ## `src/components/`
 
-Garden: [garden/Garden](src/components/garden/Garden.tsx) (the SVG scene) ·
-[garden/QuickActions](src/components/garden/QuickActions.tsx) ·
+Park: [park/ParkScene](src/components/park/ParkScene.tsx) (panning scroll + parallax) ·
+[park/ParkLayers](src/components/park/ParkLayers.tsx) (sky, hills, mist, rain; the only animated layers) ·
+[park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
+[park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
+[park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·
+[park/ParkTour](src/components/park/ParkTour.tsx) (first visit) · [park/Sheet](src/components/park/Sheet.tsx) ·
+park/sheets: [Water](src/components/park/sheets/WaterSheet.tsx), [Mood](src/components/park/sheets/MoodSheet.tsx), [Steps](src/components/park/sheets/StepsSheet.tsx).
+Garden: [garden/Garden](src/components/garden/Garden.tsx) (the SVG scene; also exports `Tree`, `Bird`, `Duck` for the park) ·
 [garden/WorkoutSheet](src/components/garden/WorkoutSheet.tsx) (two-tap log) ·
-[garden/StepsWeekSheet](src/components/garden/StepsWeekSheet.tsx) (last 7 days) ·
 [home/MoodPicker](src/components/home/MoodPicker.tsx) (one-tap check-in).
-Primitives: [Button](src/components/Button.tsx) · [ActionTile](src/components/ActionTile.tsx) ·
-[MoodTile](src/components/MoodTile.tsx) · [Chip](src/components/Chip.tsx) · Card, Header, Screen, ErrorBoundary.
+Primitives: [Button](src/components/Button.tsx) · [MoodTile](src/components/MoodTile.tsx) ·
+[Chip](src/components/Chip.tsx) · Card, ErrorBoundary.
 
 ## `src/navigation/`
 
 [RootNavigator](src/navigation/RootNavigator.tsx) (Onboarding | Main) · [rootRoute](src/navigation/rootRoute.ts) ·
-[TabNavigator](src/navigation/TabNavigator.tsx) (Garden · Changes · Me) · [TabIcon](src/navigation/TabIcon.tsx) ·
-[types.ts](src/navigation/types.ts).
+[types.ts](src/navigation/types.ts). No tab bar: Main is the park.
 
 ## `src/` leaf modules
 
@@ -81,6 +85,7 @@ Primitives: [Button](src/components/Button.tsx) · [ActionTile](src/components/A
 ## `__tests__/`
 
 Domain: `garden`, `changes`, `moods`. Data: `db`, `gardenStore`, `profileStore`, `settingsStore`.
-Screens/components: `GardenScreen`, `ChangesScreen`, `MeScreen`, `OnboardingScreen`, `Garden`,
+Park: `parkLayout`, `tending`, `ParkScene`, `parkSheets`, `ParkScreen`, `ParkTour`.
+Screens/components: `ChangesView`, `MeView`, `OnboardingScreen`, `Garden`,
 `homeComponents`, `Button`, `ErrorBoundary`. Services: `reminder`, `notificationsExpoGo`, `appOpens`,
 `appLaunch`, `telemetryPrivacy`, `network`. Rules: `colors` (contrast), `noEmDash`.

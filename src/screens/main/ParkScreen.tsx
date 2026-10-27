@@ -3,6 +3,7 @@ import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ParkScene, type ParkScrollHandle } from '@/components/park/ParkScene';
 import { ParkDrawer } from '@/components/park/ParkDrawer';
+import { ParkTour } from '@/components/park/ParkTour';
 import { Sheet } from '@/components/park/Sheet';
 import { WaterSheet } from '@/components/park/sheets/WaterSheet';
 import { MoodSheet } from '@/components/park/sheets/MoodSheet';
@@ -14,10 +15,11 @@ import { font } from '@/constants/typography';
 import { gardenState } from '@/domain/garden/garden';
 import { skyPhase } from '@/domain/garden/sky';
 import { untendedToday } from '@/domain/park/tending';
-import type { ParkObject } from '@/domain/park/layout';
+import { parkLayout, type ParkObject } from '@/domain/park/layout';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import type { Workout } from '@/types';
 
 const GREETING_MS = 4000;
@@ -39,6 +41,8 @@ export default function ParkScreen() {
   const [showGreeting, setShowGreeting] = useState(true);
   const [openSheet, setOpenSheet] = useState<ParkObject | null>(null);
   const [editing, setEditing] = useState<Workout | null>(null);
+  const tourSeen = useSettingsStore((s) => s.parkTourSeen);
+  const [touring, setTouring] = useState(!tourSeen);
 
   const name = useProfileStore((s) => s.profile?.name ?? null);
   const checkIns = useGardenStore((s) => s.checkIns);
@@ -93,6 +97,15 @@ export default function ParkScreen() {
         <Animated.View pointerEvents="none" style={[styles.greeting, { top: insets.top + 16, opacity: greeting }]}>
           <Text style={styles.greetingText}>{PARK_COPY.greeting(partOfDay(now), name)}</Text>
         </Animated.View>
+      )}
+
+      {touring && (
+        <ParkTour
+          layout={parkLayout(width, height)}
+          screenW={width}
+          scrollTo={(x) => scrollRef.current?.scrollTo({ x, y: 0, animated: !reduce })}
+          onDone={() => setTouring(false)}
+        />
       )}
 
       <ParkDrawer

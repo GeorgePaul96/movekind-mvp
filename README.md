@@ -8,14 +8,14 @@ MoveKind doesn't tell you how to move. It collects the everyday care you already
 
 1. **Log in one or two taps.** A glass of water, a workout (what and roughly how long), and a once-a-day mood check-in. Steps arrive automatically in the next build.
 2. **Watch the garden respond.** Water fills the stream, steps grow the grass, workouts grow the tree (birds, blossom, fruit, a second tree), and every mood plants a flower. Away for a few days? The garden rests under the moon and wakes when you're back. Nothing wilts.
-3. **See what's changing.** The Changes tab compares this week with the same stretch of last week in plain sentences, shows your garden a month ago next to today, and lays out your mood flowers week by week.
+3. **See what's changing.** Changes (in the pull-up drawer) compares this week with the same stretch of last week in plain sentences, shows your garden a month ago next to today, and lays out your mood flowers week by week.
 
 ## Features
 
 - No accounts: first launch → optional name → "how your garden grows" → Garden
 - Garden home: stream, grass, tree and flowers drawn in code (react-native-svg), gentle motion that respects Reduce Motion
 - One-tap water (with undo), two-tap workout log (edit / delete), one-tap mood check-in
-- Changes tab: kind weekly sentences, then-and-now garden, mood flowerbed
+- Changes (in the drawer): kind weekly sentences, then-and-now garden, mood flowerbed
 - Optional 9am reminder, off by default; permission asked only when you turn it on
 - All data on the device (AsyncStorage repository in `src/services/db`); "Erase all my data" in Me
 - Anonymous product analytics via PostHog (optional): only `app_opened {day_index}` and `logged {kind}`, never values
@@ -89,9 +89,10 @@ movekind-mvp/
 ├── app.json
 ├── src/
 │   ├── components/
-│   │   ├── garden/            # Garden (SVG scene), QuickActions, WorkoutSheet
+│   │   ├── park/              # the park home: scene, layers, hotspots, drawer, sheets, tour
+│   │   ├── garden/            # Garden (SVG scene), WorkoutSheet
 │   │   ├── home/MoodPicker.tsx
-│   │   └── ActionTile, Button, Chip, MoodTile, Card, Header, Screen
+│   │   └── Button, Chip, MoodTile, Card
 │   ├── domain/
 │   │   ├── garden/garden.ts   # gardenState(): logs → garden (pure, unit-tested)
 │   │   ├── garden/changes.ts  # weeklyChanges(), flowersByWeek()
@@ -99,12 +100,12 @@ movekind-mvp/
 │   │   └── checkin/moods.ts   # mood tiles → energy → mood
 │   ├── screens/
 │   │   ├── onboarding/        # name + how the garden grows
-│   │   └── main/              # Garden, Changes, Me (ProfileScreen)
+│   │   └── main/              # ParkScreen (home), ChangesView, MeView
 │   ├── services/              # db (local repository), telemetry, appOpens, notifications
 │   ├── store/                 # gardenStore, profileStore, settingsStore
 │   ├── constants/             # colors (incl. gardenColors), copy
 │   ├── types/                 # shared TypeScript types
-│   └── navigation/            # RootNavigator, TabNavigator
+│   └── navigation/            # RootNavigator (no tab bar)
 └── __tests__/                 # Unit + component tests
 ```
 

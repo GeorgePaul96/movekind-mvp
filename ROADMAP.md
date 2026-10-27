@@ -5,8 +5,8 @@
 ## Current: the Garden (pivot decided 2026-10-23)
 
 MoveKind no longer guides exercise. It is a calm tracker for water, workouts done anywhere,
-mood and steps, shown as a garden that grows (stream, grass, tree, flowers), plus a Changes tab
-that says in plain sentences what activity is changing. Design:
+mood and steps, shown as a garden that grows (stream, grass, tree, flowers), plus Changes
+that say in plain sentences what activity is changing. Design:
 `docs/superpowers/specs/2026-10-23-garden-pivot-design.md`.
 
 | Stage | What | Status |
@@ -41,6 +41,22 @@ Built from the owner's Stitch designs: sage palette, Plus Jakarta Sans, pill tab
 pills, welcome card, honest workout growth line, night scene sign-up, new app icon. Then (2026-10-26):
 **Feeling unwell** (a choice beside the day's mood; a gentle rainy garden) and **time-of-day skies**
 (dawn / day / dusk / night; what has grown stays grown) ✅.
+
+### The park (2026-10-27, in progress)
+
+Home becomes a full-screen park you pan by swiping (portrait, about 2.2 screens wide, parallax and
+mist). Each object is how you log: river = water, tree = workouts, flowerbed = mood / unwell,
+grassy path = steps, hammock = sleep. A pull-up drawer holds today, the note, Changes and Me (no tab
+bar). Untended objects shimmer softly; a short tour on the first visit. Design:
+`docs/superpowers/specs/2026-10-27-park-design.md`; plan: `docs/superpowers/plans/2026-10-27-park.md`.
+
+| Park stage | What | Status |
+|---|---|---|
+| 1 | The panning park, sheets, drawer, shimmer, first-visit tour | ✅ built 2026-10-27, **owner testing** |
+| 2 | Sleep at the hammock (rested / okay / restless, hours) | next |
+| 3 | A rabbit whose mood follows the day | after 2 |
+| 4 | Ambient sound (owner approves the CC0 files first) | after 3 |
+| Later | Gentle mind games | after the park |
 
 **Not doing:** exercise instructions, calorie counting, weight/BMI, anything that judges bodies,
 targets, streaks, scores, public comparison.

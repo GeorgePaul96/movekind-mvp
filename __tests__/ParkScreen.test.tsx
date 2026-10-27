@@ -125,3 +125,16 @@ describe('<ParkScreen />', () => {
     expect(getByText(BADGE_COPY.growth[1])).toBeTruthy();
   });
 });
+
+describe('first visit', () => {
+  it('the tour shows on the first visit only', () => {
+    const { TOUR_COPY } = require('../src/constants/copy');
+    useSettingsStore.setState({ parkTourSeen: false } as any);
+    const first = render(<ParkScreen />);
+    expect(first.getByLabelText(TOUR_COPY.skip)).toBeTruthy();
+    first.unmount();
+    useSettingsStore.setState({ parkTourSeen: true } as any);
+    const later = render(<ParkScreen />);
+    expect(later.queryByLabelText(TOUR_COPY.skip)).toBeNull();
+  });
+});
