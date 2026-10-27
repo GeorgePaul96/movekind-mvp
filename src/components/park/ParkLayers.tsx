@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Ellipse, G, Image, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { parkColors as p } from '@/constants/colors';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
@@ -19,54 +19,48 @@ export function useDrift(): number {
   return reduce ? 0 : t;
 }
 
+/** The painted daytime sky (design/park/layers/layer 1.jpg). Night keeps its own stars and moon. */
+const SKY_ART = require('../../../assets/park/sky.png');
+
 const STARS = Array.from({ length: 26 }, (_, i) => [((i * 97) % 100) / 100, ((i * 53) % 45) / 100] as const);
 
-/** Sky gradient, sun or moon, stars and clouds. Slowest parallax layer. */
+/** The painted sky (tinted for dawn, dusk and rain), or a starry night sky. Slowest parallax layer. */
 export function SkyLayer({ width, height, light }: { width: number; height: number; light: ParkLight }) {
   const t = useDrift();
-  const sky = p.sky[light];
-  const id = `park-sky-${light}`;
-  const sun =
-    light === 'dawn'
-      ? { x: 0.55, y: 0.36, fill: p.sun.dawn }
-      : light === 'day'
-        ? { x: 0.7, y: 0.14, fill: p.sun.day }
-        : light === 'dusk'
-          ? { x: 0.6, y: 0.4, fill: p.sun.dusk }
-          : null;
-  const drift = Math.sin(t * 0.08) * 10;
+  if (light !== 'night') {
+    const tint = light === 'day' ? null : p.tint[light];
+    const drift = Math.sin(t * 0.08) * 10;
+    return (
+      <Svg width={width} height={height}>
+        <Image testID="sky-art" href={SKY_ART} x={0} y={0} width={width} height={height} preserveAspectRatio="xMidYMid slice" />
+        {tint && <Rect width={width} height={height} fill={tint.color} opacity={tint.opacity} />}
+        {light === 'rain' && (
+          <G transform={`translate(${drift} 0)`} opacity={0.9}>
+            <Ellipse cx={width * 0.18} cy={height * 0.12} rx={70} ry={10} fill={p.far.rain} />
+            <Ellipse cx={width * 0.5} cy={height * 0.08} rx={90} ry={9} fill={p.far.rain} />
+            <Ellipse cx={width * 0.82} cy={height * 0.17} rx={60} ry={8} fill={p.far.rain} />
+          </G>
+        )}
+      </Svg>
+    );
+  }
+  const sky = p.sky.night;
   return (
     <Svg width={width} height={height}>
       <Defs>
-        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id="park-sky-night" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={sky.top} />
           <Stop offset="0.6" stopColor={sky.low} />
         </LinearGradient>
       </Defs>
-      <Rect width={width} height={height} fill={`url(#${id})`} />
-      {light === 'night' ? (
-        <>
-          {STARS.map(([fx, fy], i) => (
-            <Circle key={i} cx={fx * width} cy={fy * height} r={i % 4 === 0 ? 1.6 : 1} fill={p.star} opacity={0.5 + 0.5 * Math.abs(Math.sin(t * 0.5 + i))} />
-          ))}
-          <G testID="moon">
-            <Circle cx={width * 0.72} cy={height * 0.12} r={16} fill={p.moon} />
-            <Circle cx={width * 0.72 + 7} cy={height * 0.12 - 5} r={14} fill={sky.top} />
-          </G>
-        </>
-      ) : sun ? (
-        <>
-          <Circle cx={sun.x * width} cy={sun.y * height} r={46} fill={sun.fill} opacity={0.35} />
-          <Circle testID="sun" cx={sun.x * width} cy={sun.y * height} r={24} fill={sun.fill} />
-        </>
-      ) : null}
-      {light !== 'night' && (
-        <G transform={`translate(${drift} 0)`} opacity={light === 'rain' ? 0.9 : 0.55}>
-          <Ellipse cx={width * 0.18} cy={height * 0.12} rx={70} ry={10} fill={light === 'rain' ? p.far.rain : p.cloud} />
-          <Ellipse cx={width * 0.5} cy={height * 0.08} rx={90} ry={9} fill={light === 'rain' ? p.far.rain : p.cloud} />
-          <Ellipse cx={width * 0.82} cy={height * 0.17} rx={60} ry={8} fill={light === 'rain' ? p.far.rain : p.cloud} />
-        </G>
-      )}
+      <Rect width={width} height={height} fill="url(#park-sky-night)" />
+      {STARS.map(([fx, fy], i) => (
+        <Circle key={i} cx={fx * width} cy={fy * height} r={i % 4 === 0 ? 1.6 : 1} fill={p.star} opacity={0.5 + 0.5 * Math.abs(Math.sin(t * 0.5 + i))} />
+      ))}
+      <G testID="moon">
+        <Circle cx={width * 0.72} cy={height * 0.12} r={16} fill={p.moon} />
+        <Circle cx={width * 0.72 + 7} cy={height * 0.12 - 5} r={14} fill={sky.top} />
+      </G>
     </Svg>
   );
 }
@@ -84,7 +78,7 @@ export function HillLayer({
   depth: 'far' | 'mid';
 }) {
   const t = useDrift();
-  const top = depth === 'far' ? 0.34 : 0.44; // ridge height as a fraction of the screen
+  const top = depth === 'far' ? 0.22 : 0.27; // ridges peek over the painted hilltop (about 0.32 to 0.38)
   const fill = depth === 'far' ? p.far[light] : p.mid[light];
   const humps = depth === 'far' ? 5 : 4;
   let d = `M0 ${height * (top + 0.06)}`;

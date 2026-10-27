@@ -147,6 +147,8 @@ export const parkColors: {
   soil: Record<ParkLight, string>;
   stone: Record<ParkLight, string>;
   hammock: { cloth: string; stripe: string };
+  /** Washes the daytime painting toward each light (day needs none). */
+  tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
   sun: { dawn: string; day: string; dusk: string };
   moon: string;
@@ -190,6 +192,12 @@ export const parkColors: {
   soil: { dawn: '#8A6D58', day: '#8B6A4F', dusk: '#6E5444', night: '#3A3330', rain: '#7A6252' },
   stone: { dawn: '#D9D2C6', day: '#E2DBCD', dusk: '#B7AC9C', night: '#5A5E5E', rain: '#C9C6BE' },
   hammock: { cloth: '#F1D9A6', stripe: '#E2A86B' },
+  tint: {
+    dawn: { color: '#F2B39A', opacity: 0.16 },
+    dusk: { color: '#6E4F86', opacity: 0.3 },
+    night: { color: '#0D1A2E', opacity: 0.62 },
+    rain: { color: '#7E949C', opacity: 0.3 },
+  },
   mist: { dawn: 0.45, day: 0.35, dusk: 0.3, night: 0.14, rain: 0.5 },
   sun: { dawn: '#FFE3B0', day: '#FFF1BF', dusk: '#FFC77A' },
   moon: '#F6E7B5',

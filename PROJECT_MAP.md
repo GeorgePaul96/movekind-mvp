@@ -57,7 +57,8 @@
 Park: [park/ParkScene](src/components/park/ParkScene.tsx) (panning scroll + parallax) ·
 [park/ParkLayers](src/components/park/ParkLayers.tsx) (sky, hills, mist, rain; the only animated layers) ·
 [park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
-[park/ParkTree](src/components/park/ParkTree.tsx) (the tree's growth stages) · shapes from [domain/park/shapes](src/domain/park/shapes.ts) (hill, river and walkway courses) ·
+[park/ParkTree](src/components/park/ParkTree.tsx) (painted growth stages) · [domain/park/shapes](src/domain/park/shapes.ts) (river and footpath traced from the painting) ·
+Park art: `assets/park/*.png`, cut from Gemini paintings in `design/park/layers` (sky, ground, tree stages, bed, hammock); the far and middle hills stay SVG. Other lights are a tint over the daytime art (`parkColors.tint`).
 [park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
 [park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·
 [park/ParkTour](src/components/park/ParkTour.tsx) (first visit) · [park/Sheet](src/components/park/Sheet.tsx) ·

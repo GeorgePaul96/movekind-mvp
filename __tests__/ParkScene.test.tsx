@@ -55,6 +55,8 @@ describe('<ParkScene />', () => {
     expect(scene({ state: { ...base, weather: 'rain' } }).queryAllByTestId('rain').length).toBeGreaterThan(0);
     expect(scene({ phase: 'night' }).queryAllByTestId('moon').length).toBeGreaterThan(0);
     expect(scene({ phase: 'day' }).queryAllByTestId('moon')).toHaveLength(0);
+    expect(scene({ phase: 'day' }).queryAllByTestId('sky-art')).toHaveLength(1);
+    expect(scene({ phase: 'night' }).queryAllByTestId('sky-art')).toHaveLength(0);
   });
 
   it('the park is wider than the screen so it can pan', () => {
