@@ -32,6 +32,8 @@ interface Props {
   untended: Set<string>;
   /** Workouts logged so far: each new one makes the tree pop. */
   logged?: number;
+  /** Glasses of water logged so far: each new one makes the crane drink and stretch. */
+  watered?: number;
   onObject: (o: ParkObject) => void;
   width: number;
   height: number;
@@ -42,7 +44,7 @@ interface Props {
  * The full-screen park, one screen wide. The ground and everything on it stay put; a horizontal
  * drag only nudges the sky and hills a few points for depth, then they spring back.
  */
-export function ParkScene({ state, phase, untended, logged, onObject, width, height, scrollRef }: Props) {
+export function ParkScene({ state, phase, untended, logged, watered, onObject, width, height, scrollRef }: Props) {
   const reduce = useReduceMotion();
   const clock = useParkClock();
   const layout = useMemo(() => parkLayout(width, height), [width, height]);
@@ -118,7 +120,15 @@ export function ParkScene({ state, phase, untended, logged, onObject, width, hei
         </Animated.View>
 
         <View testID="park-world" style={{ width, height }}>
-          <ParkWorld clock={clock} layout={layout} state={state} light={light} untended={untended} logged={logged} />
+          <ParkWorld
+            clock={clock}
+            layout={layout}
+            state={state}
+            light={light}
+            untended={untended}
+            logged={logged}
+            watered={watered}
+          />
           {OBJECTS.map((o) => (
             <Hotspot
               key={o}

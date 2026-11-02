@@ -1,5 +1,15 @@
 import { parkLayout } from '../src/domain/park/layout';
-import { parkCourses, sampleSpline, smoothPath } from '../src/domain/park/shapes';
+import {
+  CRANE_BEAK_DIP,
+  craneSpot,
+  grassTufts,
+  parkCourses,
+  pathWidthAt,
+  ribbonPath,
+  riverWidthAt,
+  sampleSpline,
+  smoothPath,
+} from '../src/domain/park/shapes';
 
 const W = 412;
 const H = 915;
@@ -56,5 +66,57 @@ describe('park shapes', () => {
     expect(d.startsWith('M0 0')).toBe(true);
     expect(d).toContain('20 0');
     expect((d.match(/C/g) ?? []).length).toBe(2);
+  });
+
+  it('ribbonPath builds a closed tapering shape that widens from source to bottom edge', () => {
+    expect(riverWidthAt(0)).toBeCloseTo(10, 1);
+    expect(riverWidthAt(1)).toBeCloseTo(44, 1);
+    const d = ribbonPath(courses.river, riverWidthAt);
+    expect(d.startsWith('M')).toBe(true);
+    expect(d.endsWith('Z')).toBe(true);
+  });
+
+  it('grassTufts never touch the river or the footpath', () => {
+    const tufts = grassTufts(layout, courses);
+    const riverSpine = sampleSpline(courses.river, 12);
+    const walkSpine = sampleSpline(courses.walkway, 12);
+    expect(tufts.length).toBeGreaterThan(8);
+
+    for (const [tx, ty] of tufts) {
+      riverSpine.forEach(([rx, ry], i) => {
+        const half = riverWidthAt(i / (riverSpine.length - 1)) / 2;
+        expect(Math.hypot(tx - rx, ty - ry)).toBeGreaterThanOrEqual(half + 10);
+      });
+      walkSpine.forEach(([wx, wy], i) => {
+        const half = pathWidthAt(i / (walkSpine.length - 1)) / 2;
+        expect(Math.hypot(tx - wx, ty - wy)).toBeGreaterThanOrEqual(half + 8);
+      });
+    }
+  });
+
+  it('at the bottom of a drink the beak lands in the water, on any phone', () => {
+    for (const [w, h] of [[320, 568], [360, 800], [390, 844], [412, 915], [430, 932]] as const) {
+      const l = parkLayout(w, h);
+      const c = parkCourses(l);
+      const { feet, size } = craneSpot(l, c);
+      const tip = [feet[0] + CRANE_BEAK_DIP[0] * size, feet[1] + CRANE_BEAK_DIP[1] * size];
+      const spine = sampleSpline(c.river, 12);
+      const inWater = spine.some(([x, y], i) => Math.hypot(x - tip[0]!, y - tip[1]!) < riverWidthAt(i / (spine.length - 1)) / 2);
+      expect(inWater).toBe(true);
+    }
+  });
+
+  it('the crane stands on the bank, not in the water', () => {
+    const { feet } = craneSpot(layout, courses);
+    const spine = sampleSpline(courses.river, 12);
+    expect(near(spine, feet, riverWidthAt(1) / 2)).toBe(false);
+  });
+
+  it('craneSpot places the crane on the right bank with its beak on the river and the duck downstream', () => {
+    const spot = craneSpot(layout, courses);
+    const riverSpine = sampleSpline(courses.river, 12);
+    expect(spot.feet[0]).toBeGreaterThan(spot.water[0]);
+    expect(near(riverSpine, spot.water, 4)).toBe(true);
+    expect(spot.duck[1]).toBeGreaterThan(spot.water[1] + 20);
   });
 });

@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, {
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import type { Pt } from '@/domain/park/shapes';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
-import { ButterflyArt, CatArt } from './art/CrittersArt';
+import { ButterflyArt, CatArt, CraneBodyArt, CraneDropletsArt, CraneNeckArt } from './art/CrittersArt';
 
 interface CatProps {
   clock: SharedValue<number>;
@@ -60,6 +67,116 @@ export function Cat({ clock, path, asleep }: CatProps) {
         <CatArt pose="sit" size={48} />
       </Animated.View>
     </Animated.View>
+  );
+}
+
+interface CraneProps {
+  clock: SharedValue<number>;
+  feet: Pt;
+  cue: boolean;
+  asleep: boolean;
+  watered: number;
+  size?: number;
+}
+
+/**
+ * A wading crane on the right bank of the river. Periodically dips its neck to take two small sips
+ * from the stream (every 6s when untended, 12s normally), and gives a happy stretch with water
+ * droplets whenever a glass of water is logged.
+ */
+export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CraneProps) {
+  const reduce = useReduceMotion();
+  const celebrate = useSharedValue(0);
+  const drops = useSharedValue(0);
+  const blend = useSharedValue(0); // eases into and out of the logged drink, from whatever the neck was doing
+  const lastWatered = React.useRef(watered);
+
+  useEffect(() => {
+    const grew = watered > lastWatered.current;
+    lastWatered.current = watered;
+    if (!grew || reduce || asleep) return;
+    blend.value = withSequence(withTiming(1, { duration: 200 }), withTiming(1, { duration: 900 }), withTiming(0, { duration: 300 }));
+    celebrate.value = withSequence(
+      withTiming(-45, { duration: 240 }),
+      withTiming(-34, { duration: 120 }),
+      withTiming(-45, { duration: 120 }),
+      withTiming(11, { duration: 260 }),
+      withSpring(0, { damping: 12, stiffness: 180 }),
+    );
+    drops.value = withSequence(
+      withTiming(0, { duration: 420 }),
+      withTiming(1, { duration: 120 }),
+      withTiming(1, { duration: 260 }),
+      withTiming(0, { duration: 220 }),
+    );
+  }, [asleep, blend, celebrate, drops, reduce, watered]);
+
+  const period = cue ? 6 : 12;
+  const neckStyle = useAnimatedStyle(() => {
+    if (reduce || asleep) return { transform: [{ rotate: '0deg' }] };
+    const t = clock.value % period;
+    let dip = 0;
+    if (t < 0.7) {
+      dip = -44 * Math.sin(((t / 0.7) * Math.PI) / 2);
+    } else if (t < 1.05) {
+      dip = -44 + 11 * Math.sin(((t - 0.7) / 0.35) * Math.PI);
+    } else if (t < 1.4) {
+      dip = -44 + 11 * Math.sin(((t - 1.05) / 0.35) * Math.PI);
+    } else if (t < 2.2) {
+      dip = -44 * Math.cos((((t - 1.4) / 0.8) * Math.PI) / 2);
+    }
+    // The sway fades out as the neck dips, so nothing jumps where the two meet.
+    const idle = dip + Math.sin(clock.value * 1.4) * 1.2 * (1 + dip / 44);
+    const deg = idle * (1 - blend.value) + celebrate.value * blend.value;
+    return { transform: [{ rotate: `${deg}deg` }] };
+  });
+
+  const dropStyle = useAnimatedStyle(() => ({
+    opacity: reduce || asleep ? 0 : drops.value,
+    transform: [{ translateY: -drops.value * 6 }],
+  }));
+
+  const left = feet[0] - size * 0.64;
+  const top = feet[1] - size * 0.9;
+
+  if (asleep) {
+    return (
+      <View
+        testID="crane-sleeping"
+        pointerEvents="none"
+        style={[styles.abs, { left, top, width: size, height: size }]}
+      >
+        <CraneBodyArt asleep size={size} />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      testID={cue ? 'cue-river' : undefined}
+      pointerEvents="none"
+      style={[styles.abs, { left, top, width: size, height: size }]}
+    >
+      <View testID="crane" style={{ width: size, height: size }}>
+        <Animated.View
+          style={[
+            styles.abs,
+            { left: 0, top: 0, width: size, height: size, transformOrigin: '52% 54%' },
+            neckStyle,
+          ]}
+        >
+          <CraneNeckArt size={size} />
+        </Animated.View>
+        <View style={[styles.abs, { left: 0, top: 0 }]}>
+          <CraneBodyArt size={size} />
+        </View>
+        {!reduce && (
+          <Animated.View style={[styles.abs, { left: 0, top: 0, width: size, height: size }, dropStyle]}>
+            <CraneDropletsArt size={size} />
+          </Animated.View>
+        )}
+      </View>
+    </View>
   );
 }
 

@@ -5,6 +5,8 @@ import type { UserState } from '@/types';
 import type { ParkLight } from '../ParkLayers';
 
 const S = parkColors.outline;
+// Unified ~2.6pt on-screen outline weight (viewBox 192 rendered at ~170pt -> strokeWidth 3)
+const BED_SW = 3;
 
 export const BedBaseArt = React.memo(function BedBaseArt({
   width,
@@ -18,19 +20,19 @@ export const BedBaseArt = React.memo(function BedBaseArt({
   const stone = parkColors.stone[light];
   const soil = parkColors.soil[light];
   const stones = [
-    [26, 66, 15, 10],
-    [50, 74, 16, 11],
-    [80, 78, 18, 11],
-    [112, 78, 18, 11],
-    [142, 74, 16, 11],
-    [166, 66, 15, 10],
+    [28, 65, 15, 9.5],
+    [54, 73, 16, 10.5],
+    [82, 77, 17, 10.5],
+    [110, 77, 17, 10.5],
+    [138, 73, 16, 10.5],
+    [164, 65, 15, 9.5],
   ] as const;
 
   return (
     <Svg width={width} height={height} viewBox="0 0 192 96">
-      <Ellipse cx="96" cy="64" rx="88" ry="26" fill={parkColors.shadow} />
-      <Ellipse cx="96" cy="56" rx="78" ry="22" fill={soil} stroke={S} strokeWidth="4.5" />
-      <G stroke={S} strokeWidth="4">
+      <Ellipse cx="96" cy="66" rx="88" ry="25" fill={parkColors.shadow} />
+      <Ellipse cx="96" cy="56" rx="78" ry="22" fill={soil} stroke={S} strokeWidth={BED_SW} />
+      <G stroke={S} strokeWidth={BED_SW}>
         {stones.map(([cx, cy, rx, ry], i) => (
           <Ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} fill={stone} />
         ))}
@@ -43,7 +45,7 @@ export const BedBaseArt = React.memo(function BedBaseArt({
 export const TulipArt = React.memo(function TulipArt({
   mood,
   light,
-  size = 28,
+  size = 24,
 }: {
   mood: UserState;
   light: ParkLight;

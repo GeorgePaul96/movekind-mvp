@@ -89,6 +89,9 @@ export default function ParkScreen() {
   const phase = skyPhase(now);
   const light = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
   const allMinutes = workouts.reduce((m, w) => m + w.minutes, 0);
+  // The water sheet covers the crane, so its thank-you waits until the sheet is closing.
+  const wateredShown = useRef(water.length);
+  if (openSheet !== 'river') wateredShown.current = water.length;
   const close = () => {
     setOpenSheet(null);
     setEditing(null);
@@ -96,16 +99,20 @@ export default function ParkScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: parkColors.ground[light].front }]}>
-      <ParkScene
-        state={state}
-        phase={phase}
-        untended={untendedToday(input, now)}
-        logged={workouts.length}
-        onObject={setOpenSheet}
-        width={sceneW}
-        height={sceneH}
-        scrollRef={scrollRef}
-      />
+      {/* After loading, so stored history doesn't read as things just logged and set everything popping. */}
+      {loaded && (
+        <ParkScene
+          state={state}
+          phase={phase}
+          untended={untendedToday(input, now)}
+          logged={workouts.length}
+          watered={wateredShown.current}
+          onObject={setOpenSheet}
+          width={sceneW}
+          height={sceneH}
+          scrollRef={scrollRef}
+        />
+      )}
 
       {showGreeting && (
         <Animated.View pointerEvents="none" style={[styles.greeting, { top: insets.top + 24 }, greetingStyle]}>

@@ -46,6 +46,134 @@ export function sampleSpline(pts: Pt[], perSegment: number): Pt[] {
   return out;
 }
 
+/** Width of the river at normalized progress t in [0, 1] from hilltop source to bottom edge. */
+export const riverWidthAt = (t: number): number => 10 + 34 * Math.pow(Math.max(0, Math.min(1, t)), 0.9);
+
+/** Width of the footpath at normalized progress t in [0, 1] from tree foot to bottom edge. */
+export const pathWidthAt = (t: number): number => 12 + 22 * Math.pow(Math.max(0, Math.min(1, t)), 0.9);
+
+/**
+ * Builds a closed SVG path for a ribbon that widens along `pts` according to `widthAt(t)`.
+ * Uses local normals along `sampleSpline` so both banks curve smoothly without round stroke caps.
+ */
+export function ribbonPath(pts: Pt[], widthAt: (t: number) => number): string {
+  const spine = sampleSpline(pts, 8);
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  const total = Math.max(1, spine.length - 1);
+
+  for (let i = 0; i < spine.length; i++) {
+    const prev = spine[Math.max(0, i - 1)]!;
+    const next = spine[Math.min(spine.length - 1, i + 1)]!;
+    const dx = next[0] - prev[0];
+    const dy = next[1] - prev[1];
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const half = widthAt(i / total) / 2;
+    const [px, py] = spine[i]!;
+    left.push([px + nx * half, py + ny * half]);
+    right.push([px - nx * half, py - ny * half]);
+  }
+
+  const rightRev = right.slice().reverse();
+  const dLeft = smoothPath(left);
+  const dRight = smoothPath(rightRev).replace(/^M[^C]+/, `L${fmt(rightRev[0]!)}`);
+  return `${dLeft} ${dRight} Z`;
+}
+
+/**
+ * Places grass tufts along the foreground and river banks while strictly skipping any tuft that
+ * comes within the local ribbon half-width + safety margin of the river or footpath.
+ */
+export function grassTufts(layout: ParkLayout, courses: ParkCourses = parkCourses(layout)): Pt[] {
+  const { worldW: W, worldH: H, objects } = layout;
+  const riverPts = sampleSpline(courses.river, 12);
+  const walkPts = sampleSpline(courses.walkway, 12);
+  const bed = objects.flowerbed;
+
+  const candidates: Pt[] = [];
+  const count = Math.round(W / 28);
+  for (let i = 0; i < count; i++) {
+    const x = 14 + i * 28;
+    const y = H * 0.89 - (i % 3) * 8;
+    candidates.push([x, y]);
+  }
+
+  // Bank tufts nestled safely beside the upper/mid river bends and spring rocks
+  const s = courses.river[0]!;
+  candidates.push(
+    [s[0] - 28, s[1] + 6],
+    [s[0] + 28, s[1] + 8],
+    [W * 0.64, H * 0.56],
+    [W * 0.94, H * 0.66],
+    [W * 0.54, H * 0.78],
+  );
+
+  const safeFromCourse = (pt: Pt, spine: Pt[], widthFn: (t: number) => number, pad: number): boolean => {
+    const nPts = Math.max(1, spine.length - 1);
+    for (let i = 0; i < spine.length; i++) {
+      const sp = spine[i]!;
+      const half = widthFn(i / nPts) / 2;
+      if (Math.hypot(pt[0] - sp[0], pt[1] - sp[1]) < half + pad) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  return candidates.filter((pt) => {
+    if (!safeFromCourse(pt, riverPts, riverWidthAt, 11)) return false;
+    if (!safeFromCourse(pt, walkPts, pathWidthAt, 9)) return false;
+    const clearBedX = Math.abs(pt[0] - (bed.x + bed.w / 2)) > (bed.w * 1.15) / 2 + 8;
+    const clearBedY = Math.abs(pt[1] - (bed.y + bed.h / 2)) > (bed.w * 1.15 * 0.5) / 2 + 8;
+    return clearBedX || clearBedY;
+  });
+}
+
+/** The crane's box, as a share of the screen's width. */
+const CRANE_SIZE = 0.22;
+/** Where the beak tip lands at the bottom of a drink, from the feet, as a share of the crane's size. */
+export const CRANE_BEAK_DIP: Pt = [-0.574, -0.326];
+
+/**
+ * Computes where the crane stands on the right bank and where its beak dips into the water,
+ * derived directly from the river's spline so it fits every screen size.
+ */
+export function craneSpot(layout: ParkLayout, courses: ParkCourses = parkCourses(layout)): {
+  feet: Pt;
+  water: Pt;
+  duck: Pt;
+  size: number;
+} {
+  const { worldW: W, worldH: H } = layout;
+  const size = Math.round(W * CRANE_SIZE);
+  const spine = sampleSpline(courses.river, 12);
+  const targetY = H * 0.745;
+  let water = spine[Math.floor(spine.length * 0.55)]!;
+  let minDiff = Infinity;
+  for (const pt of spine) {
+    const diff = Math.abs(pt[1] - targetY);
+    if (diff < minDiff) {
+      minDiff = diff;
+      water = pt;
+    }
+  }
+  const feet: Pt = [water[0] - CRANE_BEAK_DIP[0] * size + W * 0.015, water[1] - CRANE_BEAK_DIP[1] * size];
+  // Place the duck on the next bend down so the crane and duck never collide
+  const duckY = H * 0.81;
+  let duck = courses.river[4]!;
+  let minDuckDiff = Infinity;
+  for (const pt of spine) {
+    const diff = Math.abs(pt[1] - duckY);
+    if (diff < minDuckDiff) {
+      minDuckDiff = diff;
+      duck = pt;
+    }
+  }
+  return { feet, water, duck, size };
+}
+
 const centre = (r: Rect): Pt => [r.x + r.w / 2, r.y + r.h / 2];
 
 export interface ParkCourses {

@@ -58,8 +58,8 @@ Park: [park/ParkScene](src/components/park/ParkScene.tsx) (one-screen scene, sma
 [park/ParkLayers](src/components/park/ParkLayers.tsx) (sky, hills, mist, rain; the only animated layers) ·
 [park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
 [park/ParkTree](src/components/park/ParkTree.tsx) (growth stages; canopy sways, trunk stays planted) · [domain/park/shapes](src/domain/park/shapes.ts) (river and footpath courses) ·
-[park/Motion](src/components/park/Motion.tsx) (sway, ripple, native-driver loops) · [park/Creatures](src/components/park/Creatures.tsx) (the cat on the path, butterflies, the bobbing duck) ·
-Park art: flat vector components in `src/components/park/art/` (tree stages, flowerbed and tulips, hammock, duck, robins, butterfly, cat). Other lights use `parkColors` per light plus one tint (`parkColors.tint`).
+[park/Motion](src/components/park/Motion.tsx) (the shared clock, sway, the pop when something is logged) · [park/Creatures](src/components/park/Creatures.tsx) (the cat on the path, the crane drinking at the river, butterflies, the bobbing duck) ·
+Park art: flat vector components in `src/components/park/art/` (tree stages, flowerbed and tulips, hammock, duck, robins, butterfly, cat, crane). Other lights use `parkColors` per light plus one tint (`parkColors.tint`).
 [park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
 [park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·
 [park/ParkTour](src/components/park/ParkTour.tsx) (first visit) · [park/Sheet](src/components/park/Sheet.tsx) ·

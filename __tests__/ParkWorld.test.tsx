@@ -43,6 +43,29 @@ describe('<ParkWorld />', () => {
     expect(world({ ducks: false }).queryAllByTestId('duck')).toHaveLength(0);
   });
 
+  it('a crane stands by the river by day, sleeps at night or when resting, and marks cue-river only when untended', () => {
+    const tendedDay = world({}, 'day', new Set());
+    expect(tendedDay.queryAllByTestId('crane')).toHaveLength(1);
+    expect(tendedDay.queryAllByTestId('crane-sleeping')).toHaveLength(0);
+    expect(tendedDay.queryAllByTestId('cue-river')).toHaveLength(0);
+
+    const untendedDay = world({}, 'day', new Set(['river']));
+    expect(untendedDay.queryAllByTestId('crane')).toHaveLength(1);
+    expect(untendedDay.queryAllByTestId('cue-river')).toHaveLength(1);
+
+    const nightWorld = world({}, 'night', new Set(['river']));
+    expect(nightWorld.queryAllByTestId('crane-sleeping')).toHaveLength(1);
+    expect(nightWorld.queryAllByTestId('crane')).toHaveLength(0);
+
+    const restingWorld = world({ resting: true }, 'day');
+    expect(restingWorld.queryAllByTestId('crane-sleeping')).toHaveLength(1);
+
+    mockReduce = true;
+    const reducedUntended = world({}, 'day', new Set(['river']));
+    expect(reducedUntended.queryAllByTestId('crane')).toHaveLength(1);
+    expect(reducedUntended.queryAllByTestId('cue-river')).toHaveLength(1);
+  });
+
   it('a cat walks the path by day, sleeps at night, and sits still with Reduce Motion', () => {
     expect(world({}, 'day').queryAllByTestId('cat-walking')).toHaveLength(1);
     expect(world({}, 'night').queryAllByTestId('cat-sleeping')).toHaveLength(1);

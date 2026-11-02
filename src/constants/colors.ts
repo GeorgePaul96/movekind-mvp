@@ -141,12 +141,16 @@ export const parkColors: {
   mid: Record<ParkLight, string>;
   ground: Record<ParkLight, { back: string; front: string; fore: string }>;
   path: Record<ParkLight, string>;
-  river: Record<ParkLight, { water: string; flow: string }>;
+  pathBank: Record<ParkLight, string>;
+  river: Record<ParkLight, { water: string; flow: string; bank: string }>;
   /** Tree crowns: shade underneath, leaf, and the light catching the top. */
   foliage: Record<ParkLight, { shade: string; leaf: string; light: string }>;
   soil: Record<ParkLight, string>;
   stone: Record<ParkLight, string>;
+  /** The rocks at the river's spring: darker than `stone`, so they can't read as a cloud. */
+  rock: Record<ParkLight, { base: string; light: string }>;
   hammock: { cloth: string; stripe: string };
+  crane: { body: string; shade: string; plume: string; crown: string; leg: string };
   /** Washes the daytime scene toward each light (day needs none). */
   tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
@@ -177,12 +181,13 @@ export const parkColors: {
     rain: { back: '#58AD68', front: '#479956', fore: '#388246' },
   },
   path: { dawn: '#EDE2C8', day: '#F5EBD4', dusk: '#C9BFA8', night: '#4A5752', rain: '#D1CABB' },
+  pathBank: { dawn: '#47A352', day: '#42A84B', dusk: '#397340', night: '#1A362B', rain: '#3E8A4C' },
   river: {
-    dawn: { water: '#7CC6F2', flow: '#E6F5FF' },
-    day: { water: '#58BDF6', flow: '#E3F6FF' },
-    dusk: { water: '#6A9BC7', flow: '#DCEBFA' },
-    night: { water: '#345E85', flow: '#7AA6CC' },
-    rain: { water: '#6CA9CC', flow: '#D6EBF7' },
+    dawn: { water: '#7CC6F2', flow: '#E6F5FF', bank: '#3D964E' },
+    day: { water: '#58BDF6', flow: '#E3F6FF', bank: '#389C49' },
+    dusk: { water: '#6A9BC7', flow: '#DCEBFA', bank: '#326B3E' },
+    night: { water: '#345E85', flow: '#7AA6CC', bank: '#16332A' },
+    rain: { water: '#6CA9CC', flow: '#D6EBF7', bank: '#357F46' },
   },
   foliage: {
     dawn: { shade: '#2E9448', leaf: '#48B862', light: '#7CE08F' },
@@ -193,7 +198,21 @@ export const parkColors: {
   },
   soil: { dawn: '#8A624A', day: '#91674C', dusk: '#6E4E3A', night: '#382B24', rain: '#75533E' },
   stone: { dawn: '#E3DDD3', day: '#ECE6DC', dusk: '#BDB5A8', night: '#575C5C', rain: '#C7C3BA' },
+  rock: {
+    dawn: { base: '#9C9A8E', light: '#BDBBAE' },
+    day: { base: '#A3A296', light: '#C6C4B7' },
+    dusk: { base: '#7F7C75', light: '#9C9991' },
+    night: { base: '#3F4645', light: '#525A58' },
+    rain: { base: '#8E8F87', light: '#ABACA3' },
+  },
   hammock: { cloth: '#FFE299', stripe: '#FF8A65' },
+  crane: {
+    body: '#F8FAF7',
+    shade: '#DCE4DD',
+    plume: '#333B38',
+    crown: '#E55A4A',
+    leg: '#5E5346',
+  },
   tint: {
     dawn: { color: '#FFA882', opacity: 0.12 },
     dusk: { color: '#5E3D7A', opacity: 0.22 },

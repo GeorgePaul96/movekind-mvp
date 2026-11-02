@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, {
   Easing,
   type SharedValue,
@@ -10,7 +10,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { parkColors } from '@/constants/colors';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 /**
@@ -107,58 +106,6 @@ export function SwayWrap({
   );
 }
 
-/** Soft expanding water rings on untended river. */
-export function Ripple({
-  clock,
-  x,
-  y,
-  size,
-  testID,
-}: {
-  clock: SharedValue<number>;
-  x: number;
-  y: number;
-  size: number;
-  testID?: string;
-}) {
-  const reduce = useReduceMotion();
-  const ringA = useAnimatedStyle(() => {
-    const p = reduce ? 0.5 : (clock.value * 0.45) % 1;
-    return {
-      opacity: reduce ? 0.45 : (1 - p) * 0.7,
-      transform: [{ scaleX: 0.35 + p * 1.05 }, { scaleY: 0.16 + p * 0.38 }],
-    };
-  });
-  const ringB = useAnimatedStyle(() => {
-    const p = ((clock.value * 0.45) + 0.5) % 1;
-    return {
-      opacity: reduce ? 0 : (1 - p) * 0.7,
-      transform: [{ scaleX: 0.35 + p * 1.05 }, { scaleY: 0.16 + p * 0.38 }],
-    };
-  });
-
-  return (
-    <View
-      testID={testID}
-      pointerEvents="none"
-      style={[styles.abs, { left: x - size / 2, top: y - size / 2, width: size, height: size }]}
-    >
-      <Animated.View style={[styles.ring, ringA]} />
-      {!reduce && <Animated.View style={[styles.ring, ringB]} />}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   abs: { position: 'absolute' },
-  ring: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    borderRadius: 999,
-    borderWidth: 3,
-    borderColor: parkColors.shimmer,
-  },
 });

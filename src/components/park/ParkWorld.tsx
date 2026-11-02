@@ -1,16 +1,25 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
-import Svg, { Circle, G, Line, Path } from 'react-native-svg';
+import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import { parkColors as p } from '@/constants/colors';
 import type { GardenState } from '@/domain/garden/garden';
 import type { ParkLayout } from '@/domain/park/layout';
-import { parkCourses, smoothPath } from '@/domain/park/shapes';
+import {
+  craneSpot,
+  grassTufts,
+  parkCourses,
+  pathWidthAt,
+  type Pt,
+  ribbonPath,
+  riverWidthAt,
+  smoothPath,
+} from '@/domain/park/shapes';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import type { ParkLight } from './ParkLayers';
 import { ParkTree } from './ParkTree';
-import { Ripple, SwayWrap, usePopOnChange } from './Motion';
-import { Bob, Butterflies, Cat } from './Creatures';
+import { SwayWrap, usePopOnChange } from './Motion';
+import { Bob, Butterflies, Cat, Crane } from './Creatures';
 import { BedBaseArt, TulipArt } from './art/FlowerbedArt';
 import { HammockArt } from './art/HammockArt';
 import { DuckArt } from './art/CrittersArt';
@@ -26,6 +35,8 @@ interface Props {
   untended?: Set<string>;
   /** Workouts logged so far: each new one makes the tree pop. */
   logged?: number;
+  /** Glasses of water logged so far: each new one makes the crane drink and stretch. */
+  watered?: number;
 }
 
 const StaticGroundSvg = React.memo(function StaticGroundSvg({
@@ -33,55 +44,80 @@ const StaticGroundSvg = React.memo(function StaticGroundSvg({
   H,
   light,
   grass,
-  riverPath,
-  walkPath,
+  sourcePt,
+  riverBankD,
+  riverRibbonD,
+  walkBankD,
+  walkRibbonD,
+  tufts,
 }: {
   W: number;
   H: number;
   light: ParkLight;
   grass: number;
-  riverPath: string;
-  walkPath: string;
+  sourcePt: Pt;
+  riverBankD: string;
+  riverRibbonD: string;
+  walkBankD: string;
+  walkRibbonD: string;
+  tufts: Pt[];
 }) {
   const g = p.ground[light];
   const f = p.foliage[light];
+  const rock = p.rock[light];
   const tuftH = 6 + grass * 3.5;
   const hillY = H * 0.43;
+  const [sx, sy] = sourcePt;
 
   return (
     <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
       <G testID="ground-art">
+        {/* Rolling hillside contour */}
         <Path
-          d={`M-60 ${hillY} Q${W * 0.48} ${hillY - 46} ${W + 60} ${hillY + 8} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
+          d={`M-60 ${hillY} Q${W * 0.36} ${hillY - 44} ${W + 60} ${hillY + 10} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
           fill={g.back}
         />
+        {/* Rolling mid-ground S-swell instead of a flat horizontal band */}
         <Path
-          d={`M-60 ${H * 0.62} Q${W * 0.55} ${H * 0.56} ${W + 60} ${H * 0.66} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
+          d={`M-60 ${H * 0.65} C${W * 0.28} ${H * 0.54} ${W * 0.68} ${H * 0.69} ${W + 60} ${H * 0.59} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
           fill={g.front}
         />
         {/* The near grass, dark enough for the drawer's light arrow to read on it. */}
         <Path
-          d={`M-60 ${H * 0.87} Q${W * 0.45} ${H * 0.84} ${W + 60} ${H * 0.88} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
+          d={`M-60 ${H * 0.88} C${W * 0.35} ${H * 0.82} ${W * 0.72} ${H * 0.9} ${W + 60} ${H * 0.85} L${W + 60} ${H + 80} L-60 ${H + 80} Z`}
           fill={g.fore}
         />
-        <Circle cx={W * 0.05} cy={hillY + 26} r={20} fill={f.leaf} />
-        <Circle cx={W * 0.13} cy={hillY + 18} r={26} fill={f.leaf} />
-        <Circle cx={W * 0.21} cy={hillY + 28} r={17} fill={f.leaf} />
-        <Circle cx={W * 0.11} cy={hillY + 12} r={10} fill={f.light} />
 
-        <Path d={walkPath} stroke={p.path[light]} strokeWidth={28} strokeLinecap="round" fill="none" />
-        <Path d={riverPath} stroke={p.river[light].water} strokeWidth={34} strokeLinecap="round" fill="none" />
+        {/* Intentional rounded bush cluster tucked on the left ridge clear of the tree trunk */}
+        <Circle cx={W * 0.04} cy={hillY + 12} r={18} fill={f.shade} />
+        <Circle cx={W * 0.1} cy={hillY + 8} r={22} fill={f.leaf} />
+        <Circle cx={W * 0.08} cy={hillY + 2} r={12} fill={f.light} />
 
-        {Array.from({ length: Math.round(W / 28) }, (_, i) => {
-          const x = 14 + i * 28;
-          const base = H * 0.89 - (i % 3) * 8;
-          return (
-            <G key={i}>
-              <Line x1={x} y1={base} x2={x - 4} y2={base - tuftH} stroke={f.shade} strokeWidth={2.5} strokeLinecap="round" />
-              <Line x1={x} y1={base} x2={x + 4} y2={base - tuftH * 0.85} stroke={f.shade} strokeWidth={2.5} strokeLinecap="round" />
-            </G>
-          );
-        })}
+        {/* Footpath bank and perspective ribbon starting naturally at the foot of the tree */}
+        <Path d={walkBankD} fill={p.pathBank[light]} />
+        <Path d={walkRibbonD} fill={p.path[light]} />
+
+        {/* River bank and perspective water ribbon widening from the hillside spring */}
+        <Path d={riverBankD} fill={p.river[light].bank} />
+        <Path d={riverRibbonD} fill={p.river[light].water} />
+
+        {/* Hillside spring rocks nestled around the river source */}
+        <Ellipse cx={sx} cy={sy - 7} rx={12} ry={8} fill={rock.base} />
+        <Ellipse cx={sx - 2} cy={sy - 10} rx={7} ry={4} fill={rock.light} />
+        <Ellipse cx={sx - 13} cy={sy - 1} rx={8} ry={6} fill={rock.base} />
+        <Ellipse cx={sx - 14} cy={sy - 3} rx={4.5} ry={2.8} fill={rock.light} />
+        <Ellipse cx={sx + 13} cy={sy} rx={8} ry={5.5} fill={rock.base} />
+        <Ellipse cx={sx + 12} cy={sy - 2} rx={4.5} ry={2.6} fill={rock.light} />
+        {/* The spring itself, where the water comes out of the ground */}
+        <Ellipse cx={sx} cy={sy} rx={7.5} ry={3.6} fill={p.river[light].water} />
+
+        {/* Grass tufts on the meadow and river banks, never touching water or footpath */}
+        {tufts.map(([x, base], i) => (
+          <G key={i}>
+            <Line x1={x} y1={base} x2={x - 4} y2={base - tuftH} stroke={f.shade} strokeWidth={2.5} strokeLinecap="round" />
+            <Line x1={x} y1={base} x2={x + 4} y2={base - tuftH * 0.85} stroke={f.shade} strokeWidth={2.5} strokeLinecap="round" />
+          </G>
+        ))}
       </G>
     </Svg>
   );
@@ -114,23 +150,29 @@ function RiverGlint({
     <View testID="river-glint" pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: strength }]}>
       <Animated.View style={[StyleSheet.absoluteFill, glintA]}>
         <Svg width={W} height={H}>
-          <Path d={d} stroke={color} strokeWidth={3.5} strokeDasharray="10 32" strokeDashoffset={0} strokeLinecap="round" fill="none" />
+          <Path d={d} stroke={color} strokeWidth={2.6} strokeDasharray="8 30" strokeDashoffset={0} strokeLinecap="round" fill="none" />
         </Svg>
       </Animated.View>
       <Animated.View style={[StyleSheet.absoluteFill, glintB]}>
         <Svg width={W} height={H}>
-          <Path d={d} stroke={color} strokeWidth={3.5} strokeDasharray="10 32" strokeDashoffset={21} strokeLinecap="round" fill="none" />
+          <Path d={d} stroke={color} strokeWidth={2.6} strokeDasharray="8 30" strokeDashoffset={19} strokeLinecap="round" fill="none" />
         </Svg>
       </Animated.View>
     </View>
   );
 }
 
-export function ParkWorld({ clock, layout, state, light, untended = new Set(), logged = 0 }: Props) {
+export function ParkWorld({ clock, layout, state, light, untended = new Set(), logged = 0, watered = 0 }: Props) {
   const { worldW: W, worldH: H, objects } = layout;
   const courses = useMemo(() => parkCourses(layout), [layout]);
-  const riverD = useMemo(() => smoothPath(courses.river), [courses]);
-  const walkD = useMemo(() => smoothPath(courses.walkway), [courses]);
+  const riverBankD = useMemo(() => ribbonPath(courses.river, (t) => riverWidthAt(t) + 6), [courses]);
+  const riverRibbonD = useMemo(() => ribbonPath(courses.river, riverWidthAt), [courses]);
+  const walkBankD = useMemo(() => ribbonPath(courses.walkway, (t) => pathWidthAt(t) + 4), [courses]);
+  const walkRibbonD = useMemo(() => ribbonPath(courses.walkway, pathWidthAt), [courses]);
+  // Glints start slightly downstream of the spring rocks so they stay well inside the narrow channel
+  const glintD = useMemo(() => smoothPath(courses.river.slice(1)), [courses]);
+  const tufts = useMemo(() => grassTufts(layout, courses), [layout, courses]);
+  const spots = useMemo(() => craneSpot(layout, courses), [layout, courses]);
   const night = light === 'night';
 
   const tree = objects.tree;
@@ -151,20 +193,39 @@ export function ParkWorld({ clock, layout, state, light, untended = new Set(), l
 
   return (
     <View style={{ width: W, height: H }} pointerEvents="none">
-      <StaticGroundSvg W={W} H={H} light={light} grass={state.grass} riverPath={riverD} walkPath={walkD} />
+      <StaticGroundSvg
+        W={W}
+        H={H}
+        light={light}
+        grass={state.grass}
+        sourcePt={courses.river[0]!}
+        riverBankD={riverBankD}
+        riverRibbonD={riverRibbonD}
+        walkBankD={walkBankD}
+        walkRibbonD={walkRibbonD}
+        tufts={tufts}
+      />
 
       <Animated.View style={[StyleSheet.absoluteFill, { transformOrigin: [rv.x + rv.w / 2, rv.y + rv.h / 2, 0] }, riverPop]}>
-        <RiverGlint clock={clock} d={riverD} W={W} H={H} color={p.river[light].flow} strength={Math.min(0.25 + state.stream * 0.16, 0.9)} />
+        <RiverGlint clock={clock} d={glintD} W={W} H={H} color={p.river[light].flow} strength={Math.min(0.25 + state.stream * 0.16, 0.9)} />
       </Animated.View>
 
-      {riverCue && <Ripple testID="cue-river" clock={clock} x={rv.x + rv.w / 2} y={rv.y + rv.h / 2} size={68} />}
       {state.ducks && (
-        <Bob clock={clock} x={rv.x + rv.w / 2 - 23} y={rv.y + rv.h / 2 - 30}>
+        <Bob clock={clock} x={spots.duck[0] - 23} y={spots.duck[1] - 26}>
           <View testID="duck">
             <DuckArt size={46} />
           </View>
         </Bob>
       )}
+
+      <Crane
+        clock={clock}
+        feet={spots.feet}
+        cue={riverCue}
+        asleep={night || state.resting}
+        watered={watered}
+        size={spots.size}
+      />
 
       <View testID={untended.has('hammock') ? 'cue-hammock' : undefined} style={StyleSheet.absoluteFill}>
         <SwayWrap
