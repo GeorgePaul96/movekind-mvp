@@ -7,37 +7,44 @@ import { font } from '@/constants/typography';
 import type { ParkLayout, ParkObject } from '@/domain/park/layout';
 import { useSettingsStore } from '@/store/settingsStore';
 
-/** Left to right through the park, then the drawer. (The hammock joins when sleep arrives.) */
+/** Through the park, then the drawer. (The hammock joins when sleep arrives.) */
 export const TOUR_STOPS = ['flowerbed', 'tree', 'river', 'path', 'drawer'] as const;
 type Stop = (typeof TOUR_STOPS)[number];
 
 /** Scroll offset that centres an object on screen, kept inside the park. */
 export function tourScrollX(layout: ParkLayout, screenW: number, o: ParkObject): number {
   const r = layout.objects[o];
-  return Math.min(Math.max(r.x + r.w / 2 - screenW / 2, 0), layout.worldW - screenW);
+  return Math.max(0, Math.min(r.x + r.w / 2 - screenW / 2, layout.worldW - screenW));
 }
 
 interface Props {
   layout: ParkLayout;
   screenW: number;
   scrollTo: (x: number) => void;
+  focusObject?: (o: ParkObject | null) => void;
   onDone: () => void;
 }
 
-/** A short first-visit walk: pans to each object with one line about it. Skippable any time. */
-export function ParkTour({ layout, screenW, scrollTo, onDone }: Props) {
+/** A short first-visit walk: highlights each object with one line about it. Skippable any time. */
+export function ParkTour({ layout, screenW, scrollTo, focusObject, onDone }: Props) {
   const markSeen = useSettingsStore((s) => s.markParkTourSeen);
   const [i, setI] = useState(0);
   const stop: Stop = TOUR_STOPS[i]!;
   const last = i === TOUR_STOPS.length - 1;
 
   useEffect(() => {
-    if (stop !== 'drawer') scrollTo(tourScrollX(layout, screenW, stop));
-    // scrollTo is a stable callback from the screen; only the stop changes the pan.
+    if (stop !== 'drawer') {
+      scrollTo(tourScrollX(layout, screenW, stop));
+      focusObject?.(stop);
+    } else {
+      focusObject?.(null);
+    }
+    return () => focusObject?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stop]);
 
   const finish = () => {
+    focusObject?.(null);
     markSeen().catch(() => {});
     onDone();
   };
@@ -62,12 +69,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    top: '7%', // in the sky, so the object being described stays in view
+    top: '8%',
     backgroundColor: colors.surface,
-    borderRadius: 24,
-    padding: 18,
+    borderRadius: 28,
+    padding: 20,
     ...elevation.raised,
   },
-  line: { ...font.medium, fontSize: 17, lineHeight: 25, color: colors.textPrimary },
+  line: { ...font.bold, fontSize: 17, lineHeight: 25, color: colors.textPrimary },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 },
 });

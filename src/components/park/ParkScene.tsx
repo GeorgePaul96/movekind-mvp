@@ -1,28 +1,37 @@
-import React, { useMemo, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import React, { useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { parkColors } from '@/constants/colors';
 import { PARK_COPY } from '@/constants/copy';
 import type { GardenState } from '@/domain/garden/garden';
 import type { SkyPhase } from '@/domain/garden/sky';
 import { PARALLAX, parkLayout, type ParkObject } from '@/domain/park/layout';
-import { HillLayer, RainLayer, SkyLayer, type ParkLight } from './ParkLayers';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
+import { CloudsLayer, HillLayer, RainLayer, SkyLayer, type ParkLight } from './ParkLayers';
 import { ParkWorld } from './ParkWorld';
 import { Hotspot } from './Hotspot';
-import { useLoop } from './Motion';
+import { useParkClock } from './Motion';
 
-/** What the tour needs from the park's scroll view. */
 export interface ParkScrollHandle {
   scrollTo(options: { x: number; y?: number; animated?: boolean }): void;
+  focusObject?(o: ParkObject | null): void;
 }
 
-/** Painted clouds (design/park/layers 2/clouds.jpg) that drift across the sky by day. */
-const CLOUDS = require('../../../assets/park/clouds.png');
-
 const OBJECTS: ParkObject[] = ['flowerbed', 'tree', 'river', 'path', 'hammock'];
+const PAD = 32; // Oversize buffer (> 2x max 20pt parallax offset)
 
 interface Props {
   state: GardenState;
   phase: SkyPhase;
   untended: Set<string>;
+  /** Workouts logged so far: each new one makes the tree pop. */
+  logged?: number;
   onObject: (o: ParkObject) => void;
   width: number;
   height: number;
@@ -30,73 +39,86 @@ interface Props {
 }
 
 /**
- * The full-screen park. The foreground world scrolls horizontally; sky and hill layers follow
- * the scroll at slower speeds (parallax, on the native thread), so panning feels deep and calm.
+ * The full-screen park, one screen wide. The ground and everything on it stay put; a horizontal
+ * drag only nudges the sky and hills a few points for depth, then they spring back.
  */
-export function ParkScene({ state, phase, untended, onObject, width, height, scrollRef }: Props) {
+export function ParkScene({ state, phase, untended, logged, onObject, width, height, scrollRef }: Props) {
+  const reduce = useReduceMotion();
+  const clock = useParkClock();
   const layout = useMemo(() => parkLayout(width, height), [width, height]);
-  const scrollX = useRef(new Animated.Value(layout.startX)).current;
-  const light: ParkLight = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
-  const range = Math.max(1, layout.worldW - width);
-  const breeze = useLoop(40000); // the sky drifts a few points over forty seconds
-  const clouds = useLoop(90000); // and the clouds a little further, more slowly
+  const light: ParkLight =
+    state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
 
-  /** A background layer `factor` as fast as the foreground: wide enough to cover its travel. */
-  const layer = (factor: number) => ({
-    width: width + range * factor,
-    style: {
-      position: 'absolute' as const,
-      top: 0,
-      left: 0,
-      transform: [
-        { translateX: scrollX.interpolate({ inputRange: [0, range], outputRange: [0, -range * factor], extrapolate: 'clamp' }) },
-      ],
-    },
-  });
-  const sky = layer(PARALLAX.sky);
-  const far = layer(PARALLAX.far);
-  const mid = layer(PARALLAX.mid);
+  const dragX = useSharedValue(0);
+  const fade = useSharedValue(reduce ? 1 : 0);
+  const [focused, setFocused] = useState<ParkObject | null>(null);
+
+  useEffect(() => {
+    fade.value = reduce ? 1 : withTiming(1, { duration: 400 });
+  }, [fade, reduce]);
+
+  useImperativeHandle(scrollRef, () => ({
+    scrollTo: () => {},
+    focusObject: (o) => setFocused(o),
+  }));
+
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-10, 10])
+        .failOffsetY([-12, 12])
+        .onUpdate((e) => {
+          if (reduce) return;
+          dragX.value = Math.max(-1, Math.min(1, e.translationX / (width * 0.45)));
+        })
+        .onEnd(() => {
+          dragX.value = withSpring(0, { damping: 18, stiffness: 160 });
+        })
+        .onFinalize(() => {
+          dragX.value = withSpring(0, { damping: 18, stiffness: 160 });
+        }),
+    [dragX, reduce, width],
+  );
+
+  const skyStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -dragX.value * PARALLAX.sky }],
+  }));
+  const farStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -dragX.value * PARALLAX.far }],
+  }));
+  const midStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -dragX.value * PARALLAX.mid }],
+  }));
+  const rootFade = useAnimatedStyle(() => ({ opacity: fade.value }));
+
+  const layerW = width + PAD * 2;
+  const layerH = height + PAD;
 
   return (
-    <View style={{ width, height }} accessibilityLabel={PARK_COPY.sceneLabel}>
-      <Animated.View style={sky.style} pointerEvents="none">
-        <Animated.View style={{ marginLeft: -20, transform: [{ translateX: breeze.interpolate({ inputRange: [0, 1], outputRange: [-14, 14] }) }] }}>
-          <SkyLayer width={sky.width + 40} height={height} light={light} />
-        </Animated.View>
-        {light !== 'night' && (
-          <Animated.Image
-            testID="clouds"
-            source={CLOUDS}
-            style={{
-              position: 'absolute',
-              left: -40,
-              top: -height * 0.06,
-              width: sky.width + 80,
-              height: sky.width + 80,
-              opacity: light === 'rain' ? 0.55 : 0.9,
-              transform: [{ translateX: clouds.interpolate({ inputRange: [0, 1], outputRange: [-36, 36] }) }],
-            }}
-          />
-        )}
-      </Animated.View>
-      <Animated.View style={far.style} pointerEvents="none">
-        <HillLayer width={far.width} height={height} light={light} depth="far" />
-      </Animated.View>
-      <Animated.View style={mid.style} pointerEvents="none">
-        <HillLayer width={mid.width} height={height} light={light} depth="mid" />
-      </Animated.View>
-
-      <Animated.ScrollView
-        ref={scrollRef as React.Ref<never>}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentOffset={{ x: layout.startX, y: 0 }}
-        scrollEventThrottle={16}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: true })}
-        style={StyleSheet.absoluteFill}
+    <GestureDetector gesture={pan}>
+      <Animated.View
+        style={[
+          styles.container,
+          { width, height, backgroundColor: parkColors.ground[light].front },
+          rootFade,
+        ]}
+        accessibilityLabel={PARK_COPY.sceneLabel}
       >
-        <View testID="park-world" style={{ width: layout.worldW, height }}>
-          <ParkWorld layout={layout} state={state} light={light} untended={untended} />
+        <Animated.View style={[styles.oversized, skyStyle]} pointerEvents="none">
+          <SkyLayer width={layerW} height={layerH} light={light} />
+          <CloudsLayer clock={clock} width={layerW} height={layerH} light={light} />
+        </Animated.View>
+
+        <Animated.View style={[styles.oversized, farStyle]} pointerEvents="none">
+          <HillLayer width={layerW} height={layerH} light={light} depth="far" />
+        </Animated.View>
+
+        <Animated.View style={[styles.oversized, midStyle]} pointerEvents="none">
+          <HillLayer width={layerW} height={layerH} light={light} depth="mid" />
+        </Animated.View>
+
+        <View testID="park-world" style={{ width, height }}>
+          <ParkWorld clock={clock} layout={layout} state={state} light={light} untended={untended} logged={logged} />
           {OBJECTS.map((o) => (
             <Hotspot
               key={o}
@@ -104,17 +126,19 @@ export function ParkScene({ state, phase, untended, onObject, width, height, scr
               rect={layout.objects[o]}
               label={PARK_COPY.objects[o].label}
               hint={PARK_COPY.objects[o].hint}
+              focused={focused === o}
               onPress={onObject}
             />
           ))}
         </View>
-      </Animated.ScrollView>
 
-      {state.weather === 'rain' && (
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <RainLayer width={width} height={height} />
-        </View>
-      )}
-    </View>
+        {state.weather === 'rain' && <RainLayer clock={clock} width={width} height={height} />}
+      </Animated.View>
+    </GestureDetector>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { overflow: 'hidden' },
+  oversized: { position: 'absolute', left: -PAD, top: 0 },
+});

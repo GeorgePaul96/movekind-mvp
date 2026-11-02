@@ -282,7 +282,7 @@ export const PARK_COPY = {
   },
   greeting: (partOfDay: string, name?: string | null) =>
     name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
-  sceneLabel: 'Your park. Swipe left or right to look around.',
+  sceneLabel: 'Your park.',
 } as const;
 
 /** The river's water sheet. One drop per glass; there is never an "out of". */

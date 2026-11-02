@@ -1,6 +1,7 @@
 /**
- * The river and the footpath as they run in the painted ground (assets/park/ground.png), traced
- * as centre lines in world pixels. Pure geometry, so the drawing and the tests agree.
+ * The river and the footpath as centre lines in world pixels: the river winds down in an S below
+ * the hammock, the path winds in an S from the foot of the tree around the flowerbed. Pure
+ * geometry, so the drawing and the tests agree.
  */
 import type { ParkLayout, Rect } from './layout';
 
@@ -50,14 +51,14 @@ const centre = (r: Rect): Pt => [r.x + r.w / 2, r.y + r.h / 2];
 export interface ParkCourses {
   /** The river's centre line, from the hilltop to below the bottom edge. */
   river: Pt[];
-  /** The footpath's centre line, from the hilltop to below the bottom edge. */
+  /** The footpath's centre line, from the foot of the tree to below the bottom edge. */
   walkway: Pt[];
 }
 
 export function parkCourses({ worldW: W, worldH: H, objects }: ParkLayout): ParkCourses {
   const at = (u: number, v: number): Pt => [u * W, v * H];
   return {
-    river: [at(0.5, 0.32), at(0.45, 0.43), at(0.38, 0.5), at(0.31, 0.57), at(0.35, 0.65), centre(objects.river), at(0.45, 0.76), at(0.42, 0.84), at(0.33, 0.93), at(0.25, 1.04)],
-    walkway: [at(0.73, 0.38), at(0.64, 0.44), at(0.61, 0.52), at(0.66, 0.6), centre(objects.path), at(0.76, 0.69), at(0.68, 0.77), at(0.62, 0.87), at(0.58, 1.04)],
+    river: [at(0.62, 0.46), at(0.7, 0.53), at(0.9, 0.6), centre(objects.river), at(0.63, 0.8), at(0.9, 0.92), at(0.8, 1.04)],
+    walkway: [at(0.3, 0.555), at(0.46, 0.585), at(0.56, 0.66), at(0.5, 0.75), centre(objects.path), at(0.25, 0.87), at(0.36, 0.95), at(0.46, 1.04)],
   };
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native';
 import type { GardenState } from '../src/domain/garden/garden';
 import { parkLayout } from '../src/domain/park/layout';
@@ -8,6 +9,7 @@ import type { ParkLight } from '../src/components/park/ParkLayers';
 
 const base: GardenState = { stream: 1, ducks: false, grass: 2, tree: 3, birds: true, flowers: [], resting: false, weather: 'clear' };
 const layout = parkLayout(412, 915);
+const clock = { value: 0 } as SharedValue<number>;
 let mockReduce = false;
 jest.mock('../src/hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduce }));
 beforeEach(() => {
@@ -15,14 +17,14 @@ beforeEach(() => {
 });
 
 const world = (state: Partial<GardenState> = {}, light: ParkLight = 'day', untended: Set<string> = new Set()) =>
-  render(<ParkWorld layout={layout} state={{ ...base, ...state }} light={light} untended={untended} />);
+  render(<ParkWorld clock={clock} layout={layout} state={{ ...base, ...state }} light={light} untended={untended} />);
 
 describe('<ParkWorld />', () => {
-  it('the painted ground is the base of the park', () => {
+  it('the drawn ground is the base of the park', () => {
     expect(world().queryAllByTestId('ground-art')).toHaveLength(1);
   });
 
-  it('the tree shows the painting for its growth stage', () => {
+  it('the tree shows the drawing for its growth stage', () => {
     for (const stage of [0, 1, 2, 3, 4, 5] as const) {
       expect(world({ tree: stage, birds: false }).queryAllByTestId(`tree-stage-${stage}`)).toHaveLength(1);
     }
@@ -67,7 +69,7 @@ describe('<ParkWorld />', () => {
     expect(glints(3)).toBeGreaterThan(glints(0));
   });
 
-  it('daylight needs no tint; dawn, dusk, night and rain each tint the painting', () => {
+  it('daylight needs no tint; dawn, dusk, night and rain each tint the scene', () => {
     expect(world({}, 'day').queryAllByTestId('light-tint')).toHaveLength(0);
     for (const l of ['dawn', 'dusk', 'night', 'rain'] as const) expect(world({}, l).queryAllByTestId('light-tint')).toHaveLength(1);
   });

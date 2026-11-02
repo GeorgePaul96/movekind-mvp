@@ -1,77 +1,115 @@
-import React, { useEffect, useState } from 'react';
-import Svg, { Circle, Defs, Ellipse, G, Image, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import Svg, { Circle, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { parkColors as p } from '@/constants/colors';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export type ParkLight = 'dawn' | 'day' | 'dusk' | 'night' | 'rain';
 
-const TICK_MS = 120; // the drifting layers only; the world drawing itself never re-renders on a timer
+const STARS = Array.from({ length: 24 }, (_, i) => [
+  ((i * 97) % 94) / 100 + 0.03,
+  ((i * 53) % 38) / 100 + 0.04,
+] as const);
 
-/** A slow clock for gentle drift. Frozen at 0 when the phone asks for less motion. */
-export function useDrift(): number {
-  const reduce = useReduceMotion();
-  const [t, setT] = useState(0);
-  useEffect(() => {
-    if (reduce) return;
-    const timer = setInterval(() => setT((v) => v + TICK_MS / 1000), TICK_MS);
-    return () => clearInterval(timer);
-  }, [reduce]);
-  return reduce ? 0 : t;
-}
-
-/** The painted daytime sky (design/park/layers/layer 1.jpg). Night keeps its own stars and moon. */
-const SKY_ART = require('../../../assets/park/sky.png');
-/** Painted distant ranges (design/park/layers 2), and where their ridgelines sit in the image. */
-const HILL_ART = {
-  far: { src: require('../../../assets/park/far.png'), ridge: 0.28, at: 0.15, fade: 0.52 },
-  mid: { src: require('../../../assets/park/mid.png'), ridge: 0.2, at: 0.25, fade: 0.7 },
-};
-
-const STARS = Array.from({ length: 26 }, (_, i) => [((i * 97) % 100) / 100, ((i * 53) % 45) / 100] as const);
-
-/** The painted sky (tinted for dawn, dusk and rain), or a starry night sky. Slowest parallax layer. */
-export function SkyLayer({ width, height, light }: { width: number; height: number; light: ParkLight }) {
-  const t = useDrift();
-  if (light !== 'night') {
-    const tint = light === 'day' ? null : p.tint[light];
-    const drift = Math.sin(t * 0.08) * 10;
-    return (
-      <Svg width={width} height={height}>
-        <Image testID="sky-art" href={SKY_ART} x={0} y={0} width={width} height={height} preserveAspectRatio="xMidYMid slice" />
-        {tint && <Rect width={width} height={height} fill={tint.color} opacity={tint.opacity} />}
-        {light === 'rain' && (
-          <G transform={`translate(${drift} 0)`} opacity={0.9}>
-            <Ellipse cx={width * 0.18} cy={height * 0.12} rx={70} ry={10} fill={p.far.rain} />
-            <Ellipse cx={width * 0.5} cy={height * 0.08} rx={90} ry={9} fill={p.far.rain} />
-            <Ellipse cx={width * 0.82} cy={height * 0.17} rx={60} ry={8} fill={p.far.rain} />
-          </G>
-        )}
-      </Svg>
-    );
-  }
-  const sky = p.sky.night;
+/** Sky gradient and stars/moon. Oversized so parallax never shows an edge. */
+export const SkyLayer = React.memo(function SkyLayer({
+  width,
+  height,
+  light,
+}: {
+  width: number;
+  height: number;
+  light: ParkLight;
+}) {
+  const sky = p.sky[light];
   return (
     <Svg width={width} height={height}>
       <Defs>
-        <LinearGradient id="park-sky-night" x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id="park-sky-grad" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={sky.top} />
-          <Stop offset="0.6" stopColor={sky.low} />
+          <Stop offset="0.58" stopColor={sky.low} />
+          <Stop offset="1" stopColor={sky.low} />
         </LinearGradient>
       </Defs>
-      <Rect width={width} height={height} fill="url(#park-sky-night)" />
-      {STARS.map(([fx, fy], i) => (
-        <Circle key={i} cx={fx * width} cy={fy * height} r={i % 4 === 0 ? 1.6 : 1} fill={p.star} opacity={0.5 + 0.5 * Math.abs(Math.sin(t * 0.5 + i))} />
-      ))}
-      <G testID="moon">
-        <Circle cx={width * 0.72} cy={height * 0.12} r={16} fill={p.moon} />
-        <Circle cx={width * 0.72 + 7} cy={height * 0.12 - 5} r={14} fill={sky.top} />
-      </G>
+      <Rect testID={light === 'night' ? undefined : 'sky-art'} x="0" y="0" width={width} height={height} fill="url(#park-sky-grad)" />
+      {light === 'night' && (
+        <>
+          {STARS.map(([fx, fy], i) => (
+            <Circle
+              key={i}
+              cx={fx * width}
+              cy={fy * height}
+              r={i % 3 === 0 ? 2 : 1.3}
+              fill={p.star}
+              opacity={i % 2 === 0 ? 0.9 : 0.55}
+            />
+          ))}
+          <G testID="moon">
+            <Path
+              d={`M${width * 0.76} ${height * 0.13 - 18} A18 18 0 1 0 ${width * 0.76} ${height * 0.13 + 18} A23 23 0 1 1 ${width * 0.76} ${height * 0.13 - 18} Z`}
+              fill={p.moon}
+            />
+          </G>
+        </>
+      )}
     </Svg>
+  );
+});
+
+/** Single puffy vector cloud group, duplicated twice for seamless 120s loop. */
+const CloudStrip = React.memo(function CloudStrip({ width, height }: { width: number; height: number }) {
+  const puff = (cx: number, cy: number, s: number) => (
+    <G transform={`translate(${cx}, ${cy}) scale(${s})`} fill={p.cloud}>
+      <Circle cx="0" cy="0" r="26" />
+      <Circle cx="-24" cy="6" r="20" />
+      <Circle cx="24" cy="6" r="20" />
+      <Rect x="-24" y="6" width="48" height="20" rx="10" />
+    </G>
+  );
+  return (
+    <Svg width={width * 2} height={height * 0.36}>
+      {puff(width * 0.18, height * 0.14, 1.15)}
+      {puff(width * 0.56, height * 0.09, 0.85)}
+      {puff(width * 0.86, height * 0.17, 1.0)}
+      {puff(width * 1.18, height * 0.14, 1.15)}
+      {puff(width * 1.56, height * 0.09, 0.85)}
+      {puff(width * 1.86, height * 0.17, 1.0)}
+    </Svg>
+  );
+});
+
+export function CloudsLayer({
+  clock,
+  width,
+  height,
+  light,
+}: {
+  clock: SharedValue<number>;
+  width: number;
+  height: number;
+  light: ParkLight;
+}) {
+  const reduce = useReduceMotion();
+  const style = useAnimatedStyle(() => {
+    const progress = reduce ? 0 : (clock.value / 120) % 1;
+    return { transform: [{ translateX: -progress * width }] };
+  });
+
+  if (light === 'night') return null;
+  return (
+    <Animated.View
+      testID="clouds"
+      pointerEvents="none"
+      style={[{ position: 'absolute', left: 0, top: 0, opacity: light === 'rain' ? 0.6 : 0.95 }, style]}
+    >
+      <CloudStrip width={width} height={height} />
+    </Animated.View>
   );
 }
 
-/** One band of rolling hills with a soft mist drifting in front of it. */
-export function HillLayer({
+/** Rounded background hills extending all the way to the bottom edge so no seam can ever show. */
+export const HillLayer = React.memo(function HillLayer({
   width,
   height,
   light,
@@ -82,58 +120,70 @@ export function HillLayer({
   light: ParkLight;
   depth: 'far' | 'mid';
 }) {
-  const t = useDrift();
-  const art = HILL_ART[depth];
-  // The square painting spans the layer's width; its ridgeline lands at `at` of the screen height,
-  // above the painted hilltop of the ground (about 0.32 to 0.38).
-  const size = width;
-  const imgY = height * art.at - size * art.ridge;
-  const top = art.at + 0.06;
-  const tint = light === 'day' ? null : p.tint[light];
-  // The wash fades in below the peaks and out where the painting fades, so it leaves no edges.
-  const tintTop = height * (art.at - 0.04);
-  const tintBottom = imgY + size * art.fade;
-  const mistShift = Math.sin(t * 0.3 + (depth === 'far' ? 0 : 1.7)) * 6;
-  const mistId = `park-mist-${depth}-${light}`;
-  const mistY = height * (top + 0.04);
+  const fill = depth === 'far' ? p.far[light] : p.mid[light];
+  const yTop = depth === 'far' ? height * 0.34 : height * 0.4;
+  const d =
+    depth === 'far'
+      ? `M0 ${yTop} Q${width * 0.28} ${yTop - 38} ${width * 0.55} ${yTop - 6} T${width} ${yTop - 18} L${width} ${height} L0 ${height} Z`
+      : `M0 ${yTop + 10} Q${width * 0.25} ${yTop - 16} ${width * 0.52} ${yTop + 14} T${width} ${yTop - 12} L${width} ${height} L0 ${height} Z`;
+
   return (
     <Svg width={width} height={height}>
-      <Defs>
-        {tint && (
-          <LinearGradient id={`${mistId}-tint`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={tint.color} stopOpacity={0} />
-            <Stop offset="0.3" stopColor={tint.color} stopOpacity={tint.opacity} />
-            <Stop offset="0.85" stopColor={tint.color} stopOpacity={tint.opacity} />
-            <Stop offset="1" stopColor={tint.color} stopOpacity={0} />
-          </LinearGradient>
-        )}
-        <LinearGradient id={mistId} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={p.mistTint} stopOpacity={0} />
-          <Stop offset="0.5" stopColor={p.mistTint} stopOpacity={p.mist[light]} />
-          <Stop offset="1" stopColor={p.mistTint} stopOpacity={0} />
-        </LinearGradient>
-      </Defs>
-      <Image testID={`${depth}-art`} href={art.src} x={0} y={imgY} width={size} height={size} />
-      {tint && <Rect x={0} y={tintTop} width={width} height={tintBottom - tintTop} fill={`url(#${mistId}-tint)`} />}
-      <G testID="mist" transform={`translate(${mistShift} 0)`}>
-        <Rect x={-20} y={mistY} width={width + 40} height={height * 0.09} fill={`url(#${mistId})`} />
-      </G>
+      <Path testID={`${depth}-art`} d={d} fill={fill} />
+      <Rect
+        testID="mist"
+        x={0}
+        y={yTop + 12}
+        width={width}
+        height={height * 0.06}
+        fill={p.mistTint}
+        opacity={p.mist[light] * 0.5}
+      />
     </Svg>
   );
-}
+});
 
-/** Gentle rain over the whole screen (does not pan). */
-export function RainLayer({ width, height }: { width: number; height: number }) {
-  const t = useDrift();
+/** UI-thread rain overlay. */
+export function RainLayer({
+  clock,
+  width,
+  height,
+}: {
+  clock: SharedValue<number>;
+  width: number;
+  height: number;
+}) {
+  const reduce = useReduceMotion();
+  const style = useAnimatedStyle(() => {
+    const dy = reduce ? 0 : ((clock.value * 180) % 48);
+    return { transform: [{ translateY: dy }, { translateX: -dy * 0.2 }] };
+  });
+
   return (
-    <Svg width={width} height={height} pointerEvents="none">
-      <G testID="rain">
-        {Array.from({ length: 36 }, (_, i) => {
-          const x = ((i * 61) % 100) / 100 * width;
-          const y = (((i * 37) % 100) / 100 * height + t * 90) % height;
-          return <Line key={i} x1={x} y1={y} x2={x - 3} y2={y + 12} stroke={p.river.rain.water} strokeWidth={1.4} strokeLinecap="round" opacity={0.7} />;
-        })}
-      </G>
-    </Svg>
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Animated.View style={[StyleSheet.absoluteFill, style]}>
+        <Svg width={width} height={height + 60} style={{ top: -48 }}>
+          <G testID="rain">
+            {Array.from({ length: 32 }, (_, i) => {
+              const x = (((i * 61) % 96) / 100) * width;
+              const y = (((i * 37) % 96) / 100) * (height + 48);
+              return (
+                <Line
+                  key={i}
+                  x1={x}
+                  y1={y}
+                  x2={x - 4}
+                  y2={y + 14}
+                  stroke={p.river.rain.flow}
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  opacity={0.65}
+                />
+              );
+            })}
+          </G>
+        </Svg>
+      </Animated.View>
+    </View>
   );
 }

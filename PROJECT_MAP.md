@@ -54,12 +54,12 @@
 
 ## `src/components/`
 
-Park: [park/ParkScene](src/components/park/ParkScene.tsx) (panning scroll + parallax) ·
+Park: [park/ParkScene](src/components/park/ParkScene.tsx) (one-screen scene, small drag parallax) ·
 [park/ParkLayers](src/components/park/ParkLayers.tsx) (sky, hills, mist, rain; the only animated layers) ·
 [park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
-[park/ParkTree](src/components/park/ParkTree.tsx) (painted growth stages) · [domain/park/shapes](src/domain/park/shapes.ts) (river and footpath traced from the painting) ·
+[park/ParkTree](src/components/park/ParkTree.tsx) (growth stages; canopy sways, trunk stays planted) · [domain/park/shapes](src/domain/park/shapes.ts) (river and footpath courses) ·
 [park/Motion](src/components/park/Motion.tsx) (sway, ripple, native-driver loops) · [park/Creatures](src/components/park/Creatures.tsx) (the cat on the path, butterflies, the bobbing duck) ·
-Park art: `assets/park/*.png`, cut from Gemini paintings in `design/park/layers` and `design/park/layers 2` (sky, clouds, far and mid hills, ground, tree stages, robins, bed, mood flowers, hammock, duck, cat, butterflies). Other lights are a tint over the daytime art (`parkColors.tint`).
+Park art: flat vector components in `src/components/park/art/` (tree stages, flowerbed and tulips, hammock, duck, robins, butterfly, cat). Other lights use `parkColors` per light plus one tint (`parkColors.tint`). The older paintings in `assets/park/*.png` are no longer used.
 [park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
 [park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·
 [park/ParkTour](src/components/park/ParkTour.tsx) (first visit) · [park/Sheet](src/components/park/Sheet.tsx) ·

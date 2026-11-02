@@ -67,33 +67,8 @@ describe('<ParkScene />', () => {
     expect(scene({ phase: 'night' }).queryAllByTestId('sky-art')).toHaveLength(0);
   });
 
-  it('the park is wider than the screen so it can pan', () => {
+  it('the park is one screen wide, so the ground never slides', () => {
     const { getByTestId } = scene();
-    expect(getByTestId('park-world').props.style).toEqual(expect.objectContaining({ width: Math.round(390 * 2.2) }));
-  });
-
-  // react-native-svg turns a transform string into a matrix prop on the drawn element.
-  const mistShift = (t: ReturnType<typeof scene>) => {
-    const n = t.getAllByTestId('mist')[0]!;
-    return n.props.matrix ?? n.props.transform;
-  };
-
-  it('mist drifts slowly', () => {
-    const t = scene();
-    const start = JSON.stringify(mistShift(t));
-    act(() => {
-      jest.advanceTimersByTime(4000);
-    });
-    expect(JSON.stringify(mistShift(t))).not.toBe(start);
-  });
-
-  it('holds still with reduce motion', () => {
-    mockReducedMotion = true;
-    const t = scene();
-    const start = JSON.stringify(mistShift(t));
-    act(() => {
-      jest.advanceTimersByTime(4000);
-    });
-    expect(JSON.stringify(mistShift(t))).toBe(start);
+    expect(getByTestId('park-world').props.style).toEqual(expect.objectContaining({ width: 390 }));
   });
 });

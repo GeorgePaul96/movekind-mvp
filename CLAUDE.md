@@ -9,7 +9,7 @@ MoveKind is a **calm, anti-guilt self-care tracker with a garden that grows** (E
 Native / TypeScript). People log the everyday care they already spread across several apps
 (**water, workouts done anywhere, a one-tap mood check-in**, and soon **steps**) and see it
 turn into a living garden: water fills the stream, steps grow the grass, workouts grow the
-tree, each mood plants a flower. Home is a **full-screen park** you pan by swiping; tapping
+tree, each mood plants a flower. Home is a **full-screen, one-screen park**; tapping
 the river, tree, flowerbed or path is how you log. **Changes** (in the pull-up drawer) says in
 plain sentences what their activity is changing. MoveKind **never tells anyone how to move** (no exercise instructions).
 No streaks, no targets, no guilt: the garden only grows or rests.
@@ -72,9 +72,9 @@ Verify changes with `npm run typecheck` and `npm test`.
   `moodToEnergy` (1/2/4/5) → `mapEnergyToState` in [moods.ts](src/domain/checkin/moods.ts). A day is
   one check-in: re-picking edits it. Mood colour = `stateColors[mood].tint` (the flower).
 - **The park is home.** [parkLayout(w, h)](src/domain/park/layout.ts) places every object (pure; the
-  drawing and the tap targets share it). [ParkScene](src/components/park/ParkScene.tsx) pans it with
-  parallax; only the sky / hills / mist / rain layers animate, the foreground `ParkWorld` is static
-  so panning stays smooth. Untended objects shimmer ([untendedToday](src/domain/park/tending.ts)).
+  drawing and the tap targets share it). [ParkScene](src/components/park/ParkScene.tsx) keeps the ground
+  still; a drag only nudges the sky and hills a few points. The art is static vector drawing
+  (`src/components/park/art/`) and all motion runs on the UI thread from one clock (Reanimated). Untended objects shimmer ([untendedToday](src/domain/park/tending.ts)).
   No tab bar: [ParkDrawer](src/components/park/ParkDrawer.tsx) holds today's log rows, the note,
   `ChangesView` and `MeView`. A short [ParkTour](src/components/park/ParkTour.tsx) runs once
   (`settingsStore.parkTourSeen`).

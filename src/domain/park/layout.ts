@@ -1,7 +1,7 @@
 /**
- * Where everything sits in the park. Pure: screen size in, world size and object rects out.
- * The park is a panorama 2.2 screens wide that pans horizontally; the same rects place the
- * drawings and the tappable hotspots, so what you see is exactly what you can tap.
+ * Single-screen diorama layout. Pure: screen size in, world size and object rects out.
+ * The hero tree stands towards the left corner, with the path and river winding down from the
+ * hill; everything else frames it cleanly with room at the bottom for the 56pt drawer peek.
  */
 export type ParkObject = 'river' | 'tree' | 'flowerbed' | 'hammock' | 'path';
 
@@ -16,38 +16,36 @@ export interface ParkLayout {
   worldW: number;
   worldH: number;
   objects: Record<ParkObject, Rect>;
-  /** Scroll offset the park opens at: the tree and the river in view. */
   startX: number;
 }
 
-/** How far each layer moves for one point of foreground scroll (far layers move least). */
-export const PARALLAX = { sky: 0.15, far: 0.35, mid: 0.6, world: 1 } as const;
+/** Max horizontal parallax offset (in points) when dragging the scene. */
+export const PARALLAX = { sky: 6, far: 12, mid: 20, world: 0 } as const;
 
-const WORLD_SCREENS = 2.2;
-const MIN_TARGET = 44;
+const MIN_TARGET = 48;
+const BOTTOM_RESERVE = 76; // 56pt drawer peek + breathing room
 
-/**
- * Centre (fractions of world width / height) and size (fractions of screen width / height),
- * matched to the painted ground (assets/park/ground.png): the river and footpath are where the
- * painting has them; the tree, flowerbed and hammock stand on its open grass.
- */
 const PLACES: Record<ParkObject, { cx: number; cy: number; w: number; h: number }> = {
-  flowerbed: { cx: 0.12, cy: 0.8, w: 0.28, h: 0.08 },
-  tree: { cx: 0.16, cy: 0.41, w: 0.28, h: 0.22 },
-  river: { cx: 0.4, cy: 0.7, w: 0.28, h: 0.12 },
-  path: { cx: 0.73, cy: 0.64, w: 0.28, h: 0.1 },
-  hammock: { cx: 0.84, cy: 0.42, w: 0.3, h: 0.18 },
+  tree: { cx: 0.3, cy: 0.41, w: 0.44, h: 0.3 },
+  hammock: { cx: 0.86, cy: 0.47, w: 0.24, h: 0.14 },
+  flowerbed: { cx: 0.24, cy: 0.68, w: 0.36, h: 0.11 },
+  river: { cx: 0.78, cy: 0.7, w: 0.34, h: 0.26 },
+  path: { cx: 0.38, cy: 0.8, w: 0.36, h: 0.12 },
 };
 
 export function parkLayout(screenW: number, screenH: number): ParkLayout {
-  const worldW = Math.round(screenW * WORLD_SCREENS);
+  const worldW = screenW;
   const worldH = screenH;
+  const safeH = Math.max(screenH - BOTTOM_RESERVE, screenH * 0.82);
   const objects = {} as Record<ParkObject, Rect>;
+
   for (const [name, p] of Object.entries(PLACES) as [ParkObject, (typeof PLACES)[ParkObject]][]) {
-    const w = Math.min(Math.max(p.w * screenW, MIN_TARGET), 0.3 * screenW);
-    const h = Math.max(p.h * screenH, MIN_TARGET);
-    objects[name] = { x: p.cx * worldW - w / 2, y: p.cy * worldH - h / 2, w, h };
+    const w = Math.max(Math.round(p.w * screenW), MIN_TARGET);
+    const h = Math.max(Math.round(p.h * screenH), MIN_TARGET);
+    const rawY = Math.round(p.cy * screenH - h / 2);
+    const y = Math.min(rawY, safeH - h);
+    objects[name] = { x: Math.round(p.cx * screenW - w / 2), y, w, h };
   }
-  const startX = Math.min(Math.max(0.1 * worldW, 0), worldW - screenW);
-  return { worldW, worldH, objects, startX };
+
+  return { worldW, worldH, objects, startX: 0 };
 }

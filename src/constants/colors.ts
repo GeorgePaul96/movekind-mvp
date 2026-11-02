@@ -132,8 +132,8 @@ export const elevation = {
 type ParkLight = 'dawn' | 'day' | 'dusk' | 'night' | 'rain';
 
 /**
- * The full-screen park (src/components/park). Decorative only, like `gardenColors`: no text sits
- * on these. Matches the Gemini concept art in design/park: layered hills, mist, four lights.
+ * The full-screen cartoon park (src/components/park). Decorative only, like `gardenColors`.
+ * Tuned for a bright, friendly vector world with bold hero outlines (`outline`) and soft ground shadows (`shadow`).
  */
 export const parkColors: {
   sky: Record<ParkLight, { top: string; low: string }>;
@@ -147,7 +147,7 @@ export const parkColors: {
   soil: Record<ParkLight, string>;
   stone: Record<ParkLight, string>;
   hammock: { cloth: string; stripe: string };
-  /** Washes the daytime painting toward each light (day needs none). */
+  /** Washes the daytime scene toward each light (day needs none). */
   tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
   sun: { dawn: string; day: string; dusk: string };
@@ -157,53 +157,57 @@ export const parkColors: {
   shimmer: string;
   cloud: string;
   mistTint: string;
+  outline: string;
+  shadow: string;
 } = {
   sky: {
-    dawn: { top: '#C9B5DE', low: '#FBD9C4' },
-    day: { top: '#9FD6CB', low: '#E2F3EA' },
-    dusk: { top: '#5E5A84', low: '#F2A06A' },
-    night: { top: '#16233B', low: '#2B3E57' },
-    rain: { top: '#B4C3BE', low: '#DCE5E1' },
+    dawn: { top: '#B6D0F7', low: '#FFE4D6' },
+    day: { top: '#89CFF8', low: '#DCF2FF' },
+    dusk: { top: '#6D68A8', low: '#F7B08A' },
+    night: { top: '#142038', low: '#263B5E' },
+    rain: { top: '#A8BFC9', low: '#DAE6EC' },
   },
-  far: { dawn: '#B9C4BA', day: '#A3CDB9', dusk: '#8E8A80', night: '#2E4552', rain: '#AABAB3' },
-  mid: { dawn: '#97B2A0', day: '#83BA9D', dusk: '#6E7563', night: '#24394A', rain: '#91A79D' },
+  far: { dawn: '#8FD694', day: '#7ED987', dusk: '#689E70', night: '#264D3E', rain: '#84B593' },
+  mid: { dawn: '#6CC476', day: '#59C768', dusk: '#528B5A', night: '#1F4033', rain: '#6BA07B' },
   ground: {
-    dawn: { back: '#86AC93', front: '#73A086', fore: '#5F8E73' },
-    day: { back: '#74AE8A', front: '#5F9F78', fore: '#4E8C68' },
-    dusk: { back: '#64735A', front: '#596A50', fore: '#4C5D45' },
-    night: { back: '#2F4A45', front: '#2A443F', fore: '#223A35' },
-    rain: { back: '#76A288', front: '#668F78', fore: '#577F69' },
+    dawn: { back: '#63C16D', front: '#4FB45B', fore: '#3E9C4A' },
+    day: { back: '#62C96B', front: '#4DB857', fore: '#399E43' },
+    dusk: { back: '#509658', front: '#42824A', fore: '#346B3B' },
+    night: { back: '#244A3B', front: '#1E3F32', fore: '#173328' },
+    rain: { back: '#58AD68', front: '#479956', fore: '#388246' },
   },
-  path: { dawn: '#AFC9AC', day: '#A4D0A9', dusk: '#8F9472', night: '#3E5B52', rain: '#98B79E' },
+  path: { dawn: '#EDE2C8', day: '#F5EBD4', dusk: '#C9BFA8', night: '#4A5752', rain: '#D1CABB' },
   river: {
-    dawn: { water: '#B9C8DE', flow: '#E8EEF6' },
-    day: { water: '#9FD3E6', flow: '#E3F4FA' },
-    dusk: { water: '#8F9DBE', flow: '#E9D6E3' },
-    night: { water: '#4C6E8C', flow: '#8FAECB' },
-    rain: { water: '#93B4C2', flow: '#D1E0E6' },
+    dawn: { water: '#7CC6F2', flow: '#E6F5FF' },
+    day: { water: '#58BDF6', flow: '#E3F6FF' },
+    dusk: { water: '#6A9BC7', flow: '#DCEBFA' },
+    night: { water: '#345E85', flow: '#7AA6CC' },
+    rain: { water: '#6CA9CC', flow: '#D6EBF7' },
   },
   foliage: {
-    dawn: { shade: '#4D8A6A', leaf: '#6CAE88', light: '#A3D2B2' },
-    day: { shade: '#3F8F66', leaf: '#5FB585', light: '#8ED3A8' },
-    dusk: { shade: '#4A6B4C', leaf: '#62845C', light: '#89A47A' },
-    night: { shade: '#1F3A35', leaf: '#2C4E46', light: '#3E6658' },
-    rain: { shade: '#457F63', leaf: '#62A07F', light: '#8DC0A2' },
+    dawn: { shade: '#2E9448', leaf: '#48B862', light: '#7CE08F' },
+    day: { shade: '#279B43', leaf: '#44C45E', light: '#7AE88F' },
+    dusk: { shade: '#2B753D', leaf: '#3E9452', light: '#66B878' },
+    night: { shade: '#16382B', leaf: '#214F3D', light: '#326B54' },
+    rain: { shade: '#2D8547', leaf: '#44A660', light: '#6EC786' },
   },
-  soil: { dawn: '#8A6D58', day: '#8B6A4F', dusk: '#6E5444', night: '#3A3330', rain: '#7A6252' },
-  stone: { dawn: '#D9D2C6', day: '#E2DBCD', dusk: '#B7AC9C', night: '#5A5E5E', rain: '#C9C6BE' },
-  hammock: { cloth: '#F1D9A6', stripe: '#E2A86B' },
+  soil: { dawn: '#8A624A', day: '#91674C', dusk: '#6E4E3A', night: '#382B24', rain: '#75533E' },
+  stone: { dawn: '#E3DDD3', day: '#ECE6DC', dusk: '#BDB5A8', night: '#575C5C', rain: '#C7C3BA' },
+  hammock: { cloth: '#FFE299', stripe: '#FF8A65' },
   tint: {
-    dawn: { color: '#F2B39A', opacity: 0.16 },
-    dusk: { color: '#6E4F86', opacity: 0.3 },
-    night: { color: '#0D1A2E', opacity: 0.62 },
-    rain: { color: '#7E949C', opacity: 0.3 },
+    dawn: { color: '#FFA882', opacity: 0.12 },
+    dusk: { color: '#5E3D7A', opacity: 0.22 },
+    night: { color: '#0A1526', opacity: 0.45 },
+    rain: { color: '#6E8894', opacity: 0.22 },
   },
-  mist: { dawn: 0.45, day: 0.35, dusk: 0.3, night: 0.14, rain: 0.5 },
-  sun: { dawn: '#FFE3B0', day: '#FFF1BF', dusk: '#FFC77A' },
-  moon: '#F6E7B5',
-  star: '#F4F1E8',
-  firefly: '#F5E58A',
+  mist: { dawn: 0.3, day: 0.2, dusk: 0.25, night: 0.12, rain: 0.4 },
+  sun: { dawn: '#FFE082', day: '#FFF0A8', dusk: '#FFB76B' },
+  moon: '#FFF0B8',
+  star: '#FFFDF5',
+  firefly: '#FFE875',
   shimmer: '#FFFFFF',
   cloud: '#FFFFFF',
   mistTint: '#FFFFFF',
+  outline: '#231F20',
+  shadow: 'rgba(24, 52, 34, 0.18)',
 };

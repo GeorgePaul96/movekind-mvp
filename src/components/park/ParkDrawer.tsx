@@ -1,5 +1,16 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { Button } from '@/components/Button';
 import { Icon, type IconName } from '@/components/Icon';
 import { colors, elevation } from '@/constants/colors';
@@ -12,7 +23,6 @@ import type { ParkObject } from '@/domain/park/layout';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { useGardenStore } from '@/store/gardenStore';
 import ChangesView from '@/screens/main/ChangesView';
-import { useLoop } from '@/components/park/Motion';
 import MeView from '@/screens/main/MeView';
 
 const PEEK = 56;
@@ -26,7 +36,14 @@ interface Props {
   onEditWorkout: (w: Workout) => void;
 }
 
-function Row({ icon, title, value, action, onPress, primary }: {
+function Row({
+  icon,
+  title,
+  value,
+  action,
+  onPress,
+  primary,
+}: {
   icon: IconName;
   title: string;
   value: string;
@@ -57,10 +74,81 @@ function Row({ icon, title, value, action, onPress, primary }: {
 export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: Props) {
   const reduce = useReduceMotion();
   const [open, setOpen] = useState(false);
+  const openRef = useRef(open);
+  openRef.current = open;
   const closedY = height - PEEK - bottomInset;
   const openY = Math.round(height * 0.1);
-  const y = useRef(new Animated.Value(closedY)).current;
-  const bob = useLoop(1800, !open); // the closed arrow bounces softly: "pull me up"
+
+  const translateY = useSharedValue(closedY);
+  const startY = useSharedValue(closedY);
+  const bob = useSharedValue(0);
+
+  // Only a change of screen size repositions the drawer directly; open and close run the spring.
+  useEffect(() => {
+    translateY.value = openRef.current ? openY : closedY;
+  }, [closedY, openY, translateY]);
+
+  useEffect(() => {
+    if (reduce || open) {
+      bob.value = 0;
+      return;
+    }
+    bob.value = withRepeat(
+      withSequence(
+        withTiming(-7, { duration: 900, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: 900, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      false,
+    );
+  }, [bob, open, reduce]);
+
+  const snapTo = (nextOpen: boolean, velocityY = 0) => {
+    const target = nextOpen ? openY : closedY;
+    // Opening shows the panel at once; closing keeps it until it has slid away.
+    if (nextOpen) setOpen(true);
+    if (reduce) {
+      translateY.value = target;
+      setOpen(nextOpen);
+    } else {
+      translateY.value = withSpring(
+        target,
+        { damping: 22, stiffness: 210, velocity: velocityY },
+        (finished) => {
+          if (finished && !nextOpen) runOnJS(setOpen)(false);
+        },
+      );
+    }
+  };
+
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetY([-10, 10])
+        .failOffsetX([-15, 15])
+        .onStart(() => {
+          startY.value = translateY.value;
+          if (!open) runOnJS(setOpen)(true);
+        })
+        .onUpdate((e) => {
+          const next = startY.value + e.translationY;
+          translateY.value = Math.max(openY, Math.min(closedY, next));
+        })
+        .onEnd((e) => {
+          const mid = (openY + closedY) / 2;
+          const shouldOpen = e.velocityY < -400 || (e.velocityY <= 400 && translateY.value < mid);
+          runOnJS(snapTo)(shouldOpen, e.velocityY);
+        }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [closedY, open, openY, reduce],
+  );
+
+  const drawerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bob.value }],
+  }));
 
   const checkIns = useGardenStore((s) => s.checkIns);
   const water = useGardenStore((s) => s.water);
@@ -82,46 +170,22 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
     new Date(),
   )[0]?.text;
 
-  const moveTo = (next: boolean) => {
-    const toValue = next ? openY : closedY;
-    // Opening shows the panel at once; closing keeps it until it has slid away.
-    if (next) setOpen(true);
-    if (reduce) {
-      y.setValue(toValue);
-      setOpen(next);
-    } else {
-      Animated.spring(y, { toValue, useNativeDriver: true, damping: 22, stiffness: 180 }).start(() => setOpen(next));
-    }
-  };
-
-  const pan = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 12 && Math.abs(g.dy) > Math.abs(g.dx),
-        onPanResponderRelease: (_, g) => {
-          if (g.dy < -40) moveTo(true);
-          else if (g.dy > 40) moveTo(false);
-        },
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [closedY, openY, reduce],
-  );
-
   return (
     <Animated.View
-      style={[styles.drawer, open && styles.panel, { height: height - openY, transform: [{ translateY: y }] }]}
-      {...pan.panHandlers}
+      style={[styles.drawer, open && styles.panel, { height: height - openY + bottomInset }, drawerStyle]}
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={open ? DRAWER_COPY.closeLabel : DRAWER_COPY.openLabel}
-        onPress={() => moveTo(!open)}
-        style={styles.peek}
-      >
-        <Animated.View style={{ transform: [{ translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) }] }}>
-          <Icon name={open ? 'chevron-down' : 'chevron-up'} size={40} color={open ? colors.textSecondary : colors.onInverse} />
-        </Animated.View>
-      </Pressable>
+      <GestureDetector gesture={pan}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={open ? DRAWER_COPY.closeLabel : DRAWER_COPY.openLabel}
+          onPress={() => snapTo(!open)}
+          style={styles.peek}
+        >
+          <Animated.View style={chevronStyle}>
+            <Icon name={open ? 'chevron-down' : 'chevron-up'} size={40} color={open ? colors.textSecondary : colors.onInverse} />
+          </Animated.View>
+        </Pressable>
+      </GestureDetector>
 
       {open && (
         <ScrollView contentContainerStyle={{ paddingBottom: 40 + bottomInset }}>
@@ -155,35 +219,14 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
 }
 
 const styles = StyleSheet.create({
-  drawer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    paddingHorizontal: 20,
-  },
-  panel: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    ...elevation.raised,
-  },
-  peek: { height: PEEK, alignSelf: 'center', minWidth: 88, alignItems: 'center', justifyContent: 'center' },
+  drawer: { position: 'absolute', left: 0, right: 0, top: 0, paddingHorizontal: 20, backgroundColor: 'transparent' },
+  panel: { backgroundColor: colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, ...elevation.raised },
+  peek: { height: PEEK, alignSelf: 'center', minWidth: 120, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: { ...font.bold, fontSize: 20, color: colors.textPrimary, marginTop: 18, marginBottom: 10 },
-  note: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.inverse, borderRadius: 20, padding: 14, marginBottom: 10 },
+  note: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.inverse, borderRadius: 24, padding: 14, marginBottom: 10 },
   noteText: { ...font.medium, flex: 1, fontSize: 15, lineHeight: 22, color: colors.onInverse },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.ring,
-    borderRadius: 20,
-    padding: 12,
-    marginBottom: 8,
-  },
-  rowIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 24, padding: 14, marginBottom: 10, ...elevation.card },
+  rowIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { ...font.bold, fontSize: 16, color: colors.textPrimary },
   rowValue: { ...font.regular, fontSize: 14, color: colors.textSecondary },
   rowAction: { minWidth: 120 },

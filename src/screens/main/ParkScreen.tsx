@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ParkScene, type ParkScrollHandle } from '@/components/park/ParkScene';
 import { ParkDrawer } from '@/components/park/ParkDrawer';
@@ -9,7 +10,7 @@ import { WaterSheet } from '@/components/park/sheets/WaterSheet';
 import { MoodSheet } from '@/components/park/sheets/MoodSheet';
 import { StepsSheet } from '@/components/park/sheets/StepsSheet';
 import { WorkoutSheet } from '@/components/garden/WorkoutSheet';
-import { colors } from '@/constants/colors';
+import { colors, parkColors } from '@/constants/colors';
 import { PARK_COPY, SLEEP_SOON_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { gardenState } from '@/domain/garden/garden';
@@ -33,16 +34,20 @@ function partOfDay(d: Date): string {
 
 /** Home: the full-screen park. Tap an object to tend it; pull up the drawer for everything else. */
 export default function ParkScreen() {
-  const { width, height } = useWindowDimensions();
+  const win = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reduce = useReduceMotion();
   const scrollRef = useRef<ParkScrollHandle | null>(null);
-  const greeting = useRef(new Animated.Value(1)).current;
+  const greetingOpacity = useSharedValue(1);
   const [showGreeting, setShowGreeting] = useState(true);
   const [openSheet, setOpenSheet] = useState<ParkObject | null>(null);
   const [editing, setEditing] = useState<Workout | null>(null);
   const tourSeen = useSettingsStore((s) => s.parkTourSeen);
   const [touring, setTouring] = useState(!tourSeen);
+
+  // Full physical height including bottom inset so no white bar can ever show under Android navigation
+  const sceneW = win.width;
+  const sceneH = win.height + insets.bottom;
 
   const name = useProfileStore((s) => s.profile?.name ?? null);
   const checkIns = useGardenStore((s) => s.checkIns);
@@ -67,14 +72,22 @@ export default function ParkScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (reduce) setShowGreeting(false);
-      else Animated.timing(greeting, { toValue: 0, duration: 1200, useNativeDriver: true }).start(() => setShowGreeting(false));
+      else {
+        greetingOpacity.value = withTiming(0, { duration: 900 }, (done) => {
+          if (done) runOnJS(setShowGreeting)(false);
+        });
+      }
     }, GREETING_MS);
     return () => clearTimeout(timer);
-  }, [reduce, greeting]);
+  }, [greetingOpacity, reduce]);
+
+  const greetingStyle = useAnimatedStyle(() => ({ opacity: greetingOpacity.value }));
 
   const now = new Date();
   const input = { checkIns, water, workouts, stepsToday };
   const state = gardenState(input, now);
+  const phase = skyPhase(now);
+  const light = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
   const allMinutes = workouts.reduce((m, w) => m + w.minutes, 0);
   const close = () => {
     setOpenSheet(null);
@@ -82,34 +95,43 @@ export default function ParkScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: parkColors.ground[light].front }]}>
       <ParkScene
         state={state}
-        phase={skyPhase(now)}
+        phase={phase}
         untended={untendedToday(input, now)}
+        logged={workouts.length}
         onObject={setOpenSheet}
-        width={width}
-        height={height}
+        width={sceneW}
+        height={sceneH}
         scrollRef={scrollRef}
       />
 
       {showGreeting && (
-        <Animated.View pointerEvents="none" style={[styles.greeting, { top: insets.top + 16, opacity: greeting }]}>
-          <Text style={styles.greetingText}>{PARK_COPY.greeting(partOfDay(now), name)}</Text>
+        <Animated.View pointerEvents="none" style={[styles.greeting, { top: insets.top + 24 }, greetingStyle]}>
+          <Text
+            style={[
+              styles.greetingText,
+              { color: light === 'night' || light === 'dusk' ? colors.onInverse : colors.textPrimary },
+            ]}
+          >
+            {PARK_COPY.greeting(partOfDay(now), name)}
+          </Text>
         </Animated.View>
       )}
 
       {touring && (
         <ParkTour
-          layout={parkLayout(width, height)}
-          screenW={width}
+          layout={parkLayout(sceneW, win.height)}
+          screenW={sceneW}
           scrollTo={(x) => scrollRef.current?.scrollTo({ x, y: 0, animated: !reduce })}
+          focusObject={(o) => scrollRef.current?.focusObject?.(o)}
           onDone={() => setTouring(false)}
         />
       )}
 
       <ParkDrawer
-        height={height}
+        height={win.height}
         bottomInset={insets.bottom}
         onOpenSheet={setOpenSheet}
         onEditWorkout={(w) => {
@@ -139,17 +161,13 @@ export default function ParkScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  greeting: { position: 'absolute', left: 20, right: 20, alignItems: 'center' },
+  root: { flex: 1 },
+  greeting: { position: 'absolute', left: 24, right: 24, alignItems: 'center' },
   greetingText: {
-    ...font.bold,
-    fontSize: 22,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
-    borderRadius: 999,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    overflow: 'hidden',
+    ...font.extrabold,
+    fontSize: 28,
+    lineHeight: 34,
+    textAlign: 'center',
   },
   soon: { ...font.regular, fontSize: 15, lineHeight: 22, color: colors.textSecondary, marginVertical: 12 },
 });
