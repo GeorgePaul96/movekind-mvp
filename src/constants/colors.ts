@@ -150,10 +150,13 @@ export const parkColors: {
   /** The rocks at the river's spring: darker than `stone`, so they can't read as a cloud. */
   rock: Record<ParkLight, { base: string; light: string }>;
   hammock: { cloth: string; stripe: string };
-  fawn: { body: string; under: string; antler: string; spot: string; nose: string };
+  /** `far` is the two legs on the far side, a shade darker so the fawn reads as standing on four. */
+  fawn: { body: string; far: string; under: string; antler: string; spot: string; nose: string };
   rabbit: { body: string; earInner: string; nose: string };
   /** Pip, the honey-coloured seed who lives in the park. */
   pip: { body: string; shine: string; feet: string; cheek: string };
+  /** Rosy cheeks on the park's creatures. */
+  blush: string;
   /** Washes the daytime scene toward each light (day needs none). */
   tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
@@ -211,6 +214,7 @@ export const parkColors: {
   hammock: { cloth: '#FFE299', stripe: '#FF8A65' },
   fawn: {
     body: '#F08A35',
+    far: '#C9692A',
     under: '#FFF1E0',
     antler: '#8A4A28',
     spot: '#FFFFFF',
@@ -222,6 +226,7 @@ export const parkColors: {
     nose: '#EE7A63',
   },
   pip: { body: '#FFD89A', shine: '#FFF1D6', feet: '#E8B96A', cheek: '#F6A9B4' },
+  blush: '#F6A9B4',
   tint: {
     dawn: { color: '#FFA882', opacity: 0.12 },
     dusk: { color: '#5E3D7A', opacity: 0.22 },
