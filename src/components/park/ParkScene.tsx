@@ -12,11 +12,15 @@ import { PARK_COPY } from '@/constants/copy';
 import type { GardenState } from '@/domain/garden/garden';
 import type { SkyPhase } from '@/domain/garden/sky';
 import { PARALLAX, parkLayout, type ParkObject } from '@/domain/park/layout';
+import { pipMood, pipNotices } from '@/domain/park/pip';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { CloudsLayer, HillLayer, RainLayer, SkyLayer, type ParkLight } from './ParkLayers';
 import { ParkWorld } from './ParkWorld';
 import { Hotspot } from './Hotspot';
 import { useParkClock } from './Motion';
+import { Pip } from './Pip';
+
+const CHEER_MS = 2600;
 
 export interface ParkScrollHandle {
   scrollTo(options: { x: number; y?: number; animated?: boolean }): void;
@@ -58,6 +62,20 @@ export function ParkScene({ state, phase, untended, logged, watered, onObject, w
   useEffect(() => {
     fade.value = reduce ? 1 : withTiming(1, { duration: 400 });
   }, [fade, reduce]);
+
+  // Pip cheers for a moment whenever anything new is logged.
+  const growth = (logged ?? 0) + (watered ?? 0) + state.flowers.length;
+  const lastGrowth = React.useRef(growth);
+  const [cheering, setCheering] = useState(false);
+  useEffect(() => {
+    const grew = growth > lastGrowth.current;
+    lastGrowth.current = growth;
+    if (!grew) return;
+    setCheering(true);
+    const t = setTimeout(() => setCheering(false), CHEER_MS);
+    return () => clearTimeout(t);
+  }, [growth]);
+  const night = light === 'night';
 
   useImperativeHandle(scrollRef, () => ({
     scrollTo: () => {},
@@ -140,6 +158,13 @@ export function ParkScene({ state, phase, untended, logged, watered, onObject, w
               onPress={onObject}
             />
           ))}
+          <Pip
+            clock={clock}
+            layout={layout}
+            light={light}
+            mood={pipMood(state, night, cheering)}
+            notices={pipNotices(state, untended, night)}
+          />
         </View>
 
         {state.weather === 'rain' && <RainLayer clock={clock} width={width} height={height} />}

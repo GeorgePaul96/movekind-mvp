@@ -152,6 +152,8 @@ export const parkColors: {
   hammock: { cloth: string; stripe: string };
   fawn: { body: string; under: string; antler: string; spot: string; nose: string };
   rabbit: { body: string; earInner: string; nose: string };
+  /** Pip, the honey-coloured seed who lives in the park. */
+  pip: { body: string; shine: string; feet: string; cheek: string };
   /** Washes the daytime scene toward each light (day needs none). */
   tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
@@ -219,6 +221,7 @@ export const parkColors: {
     earInner: '#F6C1C9',
     nose: '#EE7A63',
   },
+  pip: { body: '#FFD89A', shine: '#FFF1D6', feet: '#E8B96A', cheek: '#F6A9B4' },
   tint: {
     dawn: { color: '#FFA882', opacity: 0.12 },
     dusk: { color: '#5E3D7A', opacity: 0.22 },

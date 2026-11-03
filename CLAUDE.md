@@ -75,6 +75,9 @@ Verify changes with `npm run typecheck` and `npm test`.
   drawing and the tap targets share it). [ParkScene](src/components/park/ParkScene.tsx) keeps the ground
   still; a drag only nudges the sky and hills a few points. The art is static vector drawing
   (`src/components/park/art/`) and all motion runs on the UI thread from one clock (Reanimated). Untended objects shimmer ([untendedToday](src/domain/park/tending.ts)).
+  **Pip**, a honey seed by the tree, is the park's character ([pip.ts](src/domain/park/pip.ts)): napping at night or
+  when resting, a leaf umbrella in rain, a hop after any log. A tap shows one line (`PIP_COPY`) about what is
+  there; Pip never asks for anything or names what didn't happen.
   No tab bar: [ParkDrawer](src/components/park/ParkDrawer.tsx) holds today's log rows, the note,
   `ChangesView` and `MeView`. A short [ParkTour](src/components/park/ParkTour.tsx) runs once
   (`settingsStore.parkTourSeen`).

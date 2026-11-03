@@ -285,6 +285,24 @@ export const PARK_COPY = {
   sceneLabel: 'Your park.',
 } as const;
 
+/** Pip, the seed who lives in the park. Pip only mentions what is there, and never asks for anything. */
+export const PIP_COPY = {
+  label: 'Pip',
+  hint: 'Pip tells you something it noticed in your park.',
+  lines: {
+    hello: 'Hello! I like it here with you.',
+    riverFull: 'The river is full and sparkly today.',
+    riverAwake: 'I can hear the river trickling along.',
+    treeGrowing: 'The tree feels a little taller. I checked.',
+    birds: 'The birds have settled into the tree.',
+    flowerToday: 'A new flower today. It suits you.',
+    grassTall: 'The grass is soft and tall. Good for sitting.',
+    calm: 'I am just here, enjoying the shade.',
+    rainy: 'I have a leaf. We can wait out the rain together.',
+    sleepy: 'Zzz. The park is resting. Nothing is lost.',
+  },
+} as const;
+
 /** The river's water sheet. One drop per glass; there is never an "out of". */
 export const WATER_COPY = {
   title: 'Water',

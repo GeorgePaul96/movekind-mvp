@@ -59,6 +59,7 @@ Park: [park/ParkScene](src/components/park/ParkScene.tsx) (one-screen scene, sma
 [park/ParkWorld](src/components/park/ParkWorld.tsx) (static foreground: river, tree, flowerbed, path, hammock) ·
 [park/ParkTree](src/components/park/ParkTree.tsx) (growth stages; canopy sways, trunk stays planted) · [domain/park/shapes](src/domain/park/shapes.ts) (river and footpath courses) ·
 [park/Motion](src/components/park/Motion.tsx) (the shared clock, sway, the pop when something is logged) · [park/Creatures](src/components/park/Creatures.tsx) (the rabbit hopping on the meadow, the fawn drinking at the river, butterflies, the bobbing duck) ·
+[park/Pip](src/components/park/Pip.tsx) (Pip, the seed by the tree: breathes, hops when something is logged, says what it noticed on tap) · [domain/park/pip](src/domain/park/pip.ts) (Pip's mood, lines and spot; pure) ·
 Park art: flat vector components in `src/components/park/art/` (tree stages, flowerbed and tulips, hammock, duck, robins, butterfly, rabbit, fawn). Other lights use `parkColors` per light plus one tint (`parkColors.tint`).
 [park/Hotspot](src/components/park/Hotspot.tsx) (accessible tap target + shimmer) ·
 [park/ParkDrawer](src/components/park/ParkDrawer.tsx) (pull-up: today, note, Changes, Me) ·

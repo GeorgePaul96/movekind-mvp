@@ -2,7 +2,7 @@ import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { GardenState } from '../src/domain/garden/garden';
 import type { ParkObject } from '../src/domain/park/layout';
-import { PARK_COPY } from '../src/constants/copy';
+import { PARK_COPY, PIP_COPY } from '../src/constants/copy';
 
 let mockReducedMotion = false;
 jest.mock('../src/hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReducedMotion }));
@@ -65,6 +65,29 @@ describe('<ParkScene />', () => {
     expect(scene({ phase: 'day' }).queryAllByTestId('moon')).toHaveLength(0);
     expect(scene({ phase: 'day' }).queryAllByTestId('sky-art')).toHaveLength(1);
     expect(scene({ phase: 'night' }).queryAllByTestId('sky-art')).toHaveLength(0);
+  });
+
+  it('Pip is a labelled button that says something it noticed, then goes quiet', () => {
+    const { getByRole, getByTestId, queryByTestId, getByText } = scene();
+    expect(getByTestId('pip-happy')).toBeTruthy();
+    fireEvent.press(getByRole('button', { name: PIP_COPY.label }));
+    expect(getByText(PIP_COPY.lines.hello)).toBeTruthy();
+    fireEvent.press(getByRole('button', { name: PIP_COPY.label }));
+    expect(getByText(PIP_COPY.lines.riverAwake)).toBeTruthy();
+    act(() => jest.advanceTimersByTime(5000));
+    expect(queryByTestId('pip-says')).toBeNull();
+  });
+
+  it('Pip naps at night, holds a leaf in the rain, and cheers when something is logged', () => {
+    expect(scene({ phase: 'night' }).getByTestId('pip-sleepy')).toBeTruthy();
+    expect(scene({ state: { ...base, weather: 'rain' } }).getByTestId('pip-rainy')).toBeTruthy();
+    const view = scene({ logged: 1 });
+    view.rerender(
+      <ParkScene state={base} phase="day" untended={new Set()} onObject={() => {}} width={390} height={844} logged={2} />,
+    );
+    expect(view.getByTestId('pip-cheer')).toBeTruthy();
+    act(() => jest.advanceTimersByTime(3000));
+    expect(view.getByTestId('pip-happy')).toBeTruthy();
   });
 
   it('the park is one screen wide, so the ground never slides', () => {
