@@ -89,7 +89,7 @@ export default function ParkScreen() {
   const phase = skyPhase(now);
   const light = state.resting || phase === 'night' ? 'night' : state.weather === 'rain' ? 'rain' : phase;
   const allMinutes = workouts.reduce((m, w) => m + w.minutes, 0);
-  // The water sheet covers the crane, so its thank-you waits until the sheet is closing.
+  // The water sheet covers the fawn, so its thank-you waits until the sheet is closing.
   const wateredShown = useRef(water.length);
   if (openSheet !== 'river') wateredShown.current = water.length;
   const close = () => {

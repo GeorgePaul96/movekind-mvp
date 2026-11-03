@@ -6,12 +6,13 @@ import { parkColors as p } from '@/constants/colors';
 import type { GardenState } from '@/domain/garden/garden';
 import type { ParkLayout } from '@/domain/park/layout';
 import {
-  craneSpot,
+  fawnSpot,
   grassTufts,
   parkCourses,
   pathWidthAt,
   type Pt,
   ribbonPath,
+  rabbitSpot,
   riverWidthAt,
   smoothPath,
 } from '@/domain/park/shapes';
@@ -19,7 +20,7 @@ import { useReduceMotion } from '@/hooks/useReduceMotion';
 import type { ParkLight } from './ParkLayers';
 import { ParkTree } from './ParkTree';
 import { SwayWrap, usePopOnChange } from './Motion';
-import { Bob, Butterflies, Cat, Crane } from './Creatures';
+import { Bob, Butterflies, Fawn, Rabbit } from './Creatures';
 import { BedBaseArt, TulipArt } from './art/FlowerbedArt';
 import { HammockArt } from './art/HammockArt';
 import { DuckArt } from './art/CrittersArt';
@@ -35,7 +36,7 @@ interface Props {
   untended?: Set<string>;
   /** Workouts logged so far: each new one makes the tree pop. */
   logged?: number;
-  /** Glasses of water logged so far: each new one makes the crane drink and stretch. */
+  /** Glasses of water logged so far: each new one makes the fawn drink and stretch. */
   watered?: number;
 }
 
@@ -172,7 +173,7 @@ export function ParkWorld({ clock, layout, state, light, untended = new Set(), l
   // Glints start slightly downstream of the spring rocks so they stay well inside the narrow channel
   const glintD = useMemo(() => smoothPath(courses.river.slice(1)), [courses]);
   const tufts = useMemo(() => grassTufts(layout, courses), [layout, courses]);
-  const spots = useMemo(() => craneSpot(layout, courses), [layout, courses]);
+  const spots = useMemo(() => fawnSpot(layout, courses), [layout, courses]);
   const night = light === 'night';
 
   const tree = objects.tree;
@@ -218,7 +219,7 @@ export function ParkWorld({ clock, layout, state, light, untended = new Set(), l
         </Bob>
       )}
 
-      <Crane
+      <Fawn
         clock={clock}
         feet={spots.feet}
         cue={riverCue}
@@ -273,7 +274,7 @@ export function ParkWorld({ clock, layout, state, light, untended = new Set(), l
         {untended.has('flowerbed') && <Butterflies clock={clock} cx={bedX + bedW / 2} cy={bedY + bedH * 0.35} spread={bedW} />}
       </Animated.View>
 
-      <Cat clock={clock} path={courses.walkway} worldH={H} asleep={night || state.resting} />
+      <Rabbit clock={clock} {...rabbitSpot(layout)} asleep={night || state.resting} />
 
       {tint && (
         <View

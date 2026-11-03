@@ -150,7 +150,8 @@ export const parkColors: {
   /** The rocks at the river's spring: darker than `stone`, so they can't read as a cloud. */
   rock: Record<ParkLight, { base: string; light: string }>;
   hammock: { cloth: string; stripe: string };
-  crane: { body: string; shade: string; plume: string; crown: string; leg: string };
+  fawn: { body: string; under: string; antler: string; spot: string; nose: string };
+  rabbit: { body: string; earInner: string; nose: string };
   /** Washes the daytime scene toward each light (day needs none). */
   tint: Record<Exclude<ParkLight, 'day'>, { color: string; opacity: number }>;
   mist: Record<ParkLight, number>;
@@ -206,12 +207,17 @@ export const parkColors: {
     rain: { base: '#8E8F87', light: '#ABACA3' },
   },
   hammock: { cloth: '#FFE299', stripe: '#FF8A65' },
-  crane: {
-    body: '#F8FAF7',
-    shade: '#DCE4DD',
-    plume: '#333B38',
-    crown: '#E55A4A',
-    leg: '#5E5346',
+  fawn: {
+    body: '#F08A35',
+    under: '#FFF1E0',
+    antler: '#8A4A28',
+    spot: '#FFFFFF',
+    nose: '#4A2818',
+  },
+  rabbit: {
+    body: '#ECEFF4',
+    earInner: '#F6C1C9',
+    nose: '#EE7A63',
   },
   tint: {
     dawn: { color: '#FFA882', opacity: 0.12 },

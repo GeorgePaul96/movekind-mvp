@@ -131,23 +131,23 @@ export function grassTufts(layout: ParkLayout, courses: ParkCourses = parkCourse
   });
 }
 
-/** The crane's box, as a share of the screen's width. */
-const CRANE_SIZE = 0.22;
-/** Where the beak tip lands at the bottom of a drink, from the feet, as a share of the crane's size. */
-export const CRANE_BEAK_DIP: Pt = [-0.574, -0.326];
+/** The fawn's box, as a share of the screen's width. */
+const FAWN_SIZE = 0.22;
+/** Where the nose lands at the bottom of a drink, from the feet, as a share of the fawn's size. */
+export const FAWN_NOSE_DIP: Pt = [-0.525, -0.336];
 
 /**
- * Computes where the crane stands on the right bank and where its beak dips into the water,
+ * Computes where the fawn stands on the right bank and where its nose dips into the water,
  * derived directly from the river's spline so it fits every screen size.
  */
-export function craneSpot(layout: ParkLayout, courses: ParkCourses = parkCourses(layout)): {
+export function fawnSpot(layout: ParkLayout, courses: ParkCourses = parkCourses(layout)): {
   feet: Pt;
   water: Pt;
   duck: Pt;
   size: number;
 } {
   const { worldW: W, worldH: H } = layout;
-  const size = Math.round(W * CRANE_SIZE);
+  const size = Math.round(W * FAWN_SIZE);
   const spine = sampleSpline(courses.river, 12);
   const targetY = H * 0.745;
   let water = spine[Math.floor(spine.length * 0.55)]!;
@@ -159,8 +159,8 @@ export function craneSpot(layout: ParkLayout, courses: ParkCourses = parkCourses
       water = pt;
     }
   }
-  const feet: Pt = [water[0] - CRANE_BEAK_DIP[0] * size + W * 0.015, water[1] - CRANE_BEAK_DIP[1] * size];
-  // Place the duck on the next bend down so the crane and duck never collide
+  const feet: Pt = [water[0] - FAWN_NOSE_DIP[0] * size + W * 0.015, water[1] - FAWN_NOSE_DIP[1] * size];
+  // Place the duck on the next bend down so the fawn and duck never collide
   const duckY = H * 0.81;
   let duck = courses.river[4]!;
   let minDuckDiff = Infinity;
@@ -173,6 +173,13 @@ export function craneSpot(layout: ParkLayout, courses: ParkCourses = parkCourses
   }
   return { feet, water, duck, size };
 }
+
+/** The rabbit's figure of eight, on the open grass between the path and the river: its middle and reach. */
+export const rabbitSpot = ({ worldW: W, worldH: H }: ParkLayout): { at: Pt; rx: number; ry: number } => ({
+  at: [W * 0.49, H * 0.875],
+  rx: W * 0.08,
+  ry: 12,
+});
 
 const centre = (r: Rect): Pt => [r.x + r.w / 2, r.y + r.h / 2];
 

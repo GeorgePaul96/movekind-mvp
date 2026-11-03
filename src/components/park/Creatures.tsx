@@ -10,67 +10,77 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { Pt } from '@/domain/park/shapes';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
-import { ButterflyArt, CatArt, CraneBodyArt, CraneDropletsArt, CraneNeckArt } from './art/CrittersArt';
+import { ButterflyArt, FawnBodyArt, FawnDropletsArt, FawnNeckArt, RabbitArt } from './art/CrittersArt';
 
-interface CatProps {
+interface RabbitProps {
   clock: SharedValue<number>;
-  path: Pt[];
-  worldH: number;
+  /** The middle of its figure of eight, on open grass. */
+  at: Pt;
+  rx: number;
+  ry: number;
   asleep: boolean;
 }
 
 /**
- * Cartoon tabby cat. At night or when resting it curls up asleep. By day it strolls a short stretch
- * and sits calmly, driven entirely by the shared UI clock without JS timers.
+ * A cream rabbit on the meadow. At night or when resting it curls up asleep. By day it hops an
+ * invisible figure of eight, sits for a while, and blinks every few seconds, driven entirely by the
+ * shared UI clock without JS timers.
  */
-export function Cat({ clock, path, asleep }: CatProps) {
+export function Rabbit({ clock, at, rx, ry, asleep }: RabbitProps) {
   const reduce = useReduceMotion();
-  const anchor = path[2] ?? path[0] ?? [180, 460];
+  const left = at[0] - 24;
+  const top = at[1] - 42;
 
   const moveStyle = useAnimatedStyle(() => {
     if (asleep || reduce) return { transform: [{ translateX: 0 }, { translateY: 0 }] };
-    const cycle = clock.value % 24;
-    const p = cycle > 12 ? 0 : Math.sin((cycle / 12) * Math.PI);
+    const cycle = clock.value % 18;
+    if (cycle > 12) return { transform: [{ translateX: 0 }, { translateY: 0 }, { scaleX: 1 }] };
+    const a = (cycle / 12) * Math.PI * 2;
+    const hop = -Math.abs(Math.sin(a * 3)) * 9;
     return {
-      transform: [{ translateX: p * 16 }, { translateY: p * 10 }, { scaleX: cycle > 6 && cycle <= 12 ? -1 : 1 }],
+      transform: [
+        { translateX: Math.sin(a) * rx },
+        { translateY: Math.sin(a * 2) * ry + hop },
+        { scaleX: Math.cos(a) >= 0 ? 1 : -1 },
+      ],
     };
   });
-  const walkA = useAnimatedStyle(() => ({ opacity: clock.value % 24 <= 12 && clock.value % 0.8 < 0.4 ? 1 : 0 }));
-  const walkB = useAnimatedStyle(() => ({ opacity: clock.value % 24 <= 12 && clock.value % 0.8 >= 0.4 ? 1 : 0 }));
-  const sit = useAnimatedStyle(() => ({ opacity: clock.value % 24 > 12 ? 1 : 0 }));
+  const hopOpen = useAnimatedStyle(() => ({ opacity: clock.value % 18 <= 12 && clock.value % 3.2 >= 0.2 ? 1 : 0 }));
+  const hopShut = useAnimatedStyle(() => ({ opacity: clock.value % 18 <= 12 && clock.value % 3.2 < 0.2 ? 1 : 0 }));
+  const sitOpen = useAnimatedStyle(() => ({ opacity: clock.value % 18 > 12 && clock.value % 3.2 >= 0.2 ? 1 : 0 }));
+  const sitShut = useAnimatedStyle(() => ({ opacity: clock.value % 18 > 12 && clock.value % 3.2 < 0.2 ? 1 : 0 }));
 
   if (asleep || reduce) {
     return (
       <View
-        testID={asleep ? 'cat-sleeping' : 'cat-sitting'}
+        testID={asleep ? 'rabbit-sleeping' : 'rabbit-sitting'}
         pointerEvents="none"
-        style={[styles.abs, { left: anchor[0] - 24, top: anchor[1] - 28 }]}
+        style={[styles.abs, { left, top }]}
       >
-        <CatArt pose={asleep ? 'sleep' : 'sit'} size={48} />
+        <RabbitArt pose={asleep ? 'sleep' : 'sit'} size={48} />
       </View>
     );
   }
 
   return (
-    <Animated.View
-      testID="cat-walking"
-      pointerEvents="none"
-      style={[styles.abs, { left: anchor[0] - 24, top: anchor[1] - 32 }, moveStyle]}
-    >
-      <Animated.View style={walkA}>
-        <CatArt pose="walkA" size={48} />
+    <Animated.View testID="rabbit-hopping" pointerEvents="none" style={[styles.abs, { left, top }, moveStyle]}>
+      <Animated.View style={hopOpen}>
+        <RabbitArt pose="hop" size={48} />
       </Animated.View>
-      <Animated.View style={[styles.abs, walkB]}>
-        <CatArt pose="walkB" size={48} />
+      <Animated.View style={[styles.abs, hopShut]}>
+        <RabbitArt pose="hop" eyesClosed size={48} />
       </Animated.View>
-      <Animated.View style={[styles.abs, sit]}>
-        <CatArt pose="sit" size={48} />
+      <Animated.View style={[styles.abs, sitOpen]}>
+        <RabbitArt pose="sit" size={48} />
+      </Animated.View>
+      <Animated.View style={[styles.abs, sitShut]}>
+        <RabbitArt pose="sit" eyesClosed size={48} />
       </Animated.View>
     </Animated.View>
   );
 }
 
-interface CraneProps {
+interface FawnProps {
   clock: SharedValue<number>;
   feet: Pt;
   cue: boolean;
@@ -80,11 +90,11 @@ interface CraneProps {
 }
 
 /**
- * A wading crane on the right bank of the river. Periodically dips its neck to take two small sips
+ * A fawn on the right bank of the river. Periodically dips its neck to take two small sips
  * from the stream (every 6s when untended, 12s normally), and gives a happy stretch with water
  * droplets whenever a glass of water is logged.
  */
-export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CraneProps) {
+export function Fawn({ clock, feet, cue, asleep, watered, size = 90 }: FawnProps) {
   const reduce = useReduceMotion();
   const celebrate = useSharedValue(0);
   const drops = useSharedValue(0);
@@ -97,10 +107,10 @@ export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CranePro
     if (!grew || reduce || asleep) return;
     blend.value = withSequence(withTiming(1, { duration: 200 }), withTiming(1, { duration: 900 }), withTiming(0, { duration: 300 }));
     celebrate.value = withSequence(
-      withTiming(-45, { duration: 240 }),
-      withTiming(-34, { duration: 120 }),
-      withTiming(-45, { duration: 120 }),
-      withTiming(11, { duration: 260 }),
+      withTiming(-42, { duration: 240 }),
+      withTiming(-32, { duration: 120 }),
+      withTiming(-42, { duration: 120 }),
+      withTiming(10, { duration: 260 }),
       withSpring(0, { damping: 12, stiffness: 180 }),
     );
     drops.value = withSequence(
@@ -117,16 +127,16 @@ export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CranePro
     const t = clock.value % period;
     let dip = 0;
     if (t < 0.7) {
-      dip = -44 * Math.sin(((t / 0.7) * Math.PI) / 2);
+      dip = -42 * Math.sin(((t / 0.7) * Math.PI) / 2);
     } else if (t < 1.05) {
-      dip = -44 + 11 * Math.sin(((t - 0.7) / 0.35) * Math.PI);
+      dip = -42 + 10 * Math.sin(((t - 0.7) / 0.35) * Math.PI);
     } else if (t < 1.4) {
-      dip = -44 + 11 * Math.sin(((t - 1.05) / 0.35) * Math.PI);
+      dip = -42 + 10 * Math.sin(((t - 1.05) / 0.35) * Math.PI);
     } else if (t < 2.2) {
-      dip = -44 * Math.cos((((t - 1.4) / 0.8) * Math.PI) / 2);
+      dip = -42 * Math.cos((((t - 1.4) / 0.8) * Math.PI) / 2);
     }
     // The sway fades out as the neck dips, so nothing jumps where the two meet.
-    const idle = dip + Math.sin(clock.value * 1.4) * 1.2 * (1 + dip / 44);
+    const idle = dip + Math.sin(clock.value * 1.4) * 1.2 * (1 + dip / 42);
     const deg = idle * (1 - blend.value) + celebrate.value * blend.value;
     return { transform: [{ rotate: `${deg}deg` }] };
   });
@@ -136,17 +146,17 @@ export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CranePro
     transform: [{ translateY: -drops.value * 6 }],
   }));
 
-  const left = feet[0] - size * 0.64;
-  const top = feet[1] - size * 0.9;
+  const left = feet[0] - size * 0.62;
+  const top = feet[1] - size * 0.88;
 
   if (asleep) {
     return (
       <View
-        testID="crane-sleeping"
+        testID="fawn-sleeping"
         pointerEvents="none"
         style={[styles.abs, { left, top, width: size, height: size }]}
       >
-        <CraneBodyArt asleep size={size} />
+        <FawnBodyArt asleep size={size} />
       </View>
     );
   }
@@ -157,22 +167,22 @@ export function Crane({ clock, feet, cue, asleep, watered, size = 90 }: CranePro
       pointerEvents="none"
       style={[styles.abs, { left, top, width: size, height: size }]}
     >
-      <View testID="crane" style={{ width: size, height: size }}>
+      <View testID="fawn" style={{ width: size, height: size }}>
         <Animated.View
           style={[
             styles.abs,
-            { left: 0, top: 0, width: size, height: size, transformOrigin: '52% 54%' },
+            { left: 0, top: 0, width: size, height: size, transformOrigin: '54% 56%' },
             neckStyle,
           ]}
         >
-          <CraneNeckArt size={size} />
+          <FawnNeckArt size={size} />
         </Animated.View>
         <View style={[styles.abs, { left: 0, top: 0 }]}>
-          <CraneBodyArt size={size} />
+          <FawnBodyArt size={size} />
         </View>
         {!reduce && (
           <Animated.View style={[styles.abs, { left: 0, top: 0, width: size, height: size }, dropStyle]}>
-            <CraneDropletsArt size={size} />
+            <FawnDropletsArt size={size} />
           </Animated.View>
         )}
       </View>

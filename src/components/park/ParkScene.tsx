@@ -32,7 +32,7 @@ interface Props {
   untended: Set<string>;
   /** Workouts logged so far: each new one makes the tree pop. */
   logged?: number;
-  /** Glasses of water logged so far: each new one makes the crane drink and stretch. */
+  /** Glasses of water logged so far: each new one makes the fawn drink and stretch. */
   watered?: number;
   onObject: (o: ParkObject) => void;
   width: number;

@@ -1,10 +1,11 @@
 import { parkLayout } from '../src/domain/park/layout';
 import {
-  CRANE_BEAK_DIP,
-  craneSpot,
+  FAWN_NOSE_DIP,
+  fawnSpot,
   grassTufts,
   parkCourses,
   pathWidthAt,
+  rabbitSpot,
   ribbonPath,
   riverWidthAt,
   sampleSpline,
@@ -94,26 +95,46 @@ describe('park shapes', () => {
     }
   });
 
-  it('at the bottom of a drink the beak lands in the water, on any phone', () => {
+  it('at the bottom of a drink the nose lands in the water, on any phone', () => {
     for (const [w, h] of [[320, 568], [360, 800], [390, 844], [412, 915], [430, 932]] as const) {
       const l = parkLayout(w, h);
       const c = parkCourses(l);
-      const { feet, size } = craneSpot(l, c);
-      const tip = [feet[0] + CRANE_BEAK_DIP[0] * size, feet[1] + CRANE_BEAK_DIP[1] * size];
+      const { feet, size } = fawnSpot(l, c);
+      const tip = [feet[0] + FAWN_NOSE_DIP[0] * size, feet[1] + FAWN_NOSE_DIP[1] * size];
       const spine = sampleSpline(c.river, 12);
       const inWater = spine.some(([x, y], i) => Math.hypot(x - tip[0]!, y - tip[1]!) < riverWidthAt(i / (spine.length - 1)) / 2);
       expect(inWater).toBe(true);
     }
   });
 
-  it('the crane stands on the bank, not in the water', () => {
-    const { feet } = craneSpot(layout, courses);
+  it('the fawn stands on the bank, not in the water', () => {
+    const { feet } = fawnSpot(layout, courses);
     const spine = sampleSpline(courses.river, 12);
     expect(near(spine, feet, riverWidthAt(1) / 2)).toBe(false);
   });
 
-  it('craneSpot places the crane on the right bank with its beak on the river and the duck downstream', () => {
-    const spot = craneSpot(layout, courses);
+  it('the rabbit hops on open grass, clear of the river, the path and the flowerbed, on any phone', () => {
+    for (const [w, h] of [[320, 568], [360, 800], [390, 844], [412, 915], [430, 932]] as const) {
+      const l = parkLayout(w, h);
+      const c = parkCourses(l);
+      const river = sampleSpline(c.river, 12);
+      const path = sampleSpline(c.walkway, 12);
+      const { at: [cx, cy], rx: reachX, ry: reachY } = rabbitSpot(l);
+      const bed = l.objects.flowerbed;
+      for (let i = 0; i < 48; i++) {
+        const a = (i / 48) * Math.PI * 2;
+        const x = cx + Math.sin(a) * reachX;
+        const y = cy + Math.sin(a * 2) * reachY;
+        // The rabbit is drawn about 18pt either side of its middle.
+        river.forEach(([px, py], j) => expect(Math.hypot(x - px, y - py)).toBeGreaterThan(riverWidthAt(j / (river.length - 1)) / 2 + 18));
+        path.forEach(([px, py], j) => expect(Math.hypot(x - px, y - py)).toBeGreaterThan(pathWidthAt(j / (path.length - 1)) / 2 + 18));
+        expect(y - 34).toBeGreaterThan(bed.y + bed.h);
+      }
+    }
+  });
+
+  it('fawnSpot places the fawn on the right bank with its nose on the river and the duck downstream', () => {
+    const spot = fawnSpot(layout, courses);
     const riverSpine = sampleSpline(courses.river, 12);
     expect(spot.feet[0]).toBeGreaterThan(spot.water[0]);
     expect(near(riverSpine, spot.water, 4)).toBe(true);
