@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dog in the Garden — Cozy Self-Care Companion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka for warm rounded headers, Plus Jakarta Sans for clean UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --font-display: 'Fredoka', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: var(--font-display);
+        }
+
+        /* Custom Keyframe Animations for Cozy Garden Life */
+        @keyframes swaySlow {
+            0%, 100% { transform: rotate(-2.5deg); }
+            50% { transform: rotate(2.5deg); }
+        }
+        @keyframes swayMedium {
+            0%, 100% { transform: rotate(-4deg) translateX(-2px); }
+            50% { transform: rotate(4deg) translateX(2px); }
+        }
+        @keyframes rustlePop {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.06, 0.94) rotate(-4deg); }
+            50% { transform: scale(0.96, 1.04) rotate(4deg); }
+            75% { transform: scale(1.02) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.65); opacity: 0; }
+            20% { opacity: 0.98; }
+            100% { transform: translateY(-65px) scale(1.2); opacity: 0; }
+        }
+        @keyframes crumbFly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx, 20px), var(--ty, -25px)) scale(0.3); opacity: 0; }
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1, 1); }
+            50% { transform: scale(1.032, 0.972); }
+        }
+        @keyframes breatheTired {
+            0%, 100% { transform: translateY(10px) scale(1.04, 0.92); }
+            50% { transform: translateY(12px) scale(1.08, 0.89); }
+        }
+        @keyframes breatheBellyUp {
+            0%, 100% { transform: scale(1, 1) translateY(0); }
+            50% { transform: scale(1.045, 1.035) translateY(-2px); }
+        }
+        @keyframes pawDreamTwitch {
+            0%, 82%, 100% { transform: rotate(0deg); }
+            86% { transform: rotate(-14deg) translateY(-3px); }
+            90% { transform: rotate(10deg) translateY(-1px); }
+            94% { transform: rotate(-10deg); }
+        }
+        @keyframes tailWagFast {
+            0%, 100% { transform: rotate(-26deg); }
+            50% { transform: rotate(30deg); }
+        }
+        @keyframes tailWagCalm {
+            0%, 100% { transform: rotate(-11deg); }
+            50% { transform: rotate(14deg); }
+        }
+        @keyframes tailWagSlow {
+            0%, 100% { transform: rotate(-4deg); }
+            50% { transform: rotate(5deg); }
+        }
+        @keyframes headBobHappy {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-7px) rotate(-4deg); }
+            50% { transform: translateY(0) rotate(2deg); }
+            75% { transform: translateY(-5px) rotate(-2deg); }
+        }
+        @keyframes headDrink {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            45% { transform: translateY(18px) rotate(24deg); }
+            65% { transform: translateY(12px) rotate(17deg); }
+        }
+        @keyframes headEat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            35% { transform: translateY(19px) rotate(26deg); }
+            55% { transform: translateY(8px) rotate(12deg); }
+            75% { transform: translateY(18px) rotate(25deg); }
+        }
+        @keyframes playBowBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30% { transform: translateY(9px) rotate(9deg); }
+            60% { transform: translateY(-16px) rotate(-7deg); }
+        }
+        @keyframes legTrotA {
+            0%, 100% { transform: rotate(-22deg); }
+            50% { transform: rotate(22deg); }
+        }
+        @keyframes legTrotB {
+            0%, 100% { transform: rotate(22deg); }
+            50% { transform: rotate(-22deg); }
+        }
+        @keyframes waterRipple {
+            0% { transform: scale(0.45); opacity: 0.9; }
+            100% { transform: scale(1.75); opacity: 0; }
+        }
+        @keyframes pulseRing {
+            0%, 100% { transform: scale(1); opacity: 0.45; }
+            50% { transform: scale(1.09); opacity: 0.85; }
+        }
+        @keyframes butterflyFlight {
+            0% { transform: translate(0px, 0px) rotate(5deg); }
+            25% { transform: translate(75px, -30px) rotate(-12deg); }
+            50% { transform: translate(135px, 12px) rotate(8deg); }
+            75% { transform: translate(55px, 34px) rotate(-6deg); }
+            100% { transform: translate(0px, 0px) rotate(5deg); }
+        }
+        @keyframes cloudDrift {
+            0% { transform: translateX(-160px); }
+            100% { transform: translateX(1350px); }
+        }
+        @keyframes scribbleJitter {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-2.5px, 2px) rotate(-3deg); }
+            50% { transform: translate(2.5px, -2px) rotate(3deg); }
+            75% { transform: translate(-2px, -1px) rotate(-2deg); }
+        }
+        @keyframes lightningFlash {
+            0%, 84%, 92%, 100% { opacity: 0; }
+            86%, 90% { opacity: 1; }
+        }
+        @keyframes rainFall {
+            0% { transform: translate(15px, -60px); opacity: 0; }
+            20% { opacity: 0.65; }
+            90% { opacity: 0.65; }
+            100% { transform: translate(-45px, 780px); opacity: 0; }
+        }
+        @keyframes flowerBloom {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.18); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes birdHop {
+            0%, 85%, 100% { transform: translateY(0) rotate(0deg); }
+            90% { transform: translateY(-7px) rotate(-6deg); }
+            95% { transform: translateY(0) rotate(4deg); }
+        }
+
+        .sway-slow { animation: swaySlow 6s ease-in-out infinite; transform-origin: bottom center; }
+        .sway-medium { animation: swayMedium 4.5s ease-in-out infinite; transform-origin: bottom center; }
+        .rustle-anim { animation: rustlePop 0.5s ease-out; }
+        .breathe-anim { animation: breathe 3.6s ease-in-out infinite; transform-origin: center bottom; }
+        .breathe-tired { animation: breatheTired 4.6s ease-in-out infinite; transform-origin: center bottom; }
+        .breathe-belly-up { animation: breatheBellyUp 3.2s ease-in-out infinite; transform-origin: center bottom; }
+        .paw-twitch { animation: pawDreamTwitch 4.5s ease-in-out infinite; transform-origin: bottom center; }
+        .tail-fast { animation: tailWagFast 0.22s ease-in-out infinite; transform-origin: 10px 10px; }
+        .tail-calm { animation: tailWagCalm 0.85s ease-in-out infinite; transform-origin: 10px 10px; }
+        .tail-slow { animation: tailWagSlow 2.2s ease-in-out infinite; transform-origin: 10px 10px; }
+        .head-happy { animation: headBobHappy 0.85s ease-in-out infinite; transform-origin: center bottom; }
+        .head-drink { animation: headDrink 0.68s ease-in-out infinite; transform-origin: 15px 30px; }
+        .head-eat { animation: headEat 0.62s ease-in-out infinite; transform-origin: 15px 30px; }
+        .play-bounce { animation: playBowBounce 0.72s ease-in-out infinite; transform-origin: center bottom; }
+        .leg-trot-a { animation: legTrotA 0.25s ease-in-out infinite; transform-origin: top center; }
+        .leg-trot-b { animation: legTrotB 0.25s ease-in-out infinite; transform-origin: top center; }
+        .butterfly-path { animation: butterflyFlight 18s ease-in-out infinite; }
+        .scribble-cloud { animation: scribbleJitter 0.35s ease-in-out infinite; }
+        .lightning-bolt { animation: lightningFlash 3.8s infinite; }
+        .bloom-enter { animation: flowerBloom 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+        .bird-hop { animation: birdHop 5s ease-in-out infinite; transform-origin: bottom center; }
+
+        /* Interactive Props Hover & Focus States */
+        .garden-hotspot {
+            cursor: pointer;
+            transition: filter 0.25s ease;
+        }
+        .garden-hotspot:hover {
+            filter: drop-shadow(0px 6px 16px rgba(254, 240, 138, 0.8)) brightness(1.04);
+        }
+        .hotspot-ring {
+            animation: pulseRing 2.6s ease-in-out infinite;
+            transform-origin: center;
+            pointer-events: none;
+        }
+
+        /* Smooth position transition for characters in SVG */
+        #golden-character {
+            transition: transform 1.15s cubic-bezier(0.42, 0, 0.28, 1);
+        }
+        #bulldog-character {
+            transition: transform 1.05s cubic-bezier(0.34, 1.26, 0.64, 1);
+        }
+
+        /* Glassmorphism Cozy Cards */
+        .cozy-card {
+            background: rgba(255, 251, 244, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(235, 218, 196, 0.9);
+            box-shadow: 0 22px 48px -12px rgba(58, 43, 27, 0.26), 0 4px 14px -2px rgba(58, 43, 27, 0.1);
+        }
+        .cozy-pill {
+            background: rgba(255, 252, 245, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(226, 208, 184, 0.85);
+            box-shadow: 0 6px 20px -4px rgba(59, 47, 34, 0.14);
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 10px;
+            border-radius: 999px;
+            background: #e5dec9;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #e07a5f;
+            border: 3px solid #fffdf9;
+            margin-top: -7px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.14);
+        }
+    </style>
+</head>
+<body class="bg-[#cbe5c4] text-[#3d342b] w-screen h-screen relative overflow-hidden select-none">
+
+    <!-- ==========================================
+         TOP FLOATING HUD (Minimal & Unobtrusive)
+         ========================================== -->
+    <header class="fixed top-0 left-0 right-0 z-30 p-3 sm:p-5 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        
+        <!-- Left: Brand + Mood Switcher Pill + Status -->
+        <div class="flex items-center gap-2 sm:gap-2.5 pointer-events-auto">
+            <!-- Mood Selector Pill -->
+            <button id="btn-mood-pill" onclick="openModal('mood-modal')" 
+                class="cozy-pill px-3.5 py-2 rounded-full flex items-center gap-2.5 hover:scale-[1.02] active:scale-95 transition-all group"
+                title="Change how you & Sunny are feeling">
+                <span id="hud-mood-emoji" class="text-xl sm:text-2xl transition-transform group-hover:rotate-12">😊</span>
+                <div class="text-left leading-tight">
+                    <div class="text-[10px] uppercase tracking-wider font-semibold text-[#8c7a66]">Feeling</div>
+                    <div id="hud-mood-label" class="text-xs sm:text-sm font-display font-semibold text-[#3d342b]">Calm &amp; Content</div>
+                </div>
+                <svg class="w-4 h-4 text-[#8c7a66] ml-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <!-- Live Companion Status Banner -->
+            <div id="status-banner" class="hidden lg:flex cozy-pill px-3.5 py-2 rounded-full items-center gap-2 text-xs font-medium text-[#695a49]">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="companion-status-text">Sunny is relaxing in the garden</span>
+            </div>
+        </div>
+
+        <!-- Right: Daily Summary Pill + Weather/Time Switcher + Audio Controls -->
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <!-- Daily Stats & Garden Bloom Pill -->
+            <button onclick="openModal('journal-modal')" 
+                class="cozy-pill px-3.5 py-2 rounded-full flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold hover:scale-[1.02] active:scale-95 transition-all"
+                title="Open Today's Garden Self-Care Journal">
+                <span class="flex items-center gap-1" title="Water Glasses">
+                    <span>💧</span>
+                    <span id="hud-water-count">0</span>
+                </span>
+                <span class="text-[#d5c7b4]">•</span>
+                <span class="flex items-center gap-1" title="Meals & Nourishment">
+                    <span>🥣</span>
+                    <span id="hud-food-count">0</span>
+                </span>
+                <span class="text-[#d5c7b4]">•</span>
+                <span class="flex items-center gap-1" title="Movement Minutes">
+                    <span>🎾</span>
+                    <span id="hud-activity-mins">0m</span>
+                </span>
+                <span class="text-[#d5c7b4]">•</span>
+                <span class="flex items-center gap-1" title="Sleep Logged">
+                    <span>💤</span>
+                    <span id="hud-sleep-hrs">--</span>
+                </span>
+                <span class="hidden sm:inline text-[#d5c7b4]">•</span>
+                <span class="hidden sm:flex items-center gap-1 text-emerald-700" title="Garden Wildflowers Bloomed">
+                    <span>🌸</span>
+                    <span id="hud-bloom-count">1</span>
+                </span>
+            </button>
+
+            <!-- 4-Mode Atmosphere / Weather Switcher (Day, Sunset, Starry Night, Cozy Rain) -->
+            <button id="btn-time-toggle" onclick="cycleTimeOfDay()" 
+                class="cozy-pill px-3 h-10 rounded-full flex items-center gap-1.5 text-xs font-display font-semibold hover:scale-105 active:scale-95 transition-all"
+                title="Switch Atmosphere: Morning Sun / Golden Sunset / Starry Night / Cozy Rain">
+                <span id="time-icon" class="text-base">☀️</span>
+                <span id="time-label" class="hidden md:inline text-[#4a3e31]">Morning</span>
+            </button>
+
+            <!-- Soundscape & SFX Toggle -->
+            <button id="btn-sound-toggle" onclick="toggleSound()" 
+                class="cozy-pill w-10 h-10 rounded-full flex items-center justify-center text-lg hover:scale-105 active:scale-95 transition-all"
+                title="Toggle Cozy Soundscape & SFX">
+                <span id="sound-icon">🔊</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         FLOATING BOTTOM HELPER PROMPT
+         ========================================== -->
+    <div class="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-full max-w-lg px-4 text-center">
+        <div id="helper-toast" class="cozy-pill inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm text-[#5c4e3e] font-medium shadow-sm transition-all duration-300">
+            <span>✨ Tap a bowl, toss the ball, pet Sunny, or wake Barnaby</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         INTERACTIVE GARDEN SCENE (SVG WORLD)
+         ========================================== -->
+    <main class="w-full h-full relative flex items-center justify-center overflow-hidden">
+        
+        <!-- Dynamic Hover Tooltip -->
+        <div id="garden-tooltip" class="fixed z-30 pointer-events-none opacity-0 transition-opacity duration-200 cozy-pill px-3 py-1.5 rounded-xl text-xs font-display font-semibold text-[#3d342b] shadow-md -translate-x-1/2 -translate-y-full -mt-3 whitespace-nowrap">
+            Tooltip
+        </div>
+
+        <!-- Fullscreen Responsive Illustrated SVG Garden -->
+        <svg id="garden-svg" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" class="w-full h-full block">
+            <defs>
+                <!-- Sky Gradients for Day, Sunset, Night, Rain -->
+                <linearGradient id="sky-day" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#9ad4ec" />
+                    <stop offset="55%" stop-color="#d4f0f2" />
+                    <stop offset="100%" stop-color="#f7f5d0" />
+                </linearGradient>
+                <linearGradient id="sky-sunset" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#4c477d" />
+                    <stop offset="45%" stop-color="#dc756c" />
+                    <stop offset="100%" stop-color="#f9c87c" />
+                </linearGradient>
+                <linearGradient id="sky-night" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#0f152e" />
+                    <stop offset="55%" stop-color="#1e2b52" />
+                    <stop offset="100%" stop-color="#324766" />
+                </linearGradient>
+                <linearGradient id="sky-rain" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#56697a" />
+                    <stop offset="55%" stop-color="#7c909e" />
+                    <stop offset="100%" stop-color="#a7b8bd" />
+                </linearGradient>
+
+                <!-- Grass & Hills Gradients -->
+                <linearGradient id="lawn-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#b5db88" />
+                    <stop offset="40%" stop-color="#96c96e" />
+                    <stop offset="100%" stop-color="#6ca654" />
+                </linearGradient>
+                <linearGradient id="sunbeam-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fffbeb" stop-opacity="0.34" />
+                    <stop offset="100%" stop-color="#fffbeb" stop-opacity="0" />
+                </linearGradient>
+                <radialGradient id="lantern-glow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#fef08a" stop-opacity="0.95" />
+                    <stop offset="45%" stop-color="#facc15" stop-opacity="0.4" />
+                    <stop offset="100%" stop-color="#facc15" stop-opacity="0" />
+                </radialGradient>
+
+                <!-- Golden Retriever Fur Gradients -->
+                <linearGradient id="golden-fur" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#f9c15e" />
+                    <stop offset="65%" stop-color="#e89f38" />
+                    <stop offset="100%" stop-color="#c97a1d" />
+                </linearGradient>
+                <linearGradient id="golden-chest" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#fef0c7" />
+                    <stop offset="100%" stop-color="#f5c66b" />
+                </linearGradient>
+
+                <!-- Wood Deck Gradient -->
+                <linearGradient id="deck-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#d49a6a" />
+                    <stop offset="100%" stop-color="#b07446" />
+                </linearGradient>
+
+                <!-- Water Bowl Shimmer -->
+                <radialGradient id="water-grad" cx="40%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#a5ecff" />
+                    <stop offset="70%" stop-color="#3eb2fd" />
+                    <stop offset="100%" stop-color="#1e88e5" />
+                </radialGradient>
+            </defs>
+
+            <!-- 1. SKY BACKGROUND -->
+            <rect id="sky-rect" width="1200" height="420" fill="url(#sky-day)" class="transition-colors duration-1000" />
+
+            <!-- Celestial Bodies (Sun / Moon / Stars) -->
+            <g id="celestial-group">
+                <!-- Sun -->
+                <g id="sun-element" transform="translate(220, 105)" class="transition-all duration-1000">
+                    <circle r="64" fill="#fef08a" opacity="0.26" />
+                    <circle r="42" fill="#fde047" opacity="0.92" />
+                </g>
+                <!-- Stars & Moon (Visible at Night) -->
+                <g id="night-stars" opacity="0" class="transition-opacity duration-1000">
+                    <circle cx="140" cy="70" r="2" fill="#fff" opacity="0.85" />
+                    <circle cx="290" cy="45" r="2.5" fill="#fef08a" opacity="0.9" />
+                    <circle cx="460" cy="88" r="1.8" fill="#fff" opacity="0.7" />
+                    <circle cx="640" cy="48" r="2.2" fill="#fff" opacity="0.85" />
+                    <circle cx="820" cy="72" r="2.5" fill="#fef08a" opacity="0.9" />
+                    <circle cx="1030" cy="52" r="2" fill="#fff" opacity="0.75" />
+                    <circle cx="950" cy="112" r="1.6" fill="#fff" opacity="0.65" />
+                    <circle cx="530" cy="40" r="1.8" fill="#fef08a" opacity="0.8" />
+                    <!-- Crescent Moon -->
+                    <path d="M920,65 A32,32 0 1,0 955,112 A26,26 0 1,1 920,65 Z" fill="#fef9c3" />
+                </g>
+            </g>
+
+            <!-- Drifting Clouds -->
+            <g id="clouds-layer" opacity="0.85">
+                <g style="animation: cloudDrift 68s linear infinite;">
+                    <path d="M80,110 Q95,90 120,98 Q145,78 175,95 Q200,95 205,115 Q205,125 185,126 L75,126 Q60,125 65,112 Z" fill="#ffffff" opacity="0.82" />
+                </g>
+                <g style="animation: cloudDrift 88s linear -35s infinite;">
+                    <path d="M580,75 Q600,52 630,62 Q660,40 695,62 Q725,62 730,85 L565,85 Q555,75 580,75 Z" fill="#ffffff" opacity="0.68" />
+                </g>
+            </g>
+
+            <!-- 2. DISTANT HILLS & GARDEN FENCE -->
+            <path d="M-50,350 Q260,250 620,315 T1260,295 L1260,460 L-50,460 Z" fill="#8ec37c" />
+            <path d="M-50,375 Q420,310 850,355 T1260,345 L1260,480 L-50,480 Z" fill="#a2d282" />
+
+            <!-- Distant Cozy Hedges -->
+            <g fill="#6ea661">
+                <circle cx="80" cy="340" r="45" />
+                <circle cx="145" cy="345" r="38" />
+                <circle cx="1050" cy="330" r="55" />
+                <circle cx="1130" cy="325" r="65" />
+                <circle cx="980" cy="348" r="40" />
+            </g>
+
+            <!-- Warm Wooden Garden Fence -->
+            <g id="wooden-fence" transform="translate(0, 290)">
+                <rect x="0" y="38" width="1200" height="10" fill="#c7956d" />
+                <rect x="0" y="72" width="1200" height="10" fill="#b8845c" />
+                <g fill="#deb089" stroke="#c28d64" stroke-width="1.5">
+                    <path d="M35,18 L48,6 L61,18 L61,95 L35,95 Z" />
+                    <path d="M95,18 L108,6 L121,18 L121,95 L95,95 Z" />
+                    <path d="M155,18 L168,6 L181,18 L181,95 L155,95 Z" />
+                    <path d="M215,18 L228,6 L241,18 L241,95 L215,95 Z" />
+                    <path d="M275,18 L288,6 L301,18 L301,95 L275,95 Z" />
+                    <path d="M335,18 L348,6 L361,18 L361,95 L335,95 Z" />
+                    <path d="M395,18 L408,6 L421,18 L421,95 L395,95 Z" />
+                    <path d="M455,18 L468,6 L481,18 L481,95 L455,95 Z" />
+                    <path d="M515,18 L528,6 L541,18 L541,95 L515,95 Z" />
+                    <path d="M575,18 L588,6 L601,18 L601,95 L575,95 Z" />
+                    <path d="M635,18 L648,6 L661,18 L661,95 L635,95 Z" />
+                    <path d="M695,18 L708,6 L721,18 L721,95 L695,95 Z" />
+                    <path d="M755,18 L768,6 L781,18 L781,95 L755,95 Z" />
+                    <path d="M815,18 L828,6 L841,18 L841,95 L815,95 Z" />
+                    <path d="M875,18 L888,6 L901,18 L901,95 L875,95 Z" />
+                    <path d="M935,18 L948,6 L961,18 L961,95 L935,95 Z" />
+                    <path d="M995,18 L1008,6 L1021,18 L1021,95 L995,95 Z" />
+                    <path d="M1055,18 L1068,6 L1081,18 L1081,95 L1055,95 Z" />
+                    <path d="M1115,18 L1128,6 L1141,18 L1141,95 L1115,95 Z" />
+                </g>
+
+                <!-- Cheerful Bluebird on Fence (Appears when user has 3+ self-care logs!) -->
+                <g id="fence-bluebird" transform="translate(588, 6)" class="hidden garden-hotspot"
+                   onclick="handleBirdClick(event)"
+                   onmouseenter="showTooltip(event, '🐦 Garden Bluebird • Chirp!')"
+                   onmouseleave="hideTooltip()">
+                    <g class="bird-hop">
+                        <line x1="-3" y1="0" x2="-3" y2="-6" stroke="#78350f" stroke-width="1.8" />
+                        <line x1="3" y1="0" x2="3" y2="-6" stroke="#78350f" stroke-width="1.8" />
+                        <path d="M4,-10 L14,-5 L11,-2 L2,-7 Z" fill="#2563eb" />
+                        <ellipse cx="0" cy="-11" rx="9" ry="7.5" fill="#3b82f6" />
+                        <ellipse cx="-2" cy="-9" rx="6" ry="4.5" fill="#fed7aa" />
+                        <circle cx="-5" cy="-16" r="6" fill="#3b82f6" />
+                        <polygon points="-10,-16 -16,-14 -10,-12" fill="#f59e0b" />
+                        <circle cx="-7" cy="-17" r="1.4" fill="#1e293b" />
+                        <circle cx="-7.4" cy="-17.4" r="0.5" fill="#fff" />
+                    </g>
+                </g>
+            </g>
+
+            <!-- 3. MAIN SUNLIT GARDEN LAWN -->
+            <path d="M-20,375 Q600,350 1220,375 L1220,780 L-20,780 Z" fill="url(#lawn-grad)" />
+
+            <!-- Dappled Sunlight Patch in Center of Lawn -->
+            <ellipse cx="545" cy="525" rx="340" ry="135" fill="#c7e896" opacity="0.55" />
+            <ellipse cx="540" cy="520" rx="220" ry="88" fill="#d9f2ad" opacity="0.45" />
+
+            <!-- Stepping Stones Path -->
+            <g fill="#dfd5c3" stroke="#c4b7a1" stroke-width="2">
+                <ellipse cx="470" cy="405" rx="36" ry="13" />
+                <ellipse cx="525" cy="435" rx="44" ry="15" />
+                <ellipse cx="490" cy="470" rx="38" ry="14" />
+            </g>
+
+            <!-- Interactive Garden Lantern Post (Near Deck) -->
+            <g id="garden-lantern" transform="translate(730, 395)" class="garden-hotspot"
+               onclick="toggleGardenLantern(event)"
+               onmouseenter="showTooltip(event, '🏮 Garden Lantern • Tap to Toggle Warm Glow')"
+               onmouseleave="hideTooltip()">
+                <ellipse cx="0" cy="68" rx="18" ry="6" fill="#528040" opacity="0.5" />
+                <path d="M-4,66 L-3,-35 Q-3,-55 18,-55 L24,-55" fill="none" stroke="#5c4033" stroke-width="6" stroke-linecap="round" />
+                <!-- Lantern Halo Glow -->
+                <circle id="lantern-halo" cx="24" cy="-34" r="65" fill="url(#lantern-glow)" opacity="0" class="transition-opacity duration-500 pointer-events-none" />
+                <!-- Lantern Body -->
+                <line x1="24" y1="-55" x2="24" y2="-46" stroke="#3e2723" stroke-width="2.5" />
+                <polygon points="14,-46 34,-46 38,-40 10,-40" fill="#3e2723" />
+                <rect id="lantern-glass" x="15" y="-40" width="18" height="20" rx="3" fill="#fef3c7" stroke="#3e2723" stroke-width="2" />
+                <circle id="lantern-flame" cx="24" cy="-30" r="4.5" fill="#f59e0b" opacity="0.35" />
+                <polygon points="12,-20 36,-20 30,-16 18,-16" fill="#3e2723" />
+            </g>
+
+            <!-- Background Interactive Bushes, Lavender & Shade Tree -->
+            <g id="back-foliage">
+                <!-- Left Interactive Bush Cluster (Rustles & spawns leaves when clicked) -->
+                <g id="left-bush-cluster" class="garden-hotspot" transform="translate(0, 0)"
+                   onclick="rustleBush(event, 150, 355)"
+                   onmouseenter="showTooltip(event, '🌿 Flowering Bush • Tap to Rustle')"
+                   onmouseleave="hideTooltip()">
+                    <g class="sway-slow" style="transform-origin: 140px 390px;">
+                        <circle cx="95" cy="365" r="46" fill="#5e9c52" />
+                        <circle cx="155" cy="360" r="52" fill="#70b162" />
+                        <circle cx="205" cy="375" r="36" fill="#82c272" />
+                        <circle cx="135" cy="345" r="6" fill="#fda4af" />
+                        <circle cx="165" cy="358" r="5" fill="#f43f5e" />
+                        <circle cx="105" cy="365" r="6" fill="#fda4af" />
+                        <circle cx="185" cy="370" r="5" fill="#fda4af" />
+                    </g>
+                </g>
+
+                <!-- Terracotta Planter Pot by Fence -->
+                <g transform="translate(275, 345)" class="garden-hotspot"
+                   onclick="rustleBush(event, 305, 335)"
+                   onmouseenter="showTooltip(event, '🪻 Lavender Planter • Sweet Garden Scent')"
+                   onmouseleave="hideTooltip()">
+                    <ellipse cx="30" cy="52" rx="28" ry="8" fill="#5b8c47" opacity="0.4" />
+                    <g class="sway-medium" style="transform-origin: 30px 20px;">
+                        <path d="M18,20 Q10,-15 6,-28" stroke="#689f63" stroke-width="3" fill="none" />
+                        <path d="M30,18 Q30,-20 32,-34" stroke="#689f63" stroke-width="3" fill="none" />
+                        <path d="M42,20 Q50,-15 54,-26" stroke="#689f63" stroke-width="3" fill="none" />
+                        <ellipse cx="6" cy="-26" rx="5" ry="12" fill="#a78bfa" transform="rotate(-12 6 -26)" />
+                        <ellipse cx="32" cy="-32" rx="5" ry="13" fill="#8b5cf6" />
+                        <ellipse cx="54" cy="-24" rx="5" ry="11" fill="#a78bfa" transform="rotate(14 54 -24)" />
+                    </g>
+                    <polygon points="8,16 52,16 44,50 16,50" fill="#d97757" />
+                    <rect x="4" y="10" width="52" height="9" rx="4" fill="#e68a6c" />
+                </g>
+
+                <!-- Right Shade Tree Trunk & Canopy -->
+                <g transform="translate(980, 120)">
+                    <path d="M95,270 Q105,180 90,90 L135,90 Q120,180 140,275 Z" fill="#8c6246" />
+                    <ellipse cx="115" cy="275" rx="48" ry="12" fill="#598a45" opacity="0.5" />
+                    <g class="sway-slow" style="transform-origin: 110px 80px;">
+                        <circle cx="40" cy="60" r="85" fill="#68ab5c" />
+                        <circle cx="135" cy="40" r="95" fill="#56964b" />
+                        <circle cx="90" cy="95" r="75" fill="#7ec06f" />
+                        <circle cx="180" cy="95" r="70" fill="#68ab5c" />
+                    </g>
+                </g>
+            </g>
+
+            <!-- LIVING GARDEN PROGRESSION: Dynamic Blooming Wildflowers Layer -->
+            <g id="living-flowers-layer">
+                <!-- Populated dynamically as the user logs water, meals, activities, and sleep! -->
+            </g>
+
+            <!-- Grass Tufts Scattered on Lawn -->
+            <g stroke="#6aa152" stroke-width="3" stroke-linecap="round" fill="none">
+                <path d="M190,480 L185,468 M194,480 L196,465 M199,480 L205,470" />
+                <path d="M680,440 L676,428 M684,440 L686,425 M689,440 L695,430" />
+                <path d="M410,635 L405,622 M415,635 L417,620 M420,635 L426,625" />
+                <path d="M740,655 L735,642 M745,655 L747,640" />
+            </g>
+
+            <!-- ==========================================
+                 4. COZY WOODEN DECK & PLAID CUSHION (Bulldog's Corner)
+                 ========================================== -->
+            <g id="bulldog-deck-area" transform="translate(745, 445)">
+                <path d="M15,45 L395,25 L435,205 L-15,215 Z" fill="#4e7a3c" opacity="0.45" />
+                <path d="M10,35 L390,15 L430,195 L-20,205 Z" fill="url(#deck-grad)" stroke="#8c5832" stroke-width="3" stroke-linejoin="round" />
+                <line x1="2" y1="75" x2="402" y2="55" stroke="#99623a" stroke-width="2" opacity="0.65" />
+                <line x1="-5" y1="118" x2="412" y2="98" stroke="#99623a" stroke-width="2" opacity="0.65" />
+                <line x1="-12" y1="162" x2="422" y2="142" stroke="#99623a" stroke-width="2" opacity="0.65" />
+
+                <!-- Cozy Plaid Outdoor Cushion under Barnaby -->
+                <g transform="translate(205, 108) rotate(-2)">
+                    <ellipse cx="0" cy="6" rx="116" ry="58" fill="#6e4223" opacity="0.35" />
+                    <ellipse cx="0" cy="0" rx="112" ry="54" fill="#e07a5f" stroke="#b8563c" stroke-width="4" />
+                    <ellipse cx="0" cy="-2" rx="95" ry="43" fill="#f4e6d2" stroke="#d9c3a5" stroke-width="2" stroke-dasharray="10 6" />
+                    <ellipse cx="0" cy="-3" rx="68" ry="29" fill="#ebdcc4" />
+                    <!-- Cushion Tuft Buttons -->
+                    <circle cx="-28" cy="-4" r="3.5" fill="#b8563c" opacity="0.6" />
+                    <circle cx="28" cy="-4" r="3.5" fill="#b8563c" opacity="0.6" />
+                </g>
+            </g>
+
+            <!-- ==========================================
+                 5. INTERACTIVE PROP 1: GOLDEN'S WATER BOWL (Left)
+                 ========================================== -->
+            <g id="prop-water-bowl" class="garden-hotspot" transform="translate(215, 520)"
+               onclick="handleWaterBowlClick(event)"
+               onmouseenter="showTooltip(event, '💧 Water Bowl • Log Hydration')"
+               onmouseleave="hideTooltip()">
+                <ellipse cx="0" cy="12" rx="58" ry="27" fill="none" stroke="#fef08a" stroke-width="2.5" class="hotspot-ring" />
+                <ellipse cx="0" cy="16" rx="48" ry="18" fill="#538241" opacity="0.55" />
+                <!-- Ceramic Bowl Base -->
+                <path d="M-38,0 L-44,16 Q0,30 44,16 L38,0 Z" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2" />
+                <path d="M-40,7 Q0,19 40,7" fill="none" stroke="#dbeafe" stroke-width="3.5" opacity="0.8" />
+                <!-- Bowl Rim -->
+                <ellipse cx="0" cy="0" rx="38" ry="14" fill="#eff6ff" stroke="#2563eb" stroke-width="2" />
+                <!-- Dynamic Water Level Inside Bowl -->
+                <ellipse id="garden-water-surface" cx="0" cy="1" rx="33" ry="11" fill="url(#water-grad)" class="transition-all duration-500" />
+                <!-- Water Specular Highlight -->
+                <path d="M-18,-2 Q-6,-6 10,-3" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.75" />
+                <!-- Animated Ripple & Droplets when drinking -->
+                <ellipse id="water-ripple-ring" cx="0" cy="1" rx="18" ry="6" fill="none" stroke="#ffffff" stroke-width="2" opacity="0" />
+                <g id="water-splash-particles" pointer-events="none"></g>
+            </g>
+
+            <!-- ==========================================
+                 6. INTERACTIVE PROP 2: GOLDEN'S FOOD BOWL (Bottom Left-Center)
+                 ========================================== -->
+            <g id="prop-food-bowl" class="garden-hotspot" transform="translate(360, 618)"
+               onclick="handleFoodBowlClick(event)"
+               onmouseenter="showTooltip(event, '🥣 Food Bowl • Log Meal & Nourishment')"
+               onmouseleave="hideTooltip()">
+                <ellipse cx="0" cy="12" rx="55" ry="25" fill="none" stroke="#fef08a" stroke-width="2.5" class="hotspot-ring" />
+                <ellipse cx="0" cy="16" rx="46" ry="17" fill="#538241" opacity="0.55" />
+                <path d="M-36,0 L-42,16 Q0,29 42,16 L36,0 Z" fill="#ea580c" stroke="#9a3412" stroke-width="2" />
+                <!-- Bone Icon on Front of Bowl -->
+                <circle cx="-5" cy="11" r="2.5" fill="#ffedd5" />
+                <circle cx="5" cy="11" r="2.5" fill="#ffedd5" />
+                <rect x="-5" y="9.5" width="10" height="3" fill="#ffedd5" />
+                <ellipse cx="0" cy="0" rx="36" ry="13" fill="#ffedd5" stroke="#c2410c" stroke-width="2" />
+                <!-- Crunchy Kibble Mound -->
+                <g id="golden-kibble-pile">
+                    <ellipse cx="0" cy="1" rx="30" ry="9" fill="#78350f" />
+                    <circle cx="-14" cy="-1" r="5.5" fill="#92400e" />
+                    <circle cx="-4" cy="-3" r="6" fill="#b45309" />
+                    <circle cx="7" cy="-2" r="5.5" fill="#92400e" />
+                    <circle cx="16" cy="0" r="5" fill="#b45309" />
+                    <circle cx="-8" cy="2" r="5" fill="#78350f" />
+                    <circle cx="3" cy="2" r="5.5" fill="#92400e" />
+                    <circle cx="12" cy="2" r="4.5" fill="#78350f" />
+                </g>
+                <g id="golden-crumb-particles" pointer-events="none"></g>
+            </g>
+
+            <!-- ==========================================
+                 7. INTERACTIVE PROP 3: RED TENNIS BALL (With Parabolic Bounce Physics)
+                 ========================================== -->
+            <g id="prop-red-ball" class="garden-hotspot" transform="translate(620, 625)"
+               onclick="handleBallClick(event)"
+               onmouseenter="showTooltip(event, '🎾 Bouncy Ball • Toss & Log Activity')"
+               onmouseleave="hideTooltip()">
+                <ellipse cx="0" cy="8" rx="38" ry="18" fill="none" stroke="#fef08a" stroke-width="2.5" class="hotspot-ring" />
+                <ellipse id="ball-shadow" cx="0" cy="14" rx="22" ry="8" fill="#497538" opacity="0.55" />
+                <g id="ball-sprite">
+                    <circle cx="0" cy="0" r="19" fill="#ef4444" stroke="#b91c1c" stroke-width="2" />
+                    <path d="M-13,-13 Q0,2 -13,13" fill="none" stroke="#fef2f2" stroke-width="2.5" stroke-linecap="round" opacity="0.85" />
+                    <path d="M13,-13 Q0,2 13,13" fill="none" stroke="#fef2f2" stroke-width="2.5" stroke-linecap="round" opacity="0.85" />
+                    <ellipse cx="-6" cy="-7" rx="5" ry="3" fill="#ffffff" opacity="0.55" transform="rotate(-30 -6 -7)" />
+                </g>
+            </g>
+
+            <!-- ==========================================
+                 8. INTERACTIVE PROP 4: BARNABY'S HEAVY BOWL (On Deck)
+                 ========================================== -->
+            <g id="prop-bulldog-bowl" class="garden-hotspot" transform="translate(795, 595)"
+               onclick="handleBulldogBowlClick(event)"
+               onmouseenter="showTooltip(event, '🥩 Barnaby\'s Bowl • The ONLY Thing That Wakes Him!')"
+               onmouseleave="hideTooltip()">
+                <ellipse cx="0" cy="10" rx="48" ry="22" fill="none" stroke="#fef08a" stroke-width="2.5" class="hotspot-ring" />
+                <ellipse cx="0" cy="14" rx="40" ry="14" fill="#6e4223" opacity="0.5" />
+                <path d="M-32,0 L-38,15 Q0,26 38,15 L32,0 Z" fill="#0f766e" stroke="#115e59" stroke-width="2" />
+                <!-- Bone Emblem on Barnaby's Bowl -->
+                <circle cx="-4" cy="9" r="2.2" fill="#ccfbf1" />
+                <circle cx="4" cy="9" r="2.2" fill="#ccfbf1" />
+                <rect x="-4" y="7.8" width="8" height="2.5" fill="#ccfbf1" />
+                <ellipse cx="0" cy="0" rx="32" ry="11" fill="#ccfbf1" stroke="#0f766e" stroke-width="2" />
+                <!-- Tasty Treats Inside -->
+                <ellipse cx="0" cy="1" rx="26" ry="8" fill="#7c2d12" />
+                <circle cx="-9" cy="-1" r="5" fill="#9a3412" />
+                <circle cx="2" cy="-2" r="5.5" fill="#c2410c" />
+                <circle cx="11" cy="0" r="4.5" fill="#9a3412" />
+                <circle cx="-2" cy="2" r="5" fill="#7c2d12" />
+                <g id="bulldog-crumb-particles" pointer-events="none"></g>
+            </g>
+
+            <!-- ==========================================
+                 9. CHARACTER 2: BARNABY THE LAZY BULLDOG (Sleep Tracker)
+                 ========================================== -->
+            <g id="bulldog-character" class="garden-hotspot" transform="translate(955, 548)"
+               onclick="handleBulldogClick(event)"
+               onmouseenter="showTooltip(event, '💤 Barnaby (Sleeping Bulldog) • Tap to Flip Pose & Log Sleep')"
+               onmouseleave="hideTooltip()">
+                
+                <!-- Shadow under Bulldog -->
+                <ellipse cx="0" cy="22" rx="68" ry="24" fill="#7d5332" opacity="0.4" />
+
+                <!-- POSE A: BELLY DOWN (Frog-legged Sploot Loaf) -->
+                <g id="bulldog-pose-down" class="breathe-anim">
+                    <!-- Frog-Legged Sploot Hind Legs -->
+                    <ellipse cx="54" cy="12" rx="19" ry="9.5" fill="#d6cfc7" stroke="#8c8275" stroke-width="2" transform="rotate(14 54 12)" />
+                    <ellipse cx="48" cy="20" rx="18" ry="9" fill="#e7e0d6" stroke="#8c8275" stroke-width="2" transform="rotate(-8 48 20)" />
+                    <!-- Pink Toe Beans on Splooted Hind Foot -->
+                    <circle cx="65" cy="14" r="2.5" fill="#f472b6" />
+                    <circle cx="62" cy="18" r="2.2" fill="#f472b6" />
+                    <!-- Nubby Tail -->
+                    <circle cx="60" cy="-3" r="8" fill="#78716c" />
+                    <!-- Plump Potato Body -->
+                    <ellipse cx="8" cy="2" rx="52" ry="32" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                    <!-- Brindle/Brown Spot on Back -->
+                    <path d="M-5,-28 Q22,-30 35,-16 Q25,2 0,-6 Z" fill="#8c6d53" />
+                    <!-- Front Paws Tucked Out -->
+                    <ellipse cx="-44" cy="18" rx="15" ry="8" fill="#e7e0d6" stroke="#8c8275" stroke-width="2" />
+                    <ellipse cx="-22" cy="22" rx="15" ry="8" fill="#e7e0d6" stroke="#8c8275" stroke-width="2" />
+                    <!-- Red Collar with Gold Tag -->
+                    <path d="M-24,-22 Q-12,5 -20,18" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="-18" cy="18" r="4.5" fill="#facc15" />
+                    <!-- Squat Bulldog Head Resting Low -->
+                    <g transform="translate(-38, -2)">
+                        <ellipse cx="0" cy="0" rx="28" ry="24" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                        <ellipse cx="-8" cy="-5" rx="11" ry="9" fill="#8c6d53" />
+                        <path d="M-18,-18 Q-30,-26 -26,-10 Z" fill="#785a42" stroke="#5c4430" stroke-width="1.8" />
+                        <path d="M12,-18 Q26,-26 22,-10 Z" fill="#785a42" stroke="#5c4430" stroke-width="1.8" />
+                        <path d="M-10,-14 Q0,-11 10,-14" fill="none" stroke="#a89f91" stroke-width="2" stroke-linecap="round" />
+                        <path d="M-7,-10 Q0,-7 7,-10" fill="none" stroke="#a89f91" stroke-width="1.8" stroke-linecap="round" />
+                        <path d="M-14,-3 Q-9,2 -4,-3" fill="none" stroke="#292524" stroke-width="2.5" stroke-linecap="round" />
+                        <path d="M6,-3 Q11,2 16,-3" fill="none" stroke="#292524" stroke-width="2.5" stroke-linecap="round" />
+                        <ellipse cx="-8" cy="10" rx="14" ry="11" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <ellipse cx="8" cy="10" rx="14" ry="11" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <polygon points="-8,15 -5,10 -2,15" fill="#ffffff" />
+                        <polygon points="4,15 7,10 10,15" fill="#ffffff" />
+                        <ellipse cx="0" cy="3" rx="6.5" ry="4.5" fill="#292524" />
+                    </g>
+                </g>
+
+                <!-- POSE B: BELLY UP (Paws in the Air, Dream Twitch, Tongue Hanging Out) -->
+                <g id="bulldog-pose-up" class="breathe-belly-up hidden">
+                    <ellipse cx="5" cy="4" rx="54" ry="30" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                    <!-- Soft Pink Spotted Belly Facing Up! -->
+                    <ellipse cx="5" cy="2" rx="39" ry="21" fill="#fce7f3" />
+                    <circle cx="-6" cy="0" r="4.5" fill="#d6c7b2" opacity="0.65" />
+                    <circle cx="15" cy="5" r="5.5" fill="#d6c7b2" opacity="0.65" />
+                    <circle cx="6" cy="-7" r="3.5" fill="#d6c7b2" opacity="0.65" />
+                    <!-- 4 Paws Flopped Up in the Air (With Dream Twitching!) -->
+                    <g fill="#e7e0d6" stroke="#8c8275" stroke-width="2">
+                        <path d="M35,-10 Q48,-36 56,-25 Q59,-16 44,-4 Z" class="paw-twitch" />
+                        <path d="M22,-16 Q32,-38 40,-30 Q42,-22 30,-10 Z" />
+                        <path d="M-20,-14 Q-28,-38 -15,-34 Q-8,-30 -12,-12 Z" class="paw-twitch" style="animation-delay: 1.4s;" />
+                        <path d="M-32,-8 Q-44,-32 -30,-28 Q-22,-25 -24,-6 Z" />
+                    </g>
+                    <!-- Pink Toe Beans -->
+                    <circle cx="51" cy="-23" r="3" fill="#f472b6" />
+                    <circle cx="-17" cy="-30" r="3" fill="#f472b6" />
+                    <!-- Upside-Down Squat Head with Floppy Jowls & Tongue -->
+                    <g transform="translate(-40, 2)">
+                        <ellipse cx="0" cy="0" rx="26" ry="22" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                        <path d="M-6,-14 Q-18,-34 -4,-36 Q7,-35 2,-14 Z" fill="#fb7185" stroke="#e11d48" stroke-width="1.5" />
+                        <line x1="-3" y1="-16" x2="-4" y2="-30" stroke="#e11d48" stroke-width="1.2" />
+                        <ellipse cx="-7" cy="-8" rx="13" ry="10" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <ellipse cx="7" cy="-8" rx="13" ry="10" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <ellipse cx="0" cy="-3" rx="6" ry="4" fill="#292524" />
+                        <path d="M-13,6 Q-8,2 -3,6" fill="none" stroke="#292524" stroke-width="2.4" stroke-linecap="round" />
+                        <path d="M5,6 Q10,2 15,6" fill="none" stroke="#292524" stroke-width="2.4" stroke-linecap="round" />
+                    </g>
+                </g>
+
+                <!-- POSE C: AWAKE & CHOWING DOWN (Only when his food bowl is clicked!) -->
+                <g id="bulldog-pose-awake" class="hidden">
+                    <rect x="24" y="8" width="12" height="22" rx="6" fill="#d6cfc7" stroke="#8c8275" stroke-width="2" class="leg-trot-a" />
+                    <rect x="38" y="6" width="12" height="22" rx="6" fill="#e7e0d6" stroke="#8c8275" stroke-width="2" class="leg-trot-b" />
+                    <rect x="-28" y="8" width="12" height="22" rx="6" fill="#d6cfc7" stroke="#8c8275" stroke-width="2" class="leg-trot-b" />
+                    <rect x="-16" y="10" width="12" height="22" rx="6" fill="#e7e0d6" stroke="#8c8275" stroke-width="2" class="leg-trot-a" />
+                    <circle cx="55" cy="-14" r="8" fill="#78716c" class="tail-fast" />
+                    <ellipse cx="10" cy="-6" rx="46" ry="28" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                    <path d="M0,-33 Q24,-34 35,-20 Q25,-4 2,-12 Z" fill="#8c6d53" />
+                    <path d="M-20,-28 Q-10,-2 -18,12" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round" />
+                    <g id="bulldog-awake-head" transform="translate(-34, -10)" class="head-eat">
+                        <ellipse cx="0" cy="0" rx="26" ry="23" fill="#e7e0d6" stroke="#8c8275" stroke-width="2.2" />
+                        <ellipse cx="-8" cy="-5" rx="10" ry="8" fill="#8c6d53" />
+                        <path d="M-16,-18 Q-28,-30 -24,-10 Z" fill="#785a42" stroke="#5c4430" stroke-width="1.8" />
+                        <path d="M12,-18 Q26,-30 22,-10 Z" fill="#785a42" stroke="#5c4430" stroke-width="1.8" />
+                        <!-- WIDE AWAKE EYES! -->
+                        <circle cx="-9" cy="-4" r="5.8" fill="#ffffff" stroke="#292524" stroke-width="1.8" />
+                        <circle cx="-10" cy="-4" r="3" fill="#292524" />
+                        <circle cx="-11" cy="-5" r="1.2" fill="#ffffff" />
+                        <circle cx="9" cy="-4" r="5.8" fill="#ffffff" stroke="#292524" stroke-width="1.8" />
+                        <circle cx="8" cy="-4" r="3" fill="#292524" />
+                        <circle cx="7" cy="-5" r="1.2" fill="#ffffff" />
+                        <!-- Chowing Muzzle -->
+                        <ellipse cx="-7" cy="9" rx="13" ry="10" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <ellipse cx="7" cy="9" rx="13" ry="10" fill="#cfc5b8" stroke="#8c8275" stroke-width="2" />
+                        <ellipse cx="0" cy="3" rx="6" ry="4" fill="#292524" />
+                    </g>
+                    <!-- Wake-Up Alert Badge -->
+                    <g transform="translate(-38, -52)">
+                        <circle cx="0" cy="0" r="14" fill="#fef08a" stroke="#ef4444" stroke-width="2.5" />
+                        <text x="0" y="6" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="19" fill="#dc2626">!</text>
+                    </g>
+                </g>
+
+                <!-- Interactive Poppable "Zzz" Sleep Bubbles Container -->
+                <g id="bulldog-zzz-group" transform="translate(-45, -28)"></g>
+            </g>
+
+            <!-- ==========================================
+                 10. CHARACTER 1: SUNNY THE GOLDEN RETRIEVER (Main Companion)
+                 ========================================== -->
+            <g id="golden-character" class="garden-hotspot" transform="translate(520, 485)"
+               onmousedown="startPettingGolden(event)"
+               ontouchstart="startPettingGolden(event)"
+               onclick="handlePetGolden(event)"
+               onmouseenter="showTooltip(event, '🐕 Sunny • Tap or Rub to Pet & Comfort')"
+               onmouseleave="hideTooltip()">
+                
+                <!-- Ground Shadow -->
+                <ellipse cx="0" cy="48" rx="64" ry="20" fill="#538241" opacity="0.48" />
+
+                <!-- Inner Wrapper for Horizontal Flip -->
+                <g id="golden-flip-wrapper" transform="scale(1, 1)">
+                    <g id="golden-body-rig" class="breathe-anim">
+                        
+                        <!-- Fluffy Golden Tail -->
+                        <g id="golden-tail" transform="translate(46, 8)" class="tail-calm">
+                            <path d="M0,0 Q38,-18 54,4 Q36,24 2,10 Z" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="2" />
+                            <path d="M12,6 Q34,16 46,4" fill="none" stroke="#fde4a6" stroke-width="3" stroke-linecap="round" />
+                        </g>
+
+                        <!-- 4 Articulated Legs (Sitting / Trotting) -->
+                        <g id="golden-hind-legs">
+                            <g id="golden-leg-br" transform="translate(26, 16)">
+                                <rect x="-6" y="0" width="14" height="32" rx="7" fill="#cf8122" />
+                                <ellipse cx="-1" cy="31" rx="10" ry="5.5" fill="#e89f38" />
+                            </g>
+                            <g id="golden-leg-bl" transform="translate(18, 12)">
+                                <path d="M-6,-6 Q30,-8 28,26 Q14,36 -2,32 Z" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="2" />
+                                <ellipse cx="0" cy="33" rx="13" ry="6.5" fill="#f7bd59" stroke="#b86f1b" stroke-width="1.8" />
+                            </g>
+                        </g>
+
+                        <!-- Main Torso -->
+                        <path d="M-26,-8 Q10,-14 44,6 Q52,32 28,42 L-22,42 Q-38,24 -26,-8 Z" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="2.2" />
+
+                        <!-- Fluffy Cream Chest Ruff -->
+                        <path d="M-28,-6 Q-44,12 -30,32 Q-16,38 -8,24 Q-12,4 -28,-6 Z" fill="url(#golden-chest)" stroke="#d9912b" stroke-width="1.8" />
+
+                        <!-- Front Legs -->
+                        <g id="golden-front-legs">
+                            <g id="golden-leg-fr" transform="translate(-10, 16)">
+                                <rect x="-6" y="0" width="13" height="34" rx="6.5" fill="#d98a26" stroke="#b86f1b" stroke-width="1.8" />
+                                <ellipse cx="-2" cy="33" rx="9" ry="5" fill="#f7bd59" stroke="#b86f1b" stroke-width="1.5" />
+                            </g>
+                            <g id="golden-leg-fl" transform="translate(-22, 14)">
+                                <rect x="-7" y="0" width="14" height="36" rx="7" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="2" />
+                                <ellipse cx="-2" cy="35" rx="10" ry="5.5" fill="#fde4a6" stroke="#b86f1b" stroke-width="1.8" />
+                            </g>
+                        </g>
+
+                        <!-- Teal/Sage Collar & Bell -->
+                        <path d="M-32,-10 Q-14,-2 -6,-14" fill="none" stroke="#0d9488" stroke-width="6.5" stroke-linecap="round" />
+                        <circle cx="-23" cy="-4" r="5" fill="#fbbf24" stroke="#b45309" stroke-width="1.5" />
+
+                        <!-- Expressive Head & Face Group (Subtly tracks cursor when idle) -->
+                        <g id="golden-head-group" transform="translate(-24, -26)">
+                            <g id="golden-head-tracker">
+                                <!-- Back Floppy Ear -->
+                                <path id="golden-ear-back" d="M-8,-18 Q-24,-14 -26,8 Q-18,16 -10,4 Z" fill="#c27418" stroke="#9a580e" stroke-width="1.8" />
+
+                                <!-- Head Base -->
+                                <ellipse cx="0" cy="-2" rx="26" ry="23" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="2.2" />
+                                <!-- Fluffy Cheek Tuft -->
+                                <path d="M18,2 Q28,6 22,14 Q15,16 12,12" fill="url(#golden-fur)" stroke="#b86f1b" stroke-width="1.8" />
+
+                                <!-- Snout / Muzzle (Facing Left) -->
+                                <path d="M-16,-4 L-37,-2 Q-42,6 -34,13 L-14,13 Z" fill="#fde4a6" stroke="#c2781e" stroke-width="2" />
+                                <!-- Dark Boopable Nose -->
+                                <ellipse cx="-37" cy="1" rx="6" ry="4.5" fill="#292524" />
+                                <ellipse cx="-38" cy="-0.5" rx="2" ry="1.2" fill="#78716c" />
+
+                                <!-- Pink Tongue (Shown when Buzzing, Drinking, or Happy) -->
+                                <path id="golden-tongue" d="M-30,11 Q-34,25 -25,25 Q-18,25 -21,11 Z" fill="#fb7185" stroke="#e11d48" stroke-width="1.5" class="hidden" />
+
+                                <!-- Smile / Mouth Expression -->
+                                <path id="golden-mouth" d="M-32,9 Q-23,14 -16,8" fill="none" stroke="#451a03" stroke-width="2.2" stroke-linecap="round" />
+
+                                <!-- Expressive Eyes (With Cursor Tracking Pupil & Natural Blinking) -->
+                                <g id="golden-eyes-open">
+                                    <circle cx="-13" cy="-6" r="4.6" fill="#292524" />
+                                    <g id="golden-pupil-group">
+                                        <circle cx="-14.5" cy="-7.5" r="1.7" fill="#ffffff" />
+                                        <circle cx="-11.8" cy="-4.8" r="0.8" fill="#ffffff" opacity="0.7" />
+                                    </g>
+                                </g>
+                                <!-- Sleepy/Tired or Blinking Eyelids -->
+                                <g id="golden-eyes-tired" class="hidden">
+                                    <path d="M-19,-5 Q-13,-1 -7,-5" fill="none" stroke="#292524" stroke-width="2.6" stroke-linecap="round" />
+                                </g>
+                                <!-- Expressive Eyebrows (Changes with Mood) -->
+                                <path id="golden-brow" d="M-19,-13 Q-13,-16 -7,-13" fill="none" stroke="#9a580e" stroke-width="2.4" stroke-linecap="round" />
+
+                                <!-- Front Floppy Golden Ear -->
+                                <path id="golden-ear-front" d="M4,-16 Q22,-14 22,12 Q12,22 3,10 Q-2,0 4,-16 Z" fill="#d98624" stroke="#9a580e" stroke-width="2" />
+                            </g>
+                        </g>
+                    </g>
+                </g>
+
+                <!-- MOOD OVERLAYS ABOVE SUNNY'S HEAD -->
+                <!-- 1. Frustrated / Overwhelmed Storm Cloud + Lightning + Comfort Progress Ring -->
+                <g id="mood-fx-frustrated" transform="translate(-25, -82)" class="hidden">
+                    <g class="scribble-cloud">
+                        <ellipse cx="0" cy="0" rx="26" ry="15" fill="#64748b" opacity="0.9" />
+                        <circle cx="-13" cy="-7" r="11" fill="#94a3b8" />
+                        <circle cx="9" cy="-8" r="13" fill="#64748b" />
+                        <path d="M-12,0 Q-4,-12 4,2 Q12,-10 14,4 Q-6,8 -12,0" fill="none" stroke="#1e293b" stroke-width="2" />
+                        <!-- Tiny Lightning Bolt Flash -->
+                        <polygon points="-2,11 -8,21 -1,21 -5,30 6,18 0,18 4,11" fill="#facc15" class="lightning-bolt" />
+                    </g>
+                    <!-- Petting Comfort Progress Ring -->
+                    <g transform="translate(0, -28)">
+                        <circle cx="0" cy="0" r="14" fill="#fffbeb" fill-opacity="0.9" stroke="#e2e8f0" stroke-width="3" />
+                        <circle id="comfort-ring-progress" cx="0" cy="0" r="14" fill="none" stroke="#10b981" stroke-width="3.5"
+                                stroke-dasharray="88" stroke-dashoffset="88" stroke-linecap="round" transform="rotate(-90)" class="transition-all duration-200" />
+                        <text x="0" y="4" text-anchor="middle" font-size="11">✋</text>
+                    </g>
+                </g>
+
+                <!-- 2. Buzzing / Energetic Sparkles -->
+                <g id="mood-fx-buzzing" transform="translate(-22, -74)" class="hidden">
+                    <path d="M-18,0 L-14,-8 L-10,0 L-14,8 Z" fill="#facc15" class="animate-bounce" />
+                    <path d="M12,-6 L16,-14 L20,-6 L16,2 Z" fill="#fb7185" class="animate-pulse" />
+                    <circle cx="0" cy="-12" r="3.5" fill="#fef08a" />
+                </g>
+
+                <!-- 3. Tired Sleepy Bubble -->
+                <g id="mood-fx-tired" transform="translate(-52, -18)" class="hidden">
+                    <circle cx="0" cy="0" r="9" fill="#e0f2fe" fill-opacity="0.78" stroke="#7dd3fc" stroke-width="1.5" class="animate-pulse" />
+                    <circle cx="-2.5" cy="-2.5" r="2.2" fill="#ffffff" />
+                </g>
+
+                <!-- Dynamic Floating Hearts Container (On Petting) -->
+                <g id="floating-hearts-layer" transform="translate(-20, -60)" pointer-events="none"></g>
+            </g>
+
+            <!-- ==========================================
+                 11. AMBIENT BUTTERFLIES, RAIN, SUNBEAMS & FIREFLIES
+                 ========================================== -->
+            <!-- Fluttering Butterfly 1 -->
+            <g transform="translate(460, 410)" pointer-events="none">
+                <g class="butterfly-path">
+                    <path d="M0,0 Q-10,-12 -4,-14 Q2,-14 0,0" fill="#fde047" />
+                    <path d="M0,0 Q10,-12 4,-14 Q-2,-14 0,0" fill="#facc15" />
+                </g>
+            </g>
+            <!-- Fluttering Butterfly 2 (Unlocks as garden blooms) -->
+            <g id="extra-butterfly" transform="translate(280, 445)" pointer-events="none" class="hidden">
+                <g class="butterfly-path" style="animation-delay: -7s; animation-duration: 15s;">
+                    <path d="M0,0 Q-11,-13 -4,-15 Q2,-15 0,0" fill="#f472b6" />
+                    <path d="M0,0 Q11,-13 4,-15 Q-2,-15 0,0" fill="#fb7185" />
+                </g>
+            </g>
+
+            <!-- Dynamic Leaf / Rustle Particles Layer -->
+            <g id="env-particles-layer" pointer-events="none"></g>
+
+            <!-- Foreground Soft Vignette / Foliage Corners + Weather Overlays -->
+            <g pointer-events="none">
+                <!-- Bottom Left Foreground Leaves -->
+                <g class="sway-slow" style="transform-origin: 0px 760px;">
+                    <circle cx="-10" cy="750" r="85" fill="#437536" />
+                    <circle cx="75" cy="765" r="65" fill="#558c46" />
+                    <circle cx="30" cy="715" r="8" fill="#fb7185" />
+                </g>
+                <!-- Bottom Right Foreground Leaves -->
+                <g class="sway-medium" style="transform-origin: 1200px 760px;">
+                    <circle cx="1210" cy="740" r="90" fill="#437536" />
+                    <circle cx="1125" cy="765" r="68" fill="#558c46" />
+                </g>
+                <!-- Diagonal Sunbeams (Day/Sunset) -->
+                <g id="sunbeams-layer" opacity="0.7" class="transition-opacity duration-1000">
+                    <polygon points="120,0 280,0 640,760 420,760" fill="url(#sunbeam-grad)" />
+                    <polygon points="360,0 470,0 860,760 710,760" fill="url(#sunbeam-grad)" />
+                </g>
+                <!-- Ambient Lighting Tint Overlay -->
+                <rect id="lighting-tint" width="1200" height="760" fill="#1e1b4b" opacity="0" class="transition-opacity duration-1000" />
+                
+                <!-- Nighttime Fireflies Layer -->
+                <g id="fireflies-layer" opacity="0" class="transition-opacity duration-1000">
+                    <circle cx="280" cy="480" r="4" fill="#fef08a" class="animate-ping" style="animation-duration: 3s;" />
+                    <circle cx="280" cy="480" r="3" fill="#fde047" />
+                    <circle cx="670" cy="510" r="4" fill="#fef08a" class="animate-ping" style="animation-duration: 4s;" />
+                    <circle cx="670" cy="510" r="3" fill="#fde047" />
+                    <circle cx="880" cy="430" r="3.5" fill="#fef08a" class="animate-ping" style="animation-duration: 3.5s;" />
+                    <circle cx="440" cy="390" r="3" fill="#fde047" class="animate-pulse" />
+                    <circle cx="180" cy="580" r="3.5" fill="#fef08a" class="animate-pulse" />
+                </g>
+
+                <!-- Cozy Rain Layer (Streaks + Ground Puddle Ripples) -->
+                <g id="rain-layer" opacity="0" class="transition-opacity duration-700">
+                    <g stroke="#e0f2fe" stroke-width="1.8" stroke-linecap="round" opacity="0.75">
+                        <line x1="120" y1="0" x2="105" y2="38" style="animation: rainFall 0.9s linear infinite;" />
+                        <line x1="260" y1="0" x2="245" y2="42" style="animation: rainFall 0.85s linear -0.3s infinite;" />
+                        <line x1="410" y1="0" x2="395" y2="36" style="animation: rainFall 0.95s linear -0.6s infinite;" />
+                        <line x1="550" y1="0" x2="535" y2="40" style="animation: rainFall 0.8s linear -0.2s infinite;" />
+                        <line x1="700" y1="0" x2="685" y2="42" style="animation: rainFall 0.9s linear -0.5s infinite;" />
+                        <line x1="840" y1="0" x2="825" y2="38" style="animation: rainFall 0.88s linear -0.1s infinite;" />
+                        <line x1="990" y1="0" x2="975" y2="40" style="animation: rainFall 0.92s linear -0.4s infinite;" />
+                        <line x1="1120" y1="0" x2="1105" y2="38" style="animation: rainFall 0.86s linear -0.7s infinite;" />
+                    </g>
+                    <!-- Lawn Raindrop Ripples -->
+                    <ellipse cx="310" cy="560" rx="14" ry="5" fill="none" stroke="#bae6fd" stroke-width="1.5" style="animation: waterRipple 1.4s ease-out infinite;" />
+                    <ellipse cx="590" cy="490" rx="14" ry="5" fill="none" stroke="#bae6fd" stroke-width="1.5" style="animation: waterRipple 1.6s ease-out -0.6s infinite;" />
+                    <ellipse cx="470" cy="650" rx="14" ry="5" fill="none" stroke="#bae6fd" stroke-width="1.5" style="animation: waterRipple 1.5s ease-out -1.1s infinite;" />
+                </g>
+            </g>
+        </svg>
+    </main>
+
+    <!-- ==========================================
+         MODALS & SELF-CARE CHECK-IN OVERLAYS
+         ========================================== -->
+
+    <!-- 1. INITIAL ONBOARDING & MOOD CHECK-IN MODAL -->
+    <div id="mood-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/25 backdrop-blur-[3px] transition-opacity duration-300">
+        <div class="cozy-card w-full max-w-lg rounded-3xl p-6 sm:p-8 text-center relative animate-[fadeIn_0.25s_ease-out]">
+            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-3xl shadow-sm">
+                🌻
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-display font-bold text-[#3d342b]">Welcome to the Garden</h2>
+            <p class="text-sm sm:text-base text-[#6e5f4f] mt-1.5 mb-6">
+                How are your mind &amp; body feeling right now? Sunny will reflect your energy in the garden.
+            </p>
+
+            <!-- 4 Mood Options Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                <button onclick="selectMood('calm')" id="mood-btn-calm"
+                    class="mood-option-btn p-4 rounded-2xl border-2 border-[#e5dec9] bg-white/80 hover:bg-[#fef9ec] hover:border-[#d99b52] transition-all flex items-start gap-3.5 group">
+                    <span class="text-3xl group-hover:scale-110 transition-transform">😊</span>
+                    <div>
+                        <div class="font-display font-bold text-[#3d342b] text-base">Calm &amp; Content</div>
+                        <div class="text-xs text-[#7c6b58] mt-0.5">Gentle tail sway, warm smile, watching butterflies</div>
+                    </div>
+                </button>
+
+                <button onclick="selectMood('buzzing')" id="mood-btn-buzzing"
+                    class="mood-option-btn p-4 rounded-2xl border-2 border-[#e5dec9] bg-white/80 hover:bg-[#fef9ec] hover:border-[#d99b52] transition-all flex items-start gap-3.5 group">
+                    <span class="text-3xl group-hover:scale-110 transition-transform">⚡</span>
+                    <div>
+                        <div class="font-display font-bold text-[#3d342b] text-base">Buzzing &amp; Energetic</div>
+                        <div class="text-xs text-[#7c6b58] mt-0.5">Happy panting, fast tail wag &amp; little hops</div>
+                    </div>
+                </button>
+
+                <button onclick="selectMood('tired')" id="mood-btn-tired"
+                    class="mood-option-btn p-4 rounded-2xl border-2 border-[#e5dec9] bg-white/80 hover:bg-[#fef9ec] hover:border-[#d99b52] transition-all flex items-start gap-3.5 group">
+                    <span class="text-3xl group-hover:scale-110 transition-transform">🥱</span>
+                    <div>
+                        <div class="font-display font-bold text-[#3d342b] text-base">Tired &amp; Low Energy</div>
+                        <div class="text-xs text-[#7c6b58] mt-0.5">Resting posture, droopy ears &amp; slow breaths</div>
+                    </div>
+                </button>
+
+                <button onclick="selectMood('frustrated')" id="mood-btn-frustrated"
+                    class="mood-option-btn p-4 rounded-2xl border-2 border-[#e5dec9] bg-white/80 hover:bg-[#fef9ec] hover:border-[#d99b52] transition-all flex items-start gap-3.5 group">
+                    <span class="text-3xl group-hover:scale-110 transition-transform">🌧️</span>
+                    <div>
+                        <div class="font-display font-bold text-[#3d342b] text-base">Mentally Frustrated</div>
+                        <div class="text-xs text-[#7c6b58] mt-0.5">Storm cloud overhead (pet Sunny 3x to soothe!)</div>
+                    </div>
+                </button>
+            </div>
+
+            <button onclick="closeAllModals()" class="mt-6 text-xs font-semibold text-[#8c7a66] hover:text-[#3d342b] underline underline-offset-4">
+                Step straight into the garden
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. HYDRATION MODAL (Golden's Water Bowl) -->
+    <div id="water-modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div class="cozy-card w-full max-w-md rounded-3xl p-6 pointer-events-auto relative shadow-2xl mb-4 sm:mb-0">
+            <button onclick="dismissInteractionModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-200 flex items-center justify-center text-2xl">💧</div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600">Hydration Check-In</span>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">How much water have you had?</h3>
+                </div>
+            </div>
+
+            <!-- Daily Hydration Progress Bar -->
+            <div class="mb-3">
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                    <span class="text-[#6e5f4f]">Daily Hydration Goal</span>
+                    <span class="text-sky-700"><span id="modal-water-glasses">0</span> / 8 glasses (<span id="modal-water-ml">0</span> ml)</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-[#e6decb] overflow-hidden">
+                    <div id="water-progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-blue-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Interactive 8 Glasses Visual Grid -->
+            <div id="water-glasses-grid" class="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-5 p-3 rounded-2xl bg-[#f7f2e7] border border-[#e6decb]">
+                <!-- Populated dynamically by JS -->
+            </div>
+
+            <!-- Counter & Quick Buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <button onclick="adjustWater(-1)" class="w-10 h-10 rounded-xl bg-[#efe8da] hover:bg-[#e2d6c1] font-display font-bold text-lg text-[#5c4e3e] active:scale-95 transition-transform" title="Remove 1 glass">−</button>
+                    <button onclick="adjustWater(1)" class="px-3.5 h-10 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-display font-semibold text-xs sm:text-sm shadow-sm active:scale-95 transition-all flex items-center gap-1">
+                        <span>+1 Glass</span>
+                        <span class="text-[10px] opacity-85">(250ml)</span>
+                    </button>
+                    <button onclick="adjustWater(2)" class="px-3 h-10 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-display font-semibold text-xs active:scale-95 transition-all">
+                        +Bottle (500ml)
+                    </button>
+                </div>
+
+                <button onclick="dismissInteractionModal()" class="px-4 py-2.5 rounded-xl bg-[#e8dfce] hover:bg-[#dcd0ba] text-xs font-bold text-[#4a3e31] transition-colors">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. NUTRITION / MEALS MODAL (Golden's Food Bowl) -->
+    <div id="food-modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div class="cozy-card w-full max-w-md rounded-3xl p-6 pointer-events-auto relative shadow-2xl mb-4 sm:mb-0">
+            <button onclick="dismissInteractionModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-orange-100 border border-orange-200 flex items-center justify-center text-2xl">🥣</div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-orange-600">Nourishment Log</span>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">What did you have to eat?</h3>
+                </div>
+            </div>
+
+            <!-- Meal Type Pills -->
+            <div class="grid grid-cols-4 gap-2 mb-3">
+                <button onclick="selectMealType('Breakfast')" data-meal="Breakfast" class="meal-type-btn py-2 px-2 rounded-xl border-2 border-orange-400 bg-orange-50 text-xs font-display font-semibold text-[#3d342b] flex flex-col items-center gap-1">
+                    <span class="text-lg">🥐</span> Breakfast
+                </button>
+                <button onclick="selectMealType('Lunch')" data-meal="Lunch" class="meal-type-btn py-2 px-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-semibold text-[#3d342b] flex flex-col items-center gap-1">
+                    <span class="text-lg">🥗</span> Lunch
+                </button>
+                <button onclick="selectMealType('Dinner')" data-meal="Dinner" class="meal-type-btn py-2 px-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-semibold text-[#3d342b] flex flex-col items-center gap-1">
+                    <span class="text-lg">🍲</span> Dinner
+                </button>
+                <button onclick="selectMealType('Snack')" data-meal="Snack" class="meal-type-btn py-2 px-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-semibold text-[#3d342b] flex flex-col items-center gap-1">
+                    <span class="text-lg">🍎</span> Snack
+                </button>
+            </div>
+
+            <!-- Nourishment Feeling Chips -->
+            <div class="mb-3">
+                <label class="block text-[11px] font-semibold text-[#7c6b58] mb-1.5">How nourishing did it feel?</label>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="selectMealVibe('🌱 Light')" data-vibe="🌱 Light" class="meal-vibe-btn py-1.5 rounded-lg border border-[#e5dec9] bg-white/70 text-[11px] font-semibold">🌱 Light</button>
+                    <button onclick="selectMealVibe('⚖️ Balanced')" data-vibe="⚖️ Balanced" class="meal-vibe-btn py-1.5 rounded-lg border-2 border-orange-400 bg-orange-50 text-[11px] font-semibold">⚖️ Balanced</button>
+                    <button onclick="selectMealVibe('🍲 Hearty')" data-vibe="🍲 Hearty" class="meal-vibe-btn py-1.5 rounded-lg border border-[#e5dec9] bg-white/70 text-[11px] font-semibold">🍲 Hearty</button>
+                    <button onclick="selectMealVibe('🧁 Treat')" data-vibe="🧁 Treat" class="meal-vibe-btn py-1.5 rounded-lg border border-[#e5dec9] bg-white/70 text-[11px] font-semibold">🧁 Treat</button>
+                </div>
+            </div>
+
+            <!-- Meal Note Input -->
+            <div class="mb-4">
+                <input id="meal-note-input" type="text" placeholder="Optional note (e.g., Warm oatmeal, avocado toast...)" 
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#dfd5c3] text-sm text-[#3d342b] placeholder-[#9c8c79] focus:outline-none focus:border-orange-400" />
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+                <div class="text-xs text-[#7c6b58]">
+                    Meals logged today: <strong id="modal-meal-count" class="text-[#3d342b]">0</strong>
+                </div>
+                <button onclick="saveMealLog()" class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-display font-semibold text-sm shadow-sm active:scale-95 transition-all">
+                    Log Nourishment 🥣
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ACTIVITY & MOVEMENT MODAL (Red Ball) -->
+    <div id="activity-modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div class="cozy-card w-full max-w-md rounded-3xl p-6 pointer-events-auto relative shadow-2xl mb-4 sm:mb-0">
+            <button onclick="dismissInteractionModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-2xl">🎾</div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Play &amp; Movement</span>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">What activity did you do today?</h3>
+                </div>
+            </div>
+
+            <!-- Activity Tags -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="selectActivityTag('🚶 Walk')" data-act="🚶 Walk" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-rose-400 bg-rose-50 text-xs font-semibold text-[#3d342b]">🚶 Walk</button>
+                <button onclick="selectActivityTag('🧘 Stretch / Yoga')" data-act="🧘 Stretch / Yoga" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">🧘 Stretch / Yoga</button>
+                <button onclick="selectActivityTag('🏃 Run')" data-act="🏃 Run" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">🏃 Run</button>
+                <button onclick="selectActivityTag('🏋️ Gym')" data-act="🏋️ Gym" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">🏋️ Gym</button>
+                <button onclick="selectActivityTag('💃 Dance')" data-act="💃 Dance" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">💃 Dance</button>
+                <button onclick="selectActivityTag('🧹 Housework')" data-act="🧹 Housework" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">🧹 Housework</button>
+                <button onclick="selectActivityTag('⚽ Sports')" data-act="⚽ Sports" class="act-tag-btn px-3 py-1.5 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-semibold text-[#3d342b]">⚽ Sports</button>
+            </div>
+
+            <!-- Duration Selector -->
+            <div class="mb-5">
+                <label class="block text-xs font-semibold text-[#7c6b58] mb-2">Duration</label>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="selectActivityDuration(15)" data-dur="15" class="dur-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-bold">15 mins</button>
+                    <button onclick="selectActivityDuration(30)" data-dur="30" class="dur-btn py-2 rounded-xl border-2 border-rose-400 bg-rose-50 text-xs font-display font-bold">30 mins</button>
+                    <button onclick="selectActivityDuration(45)" data-dur="45" class="dur-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-bold">45 mins</button>
+                    <button onclick="selectActivityDuration(60)" data-dur="60" class="dur-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-xs font-display font-bold">60+ mins</button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button onclick="launchBallPhysics()" class="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-display font-semibold transition-colors">
+                    🎾 Toss Ball Again
+                </button>
+                <button onclick="saveActivityLog()" class="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-display font-semibold text-sm shadow-sm active:scale-95 transition-all">
+                    Log Activity 🎾
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. SLEEP LOG MODAL (Barnaby the Lazy Bulldog) -->
+    <div id="sleep-modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div class="cozy-card w-full max-w-md rounded-3xl p-6 pointer-events-auto relative shadow-2xl mb-4 sm:mb-0">
+            <button onclick="dismissInteractionModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-2xl">💤</div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Barnaby's Sleep Corner</span>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">How much did you sleep?</h3>
+                </div>
+            </div>
+
+            <!-- Toggle Barnaby's Sleeping Pose -->
+            <div class="flex items-center justify-between p-3 rounded-2xl bg-[#f5efe4] border border-[#e5dec9] mb-4">
+                <div>
+                    <div class="text-xs font-bold text-[#3d342b]" id="bulldog-pose-status-text">Pose: Belly-Down Loaf</div>
+                    <div class="text-[10px] text-[#7c6b58]">Tap his rising Zzz bubbles in the garden to pop them!</div>
+                </div>
+                <button onclick="toggleBulldogBellyPose()" id="btn-bulldog-pose"
+                    class="px-3.5 py-2 rounded-xl bg-white border border-[#d6cbb9] shadow-sm text-xs font-display font-bold text-[#3d342b] hover:bg-[#fef9ec] active:scale-95 transition-all">
+                    🐾 Roll Belly Up / Down
+                </button>
+            </div>
+
+            <!-- Hours Slider + Quick Presets -->
+            <div class="mb-4">
+                <div class="flex justify-between items-baseline mb-1.5">
+                    <label class="text-xs font-semibold text-[#7c6b58]">Hours Slept</label>
+                    <span class="text-xl font-display font-bold text-indigo-700"><span id="sleep-hours-val">7.5</span> hrs</span>
+                </div>
+                <input id="sleep-hours-slider" type="range" min="2" max="12" step="0.5" value="7.5" 
+                    oninput="document.getElementById('sleep-hours-val').textContent = this.value"
+                    class="w-full mb-2" />
+                <div class="flex justify-between gap-1.5">
+                    <button onclick="setSleepPreset(5)" class="flex-1 py-1 rounded-lg bg-[#f3ede2] hover:bg-[#e5dec9] text-[11px] font-semibold">5h</button>
+                    <button onclick="setSleepPreset(6.5)" class="flex-1 py-1 rounded-lg bg-[#f3ede2] hover:bg-[#e5dec9] text-[11px] font-semibold">6.5h</button>
+                    <button onclick="setSleepPreset(7.5)" class="flex-1 py-1 rounded-lg bg-[#f3ede2] hover:bg-[#e5dec9] text-[11px] font-semibold">7.5h</button>
+                    <button onclick="setSleepPreset(8.5)" class="flex-1 py-1 rounded-lg bg-[#f3ede2] hover:bg-[#e5dec9] text-[11px] font-semibold">8.5h</button>
+                    <button onclick="setSleepPreset(10)" class="flex-1 py-1 rounded-lg bg-[#f3ede2] hover:bg-[#e5dec9] text-[11px] font-semibold">10h</button>
+                </div>
+            </div>
+
+            <!-- Sleep Quality Buttons -->
+            <div class="mb-5">
+                <label class="block text-xs font-semibold text-[#7c6b58] mb-2">Sleep Quality</label>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="selectSleepQuality('Restless')" data-sq="Restless" class="sq-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-[11px] font-semibold">🌙 Restless</button>
+                    <button onclick="selectSleepQuality('Power Nap')" data-sq="Power Nap" class="sq-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-[11px] font-semibold">⚡ Power Nap</button>
+                    <button onclick="selectSleepQuality('Good')" data-sq="Good" class="sq-btn py-2 rounded-xl border-2 border-indigo-400 bg-indigo-50 text-[11px] font-semibold">✨ Solid</button>
+                    <button onclick="selectSleepQuality('Deep Coma')" data-sq="Deep Coma" class="sq-btn py-2 rounded-xl border-2 border-[#e5dec9] bg-white/70 text-[11px] font-semibold">🐶 Bulldog Deep</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="saveSleepLog()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-display font-semibold text-sm shadow-sm active:scale-95 transition-all">
+                    Save Sleep Log 💤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. BARNABY'S WAKE-UP BOWL MODAL (Easter Egg + Treat Log) -->
+    <div id="bulldog-bowl-modal" class="fixed inset-0 z-40 hidden items-end sm:items-center justify-center p-4 pointer-events-none">
+        <div class="cozy-card w-full max-w-md rounded-3xl p-6 pointer-events-auto relative shadow-2xl mb-4 sm:mb-0">
+            <button onclick="putBulldogBackToSleep()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-teal-100 border border-teal-200 flex items-center justify-center text-2xl">🥩</div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-teal-700">Miracle Wake-Up!</span>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">Barnaby Scrambled Out of Bed!</h3>
+                </div>
+            </div>
+
+            <p class="text-xs sm:text-sm text-[#5c4e3e] mb-4 leading-relaxed">
+                The clink of his food bowl is the <strong>only</strong> force in the universe that wakes Barnaby! Watch the crumbs fly while he chows down. Did you give yourself a little pick-me-up today?
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-5">
+                <button onclick="logBulldogTreat('☕ Cozy Tea / Coffee')" class="px-3 py-2 rounded-xl bg-white border border-[#dfd5c3] hover:border-teal-500 text-xs font-semibold text-[#3d342b] transition-all">☕ Cozy Drink</button>
+                <button onclick="logBulldogTreat('🍫 Sweet Treat')" class="px-3 py-2 rounded-xl bg-white border border-[#dfd5c3] hover:border-teal-500 text-xs font-semibold text-[#3d342b] transition-all">🍫 Sweet Treat</button>
+                <button onclick="logBulldogTreat('🥜 Protein Snack')" class="px-3 py-2 rounded-xl bg-white border border-[#dfd5c3] hover:border-teal-500 text-xs font-semibold text-[#3d342b] transition-all">🥜 Protein Snack</button>
+                <button onclick="logBulldogTreat('💊 Vitamins / Meds')" class="px-3 py-2 rounded-xl bg-white border border-[#dfd5c3] hover:border-teal-500 text-xs font-semibold text-[#3d342b] transition-all">💊 Took Vitamins</button>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span class="text-[11px] text-[#8c7a66]">He'll waddle back to his cushion soon</span>
+                <button onclick="putBulldogBackToSleep()" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-display font-semibold text-xs sm:text-sm shadow-sm">
+                    Pat Barnaby &amp; Let Him Nap 💤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. DAILY GARDEN JOURNAL SUMMARY MODAL -->
+    <div id="journal-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/25 backdrop-blur-[3px]">
+        <div class="cozy-card w-full max-w-lg rounded-3xl p-6 sm:p-7 relative max-h-[88vh] flex flex-col">
+            <button onclick="closeAllModals()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#efe8da] hover:bg-[#e2d6c1] flex items-center justify-center text-[#5c4e3e] font-bold">✕</button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-2xl">🌿</div>
+                <div>
+                    <h3 class="text-xl font-display font-bold text-[#3d342b]">Today's Garden Journal</h3>
+                    <p id="journal-date-str" class="text-xs text-[#7c6b58]">Self-care moments with Sunny &amp; Barnaby</p>
+                </div>
+            </div>
+
+            <!-- Living Garden Flourish Banner -->
+            <div class="p-3 rounded-2xl bg-emerald-50/90 border border-emerald-200 mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">🌸</span>
+                    <div>
+                        <div class="text-xs font-display font-bold text-emerald-950" id="journal-flourish-title">Garden Flourish: Sprouting</div>
+                        <div class="text-[11px] text-emerald-700" id="journal-flourish-desc">Each self-care log blooms new wildflowers in the lawn!</div>
+                    </div>
+                </div>
+                <span id="journal-bloom-badge" class="px-2.5 py-1 rounded-full bg-emerald-600 text-white text-xs font-display font-bold">1 / 8</span>
+            </div>
+
+            <!-- 4 Summary Stat Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+                <div class="p-3 rounded-2xl bg-sky-50/90 border border-sky-200 text-center">
+                    <div class="text-xl">💧</div>
+                    <div id="summary-water" class="font-display font-bold text-base text-sky-900 mt-0.5">0 glasses</div>
+                    <div class="text-[10px] text-sky-700">Hydration</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-orange-50/90 border border-orange-200 text-center">
+                    <div class="text-xl">🥣</div>
+                    <div id="summary-meals" class="font-display font-bold text-base text-orange-900 mt-0.5">0 meals</div>
+                    <div class="text-[10px] text-orange-700">Nourishment</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-rose-50/90 border border-rose-200 text-center">
+                    <div class="text-xl">🎾</div>
+                    <div id="summary-activity" class="font-display font-bold text-base text-rose-900 mt-0.5">0 mins</div>
+                    <div class="text-[10px] text-rose-700">Movement</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-indigo-50/90 border border-indigo-200 text-center">
+                    <div class="text-xl">💤</div>
+                    <div id="summary-sleep" class="font-display font-bold text-base text-indigo-900 mt-0.5">-- hrs</div>
+                    <div class="text-[10px] text-indigo-700">Rest</div>
+                </div>
+            </div>
+
+            <!-- Timeline Feed -->
+            <div class="text-xs font-bold uppercase tracking-wider text-[#8c7a66] mb-2">Today's Check-In Timeline</div>
+            <div id="journal-timeline" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[130px] max-h-[220px]">
+                <!-- Populated by JS -->
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-[#e5dec9] flex items-center justify-between">
+                <button onclick="resetTodayData()" class="text-xs text-rose-600 hover:underline font-medium">Reset Today's Log</button>
+                <button onclick="closeAllModals()" class="px-5 py-2 rounded-xl bg-[#3d342b] text-[#fffbeb] text-xs font-display font-semibold">Back to Garden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         APPLICATION LOGIC, PHYSICS & WEB AUDIO
+         ========================================== -->
+    <script>
+        /* ----------------------------------------------------
+           1. STATE MANAGEMENT & LOCAL STORAGE PERSISTENCE
+           ---------------------------------------------------- */
+        const STORAGE_KEY = 'dog_in_garden_state_v2';
+        
+        const defaultState = {
+            date: new Date().toDateString(),
+            mood: 'calm',          // 'calm' | 'buzzing' | 'tired' | 'frustrated'
+            timeOfDay: 'day',      // 'day' | 'sunset' | 'night' | 'rain'
+            lanternOn: false,
+            soundEnabled: true,
+            waterGlasses: 0,       // Each glass = 250ml
+            meals: [],             // [{ type, vibe, note, time }]
+            activities: [],        // [{ tag, duration, time }]
+            sleep: { hours: null, quality: 'Good' },
+            bulldogBellyUp: false, // false = belly down, true = belly up
+            bulldogAwake: false,
+            timeline: []           // [{ icon, text, time }]
+        };
+
+        let state = loadState();
+        let selectedMealType = 'Breakfast';
+        let selectedMealVibe = '⚖️ Balanced';
+        let selectedActivityTag = '🚶 Walk';
+        let selectedActivityDuration = 30;
+        let selectedSleepQuality = 'Good';
+        let goldenWalkTimeout = null;
+        let bulldogSleepTimer = null;
+        let goldenStation = 'home'; // 'home' | 'water' | 'food' | 'ball'
+        let comfortStrokeCount = 0;
+        let isDraggingPet = false;
+
+        // Coordinates in SVG space for Golden Retriever movement
+        const GOLDEN_COORDS = {
+            home:  { x: 520, y: 485, flip: 1 },
+            water: { x: 290, y: 485, flip: 1 },
+            food:  { x: 435, y: 575, flip: 1 },
+            ball:  { x: 550, y: 585, flip: -1 }
+        };
+
+        // Coordinates in SVG space for Bulldog movement
+        const BULLDOG_COORDS = {
+            bed:   { x: 955, y: 548 },
+            bowl:  { x: 855, y: 565 }
+        };
+
+        // Wildflower positions around the garden that bloom as you log self-care
+        const WILDFLOWER_SPOTS = [
+            { x: 350, y: 445, color: '#f472b6', center: '#facc15', scale: 1 },
+            { x: 655, y: 580, color: '#fb7185', center: '#fef08a', scale: 1.1 },
+            { x: 245, y: 595, color: '#a78bfa', center: '#fde047', scale: 0.95 },
+            { x: 420, y: 520, color: '#38bdf8', center: '#fef08a', scale: 1 },
+            { x: 615, y: 465, color: '#fb923c', center: '#fffbeb', scale: 1.05 },
+            { x: 165, y: 495, color: '#f472b6', center: '#fde047', scale: 0.9 },
+            { x: 530, y: 645, color: '#c084fc', center: '#facc15', scale: 1.1 },
+            { x: 705, y: 515, color: '#fb7185', center: '#fef08a', scale: 1 }
+        ];
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return { ...defaultState };
+                const parsed = JSON.parse(raw);
+                if (parsed.date !== new Date().toDateString()) {
+                    return {
+                        ...defaultState,
+                        mood: parsed.mood || 'calm',
+                        soundEnabled: parsed.soundEnabled ?? true,
+                        bulldogBellyUp: parsed.bulldogBellyUp ?? false
+                    };
+                }
+                return { ...defaultState, ...parsed, bulldogAwake: false };
+            } catch (e) {
+                return { ...defaultState };
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save state to localStorage', e);
+            }
+            updateHUD();
+            renderLivingGardenProgression();
+        }
+
+        function addTimelineEntry(icon, text) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            state.timeline.unshift({ icon, text, time: timeStr });
+            if (state.timeline.length > 30) state.timeline.pop();
+            saveState();
+        }
+
+        /* ----------------------------------------------------
+           2. PROCEDURAL WEB AUDIO (SOUNDSCAPE + SFX)
+           ---------------------------------------------------- */
+        let audioCtx = null;
+        let ambientNoiseNode = null;
+        let ambientGainNode = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Start or update subtle background nature/rain soundscape
+        function updateAmbientSoundscape() {
+            if (!state.soundEnabled) {
+                if (ambientGainNode && audioCtx) {
+                    ambientGainNode.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.2);
+                }
+                return;
+            }
+            const ctx = getAudioContext();
+            if (!ctx) return;
+
+            if (!ambientNoiseNode) {
+                // Create looping soft filtered pink/brown noise for breeze or rain patter
+                const bufferSize = ctx.sampleRate * 2;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let lastOut = 0.0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    data[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = data[i];
+                    data[i] *= 1.5;
+                }
+                ambientNoiseNode = ctx.createBufferSource();
+                ambientNoiseNode.buffer = buffer;
+                ambientNoiseNode.loop = true;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 600;
+                filter.Q.value = 0.7;
+
+                ambientGainNode = ctx.createGain();
+                ambientGainNode.gain.value = 0.001;
+
+                ambientNoiseNode.connect(filter);
+                filter.connect(ambientGainNode);
+                ambientGainNode.connect(ctx.destination);
+                ambientNoiseNode.start();
+            }
+
+            const targetGain = state.timeOfDay === 'rain' ? 0.045 : 0.012;
+            ambientGainNode.gain.setTargetAtTime(targetGain, ctx.currentTime, 0.5);
+        }
+
+        function playSound(type) {
+            if (!state.soundEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            updateAmbientSoundscape();
+
+            const now = ctx.currentTime;
+
+            if (type === 'chime') {
+                [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+                    gain.gain.setValueAtTime(0.07, now + idx * 0.055);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.5);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.055);
+                    osc.stop(now + idx * 0.055 + 0.55);
+                });
+            } else if (type === 'water') {
+                [380, 540, 460, 680].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.13);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.45, now + idx * 0.13 + 0.09);
+                    gain.gain.setValueAtTime(0.085, now + idx * 0.13);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.13 + 0.11);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.13);
+                    osc.stop(now + idx * 0.13 + 0.12);
+                });
+            } else if (type === 'kibble') {
+                [0, 0.15, 0.31].forEach((offset) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(170, now + offset);
+                    osc.frequency.exponentialRampToValueAtTime(90, now + offset + 0.08);
+                    gain.gain.setValueAtTime(0.11, now + offset);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.09);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + offset);
+                    osc.stop(now + offset + 0.1);
+                });
+            } else if (type === 'squeak') {
+                [0, 0.2].forEach((offset, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    const startFreq = i === 0 ? 880 : 1060;
+                    osc.frequency.setValueAtTime(startFreq, now + offset);
+                    osc.frequency.exponentialRampToValueAtTime(startFreq * 1.35, now + offset + 0.07);
+                    osc.frequency.exponentialRampToValueAtTime(startFreq * 0.9, now + offset + 0.15);
+                    gain.gain.setValueAtTime(0.065, now + offset);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.16);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + offset);
+                    osc.stop(now + offset + 0.17);
+                });
+            } else if (type === 'snore') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(112, now);
+                osc.frequency.linearRampToValueAtTime(88, now + 0.45);
+                gain.gain.setValueAtTime(0.07, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'wakeup') {
+                [330, 440, 554.37, 659.25].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.09, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.24);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.25);
+                });
+            } else if (type === 'pop') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(420, now);
+                osc.frequency.exponentialRampToValueAtTime(920, now + 0.07);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.09);
+            } else if (type === 'chirp') {
+                [1400, 1850].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + idx * 0.09 + 0.06);
+                    gain.gain.setValueAtTime(0.05, now + idx * 0.09);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.08);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.09);
+                    osc.stop(now + idx * 0.09 + 0.09);
+                });
+            }
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            document.getElementById('sound-icon').textContent = state.soundEnabled ? '🔊' : '🔇';
+            updateAmbientSoundscape();
+            if (state.soundEnabled) playSound('chime');
+            saveState();
+        }
+
+        /* ----------------------------------------------------
+           3. GOLDEN RETRIEVER MOOD, EYE TRACKING & MOVEMENT
+           ---------------------------------------------------- */
+        const MOOD_CONFIG = {
+            calm: {
+                emoji: '😊',
+                label: 'Calm & Content',
+                status: 'Sunny is enjoying the gentle garden breeze',
+                tailClass: 'tail-calm',
+                headClass: '',
+                bodyClass: 'breathe-anim',
+                showTongue: false,
+                eyesTired: false,
+                browPath: 'M-19,-13 Q-13,-16 -7,-13',
+                mouthPath: 'M-32,9 Q-23,14 -16,8',
+                earTransform: 'rotate(0)'
+            },
+            buzzing: {
+                emoji: '⚡',
+                label: 'Buzzing & Energetic',
+                status: 'Sunny is full of happy, bouncy energy!',
+                tailClass: 'tail-fast',
+                headClass: 'head-happy',
+                bodyClass: 'breathe-anim',
+                showTongue: true,
+                eyesTired: false,
+                browPath: 'M-19,-15 Q-13,-19 -7,-14',
+                mouthPath: 'M-33,8 Q-23,16 -15,7',
+                earTransform: 'rotate(-9 8 -10)'
+            },
+            tired: {
+                emoji: '🥱',
+                label: 'Tired & Low Energy',
+                status: 'Sunny is resting softly with you',
+                tailClass: 'tail-slow',
+                headClass: '',
+                bodyClass: 'breathe-tired',
+                showTongue: false,
+                eyesTired: true,
+                browPath: 'M-19,-11 Q-13,-13 -7,-12',
+                mouthPath: 'M-31,10 Q-23,11 -17,10',
+                earTransform: 'rotate(9 8 -10)'
+            },
+            frustrated: {
+                emoji: '🌧️',
+                label: 'Mentally Frustrated',
+                status: 'Sunny feels your stress (Pet or rub him 3x to soothe)',
+                tailClass: 'tail-slow',
+                headClass: '',
+                bodyClass: 'breathe-anim',
+                showTongue: false,
+                eyesTired: false,
+                browPath: 'M-19,-15 L-7,-11',
+                mouthPath: 'M-31,11 Q-23,8 -17,11',
+                earTransform: 'rotate(11 8 -10)'
+            }
+        };
+
+        function applyGoldenMood(moodKey) {
+            const cfg = MOOD_CONFIG[moodKey] || MOOD_CONFIG.calm;
+            state.mood = moodKey;
+
+            document.getElementById('hud-mood-emoji').textContent = cfg.emoji;
+            document.getElementById('hud-mood-label').textContent = cfg.label;
+            document.getElementById('companion-status-text').textContent = cfg.status;
+
+            const tail = document.getElementById('golden-tail');
+            const head = document.getElementById('golden-head-group');
+            const bodyRig = document.getElementById('golden-body-rig');
+            const tongue = document.getElementById('golden-tongue');
+            const eyesOpen = document.getElementById('golden-eyes-open');
+            const eyesTired = document.getElementById('golden-eyes-tired');
+            const brow = document.getElementById('golden-brow');
+            const mouth = document.getElementById('golden-mouth');
+            const earFront = document.getElementById('golden-ear-front');
+
+            tail.setAttribute('class', cfg.tailClass);
+            head.setAttribute('class', cfg.headClass);
+            bodyRig.setAttribute('class', cfg.bodyClass);
+            tongue.classList.toggle('hidden', !cfg.showTongue);
+            eyesOpen.classList.toggle('hidden', cfg.eyesTired);
+            eyesTired.classList.toggle('hidden', !cfg.eyesTired);
+            brow.setAttribute('d', cfg.browPath);
+            mouth.setAttribute('d', cfg.mouthPath);
+            earFront.setAttribute('transform', cfg.earTransform);
+
+            if (moodKey === 'frustrated') {
+                comfortStrokeCount = 0;
+                updateComfortRing(0);
+            }
+
+            document.getElementById('mood-fx-frustrated').classList.toggle('hidden', moodKey !== 'frustrated');
+            document.getElementById('mood-fx-buzzing').classList.toggle('hidden', moodKey !== 'buzzing');
+            document.getElementById('mood-fx-tired').classList.toggle('hidden', moodKey !== 'tired');
+
+            document.querySelectorAll('.mood-option-btn').forEach(btn => {
+                btn.classList.remove('border-[#d99b52]', 'bg-[#fef9ec]');
+            });
+            const activeBtn = document.getElementById(`mood-btn-${moodKey}`);
+            if (activeBtn) activeBtn.classList.add('border-[#d99b52]', 'bg-[#fef9ec]');
+
+            saveState();
+        }
+
+        function selectMood(moodKey) {
+            playSound('chime');
+            applyGoldenMood(moodKey);
+            addTimelineEntry(MOOD_CONFIG[moodKey].emoji, `Checked in feeling ${MOOD_CONFIG[moodKey].label}`);
+            closeAllModals();
+            showToast(`Sunny is tuning in to your ${MOOD_CONFIG[moodKey].label.toLowerCase()} mood 💛`);
+        }
+
+        // Move Golden Retriever smoothly with 4-leg articulated trot cycle
+        function moveGoldenTo(stationKey, onArriveCallback) {
+            goldenStation = stationKey;
+            const target = GOLDEN_COORDS[stationKey] || GOLDEN_COORDS.home;
+            const goldenEl = document.getElementById('golden-character');
+            const flipWrapper = document.getElementById('golden-flip-wrapper');
+            const legFL = document.getElementById('golden-leg-fl');
+            const legFR = document.getElementById('golden-leg-fr');
+            const legBL = document.getElementById('golden-leg-bl');
+            const legBR = document.getElementById('golden-leg-br');
+            const head = document.getElementById('golden-head-group');
+            const headTracker = document.getElementById('golden-head-tracker');
+            const bodyRig = document.getElementById('golden-body-rig');
+            const waterRipple = document.getElementById('water-ripple-ring');
+
+            clearTimeout(goldenWalkTimeout);
+            head.classList.remove('head-drink', 'head-eat');
+            bodyRig.classList.remove('play-bounce');
+            headTracker.setAttribute('transform', 'translate(0,0) rotate(0)');
+            waterRipple.style.animation = 'none';
+            waterRipple.setAttribute('opacity', '0');
+
+            flipWrapper.setAttribute('transform', `scale(${target.flip}, 1)`);
+
+            legFL.classList.add('leg-trot-a');
+            legFR.classList.add('leg-trot-b');
+            legBL.classList.add('leg-trot-b');
+            legBR.classList.add('leg-trot-a');
+
+            goldenEl.setAttribute('transform', `translate(${target.x}, ${target.y})`);
+
+            goldenWalkTimeout = setTimeout(() => {
+                legFL.classList.remove('leg-trot-a');
+                legFR.classList.remove('leg-trot-b');
+                legBL.classList.remove('leg-trot-b');
+                legBR.classList.remove('leg-trot-a');
+
+                if (stationKey === 'water') {
+                    head.classList.add('head-drink');
+                    document.getElementById('golden-tongue').classList.remove('hidden');
+                    waterRipple.setAttribute('opacity', '0.85');
+                    waterRipple.style.animation = 'waterRipple 0.75s ease-out infinite';
+                    spawnWaterSplashes();
+                } else if (stationKey === 'food') {
+                    head.classList.add('head-eat');
+                    spawnCrumbs('golden-crumb-particles', '#b45309');
+                } else if (stationKey === 'ball') {
+                    bodyRig.classList.add('play-bounce');
+                    document.getElementById('golden-tongue').classList.remove('hidden');
+                } else {
+                    applyGoldenMood(state.mood);
+                }
+
+                if (onArriveCallback) onArriveCallback();
+            }, 1080);
+        }
+
+        // Petting & Rubbing Sunny (With Comfort Ring for Frustrated Mood)
+        function updateComfortRing(strokes) {
+            const ring = document.getElementById('comfort-ring-progress');
+            if (!ring) return;
+            const pct = Math.min(1, strokes / 3);
+            const offset = 88 - (88 * pct);
+            ring.style.strokeDashoffset = offset;
+        }
+
+        function startPettingGolden(e) {
+            isDraggingPet = true;
+        }
+        window.addEventListener('mouseup', () => { isDraggingPet = false; });
+        window.addEventListener('touchend', () => { isDraggingPet = false; });
+
+        function handlePetGolden(e) {
+            if (e) e.stopPropagation();
+            playSound('chime');
+            spawnFloatingHeart();
+
+            if (state.mood === 'frustrated') {
+                comfortStrokeCount++;
+                updateComfortRing(comfortStrokeCount);
+                if (comfortStrokeCount >= 3) {
+                    document.getElementById('mood-fx-frustrated').classList.add('hidden');
+                    document.getElementById('golden-tail').setAttribute('class', 'tail-calm');
+                    document.getElementById('golden-brow').setAttribute('d', 'M-19,-13 Q-13,-16 -7,-13');
+                    document.getElementById('golden-mouth').setAttribute('d', 'M-32,9 Q-23,14 -16,8');
+                    document.getElementById('companion-status-text').textContent = 'Sunny feels comforted by your gentle pets';
+                    spawnFloatingHeart();
+                    spawnFloatingHeart();
+                    showToast('Storm cloud cleared! Sunny leans against you with a grateful sigh 🌿💛');
+                } else {
+                    showToast(`Soothing Sunny... (${comfortStrokeCount}/3 pets to clear the storm cloud) ✋`);
+                }
+            } else {
+                showToast('Sunny leans into your hand with a warm tail wag 💛');
+            }
+        }
+
+        function spawnFloatingHeart() {
+            const container = document.getElementById('floating-hearts-layer');
+            const heart = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const randomX = Math.floor(Math.random() * 52) - 26;
+            heart.setAttribute('x', randomX);
+            heart.setAttribute('y', 0);
+            heart.setAttribute('font-size', '22');
+            heart.style.animation = 'floatUp 1.35s ease-out forwards';
+            heart.textContent = ['💛', '🧡', '✨', '🐾'][Math.floor(Math.random() * 4)];
+            container.appendChild(heart);
+            setTimeout(() => heart.remove(), 1400);
+        }
+
+        /* ----------------------------------------------------
+           4. GARDEN PROPS INTERACTION & PARTICLE EFFECTS
+           ---------------------------------------------------- */
+        function spawnWaterSplashes() {
+            const container = document.getElementById('water-splash-particles');
+            for (let i = 0; i < 6; i++) {
+                const drop = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                drop.setAttribute('cx', (Math.random() * 24 - 12));
+                drop.setAttribute('cy', 0);
+                drop.setAttribute('r', 2.8);
+                drop.setAttribute('fill', '#7dd3fc');
+                drop.style.setProperty('--tx', `${Math.random() * 46 - 23}px`);
+                drop.style.setProperty('--ty', `${-15 - Math.random() * 22}px`);
+                drop.style.animation = 'crumbFly 0.65s ease-out forwards';
+                container.appendChild(drop);
+                setTimeout(() => drop.remove(), 700);
+            }
+        }
+
+        function spawnCrumbs(containerId, colorHex) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            for (let i = 0; i < 7; i++) {
+                const crumb = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                crumb.setAttribute('cx', (Math.random() * 24 - 12));
+                crumb.setAttribute('cy', -2);
+                crumb.setAttribute('r', 2.6 + Math.random() * 1.5);
+                crumb.setAttribute('fill', colorHex);
+                crumb.style.setProperty('--tx', `${Math.random() * 54 - 27}px`);
+                crumb.style.setProperty('--ty', `${-14 - Math.random() * 26}px`);
+                crumb.style.animation = 'crumbFly 0.6s ease-out forwards';
+                container.appendChild(crumb);
+                setTimeout(() => crumb.remove(), 650);
+            }
+        }
+
+        // A. Water Bowl Click -> Hydration Flow
+        function handleWaterBowlClick(e) {
+            if (e) e.stopPropagation();
+            closeAllModals(false);
+            playSound('water');
+            showToast('Sunny trots over for a cool drink of water 💧');
+            renderWaterModal();
+            moveGoldenTo('water', () => {
+                playSound('water');
+            });
+            openModal('water-modal');
+        }
+
+        function renderWaterModal() {
+            const grid = document.getElementById('water-glasses-grid');
+            grid.innerHTML = '';
+            const count = state.waterGlasses;
+            for (let i = 1; i <= 8; i++) {
+                const filled = i <= count;
+                const btn = document.createElement('button');
+                btn.className = `h-12 rounded-xl flex flex-col items-center justify-center transition-all ${
+                    filled 
+                    ? 'bg-sky-500 text-white shadow-sm scale-100' 
+                    : 'bg-white/80 text-sky-300 hover:bg-sky-50 border border-[#e5dec9]'
+                }`;
+                btn.innerHTML = `<span class="text-lg">${filled ? '🥛' : '🫗'}</span><span class="text-[9px] font-bold">${i}</span>`;
+                btn.onclick = () => setWaterGlasses(i);
+                grid.appendChild(btn);
+            }
+            document.getElementById('modal-water-glasses').textContent = count;
+            document.getElementById('modal-water-ml').textContent = count * 250;
+            const pct = Math.min(100, Math.round((count / 8) * 100));
+            document.getElementById('water-progress-bar').style.width = `${pct}%`;
+
+            // Visually scale water surface inside garden bowl
+            const surface = document.getElementById('garden-water-surface');
+            if (surface) {
+                const rx = 25 + Math.min(8, count);
+                const ry = 8 + Math.min(3.5, count * 0.45);
+                surface.setAttribute('rx', rx);
+                surface.setAttribute('ry', ry);
+            }
+        }
+
+        function adjustWater(delta) {
+            const next = Math.max(0, Math.min(20, state.waterGlasses + delta));
+            setWaterGlasses(next);
+        }
+
+        function setWaterGlasses(val) {
+            const diff = val - state.waterGlasses;
+            state.waterGlasses = val;
+            playSound('water');
+            spawnWaterSplashes();
+            renderWaterModal();
+            if (diff > 0) {
+                addTimelineEntry('💧', `Drank water (${val} glasses / ${val * 250}ml total)`);
+            } else {
+                saveState();
+            }
+        }
+
+        // B. Food Bowl Click -> Meal & Nutrition Flow
+        function handleFoodBowlClick(e) {
+            if (e) e.stopPropagation();
+            closeAllModals(false);
+            playSound('kibble');
+            showToast('Sunny happily trots to his food bowl 🥣');
+            document.getElementById('modal-meal-count').textContent = state.meals.length;
+            moveGoldenTo('food', () => {
+                playSound('kibble');
+            });
+            openModal('food-modal');
+        }
+
+        function selectMealType(type) {
+            selectedMealType = type;
+            document.querySelectorAll('.meal-type-btn').forEach(btn => {
+                const isMatch = btn.getAttribute('data-meal') === type;
+                btn.classList.toggle('border-orange-400', isMatch);
+                btn.classList.toggle('bg-orange-50', isMatch);
+                btn.classList.toggle('border-[#e5dec9]', !isMatch);
+                btn.classList.toggle('bg-white/70', !isMatch);
+            });
+        }
+
+        function selectMealVibe(vibe) {
+            selectedMealVibe = vibe;
+            document.querySelectorAll('.meal-vibe-btn').forEach(btn => {
+                const isMatch = btn.getAttribute('data-vibe') === vibe;
+                btn.classList.toggle('border-2', isMatch);
+                btn.classList.toggle('border-orange-400', isMatch);
+                btn.classList.toggle('bg-orange-50', isMatch);
+                btn.classList.toggle('border-[#e5dec9]', !isMatch);
+                btn.classList.toggle('bg-white/70', !isMatch);
+            });
+        }
+
+        function saveMealLog() {
+            const noteInput = document.getElementById('meal-note-input');
+            const note = noteInput.value.trim();
+            const label = note ? `${selectedMealType} (${selectedMealVibe}): ${note}` : `${selectedMealType} (${selectedMealVibe})`;
+            state.meals.push({
+                type: selectedMealType,
+                vibe: selectedMealVibe,
+                note,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            noteInput.value = '';
+            playSound('kibble');
+            spawnCrumbs('golden-crumb-particles', '#b45309');
+            addTimelineEntry('🥣', `Nourished with ${label}`);
+            showToast(`Logged ${selectedMealType}! A new wildflower sprouted in the garden 🌸`);
+            dismissInteractionModal();
+        }
+
+        // C. Red Tennis Ball Click -> Real Parabolic Bounce Physics + Activity Modal
+        let ballAnimFrame = null;
+
+        function launchBallPhysics() {
+            cancelAnimationFrame(ballAnimFrame);
+            playSound('squeak');
+            const ballSprite = document.getElementById('ball-sprite');
+            const ballShadow = document.getElementById('ball-shadow');
+
+            let t = 0;
+            let vx = (Math.random() > 0.5 ? 1 : -1) * (2.2 + Math.random() * 1.5);
+            let x = 0;
+            let y = 0;
+            let vy = -11.5;
+            const gravity = 0.52;
+            let bounces = 0;
+
+            function stepBall() {
+                t++;
+                x += vx;
+                vy += gravity;
+                y += vy;
+
+                if (y >= 0) {
+                    y = 0;
+                    vy = -vy * 0.62;
+                    vx *= 0.72;
+                    bounces++;
+                    if (bounces <= 2) playSound('pop');
+                }
+
+                // Gently return toward origin x=0 after bouncing
+                if (bounces >= 3) {
+                    x *= 0.85;
+                }
+
+                const rot = x * 6;
+                ballSprite.setAttribute('transform', `translate(${x.toFixed(1)}, ${y.toFixed(1)}) rotate(${rot.toFixed(1)})`);
+                const shadowScale = Math.max(0.45, 1 + y / 60);
+                ballShadow.setAttribute('cx', x.toFixed(1));
+                ballShadow.setAttribute('rx', (22 * shadowScale).toFixed(1));
+
+                if (bounces < 5 || Math.abs(x) > 0.8 || Math.abs(y) > 0.5) {
+                    ballAnimFrame = requestAnimationFrame(stepBall);
+                } else {
+                    ballSprite.setAttribute('transform', 'translate(0, 0) rotate(0)');
+                    ballShadow.setAttribute('cx', '0');
+                    ballShadow.setAttribute('rx', '22');
+                }
+            }
+            ballAnimFrame = requestAnimationFrame(stepBall);
+        }
+
+        function handleBallClick(e) {
+            if (e) e.stopPropagation();
+            closeAllModals(false);
+            launchBallPhysics();
+            showToast('Sunny bounds over to chase his bouncy red ball! 🎾');
+            moveGoldenTo('ball', () => {
+                launchBallPhysics();
+            });
+            openModal('activity-modal');
+        }
+
+        function selectActivityTag(tag) {
+            selectedActivityTag = tag;
+            document.querySelectorAll('.act-tag-btn').forEach(btn => {
+                const isMatch = btn.getAttribute('data-act') === tag;
+                btn.classList.toggle('border-rose-400', isMatch);
+                btn.classList.toggle('bg-rose-50', isMatch);
+                btn.classList.toggle('border-[#e5dec9]', !isMatch);
+                btn.classList.toggle('bg-white/70', !isMatch);
+            });
+        }
+
+        function selectActivityDuration(mins) {
+            selectedActivityDuration = mins;
+            document.querySelectorAll('.dur-btn').forEach(btn => {
+                const isMatch = Number(btn.getAttribute('data-dur')) === mins;
+                btn.classList.toggle('border-rose-400', isMatch);
+                btn.classList.toggle('bg-rose-50', isMatch);
+                btn.classList.toggle('border-[#e5dec9]', !isMatch);
+                btn.classList.toggle('bg-white/70', !isMatch);
+            });
+        }
+
+        function saveActivityLog() {
+            state.activities.push({
+                tag: selectedActivityTag,
+                duration: selectedActivityDuration,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            playSound('squeak');
+            addTimelineEntry('🎾', `${selectedActivityTag} for ${selectedActivityDuration} mins`);
+            showToast(`Awesome movement! Logged ${selectedActivityDuration}m of ${selectedActivityTag} 🎉`);
+            dismissInteractionModal();
+        }
+
+        /* ----------------------------------------------------
+           5. BARNABY THE LAZY BULLDOG (Poppable Zzz, Sleep & Wake-Up)
+           ---------------------------------------------------- */
+        function renderBulldogState() {
+            const bulldogEl = document.getElementById('bulldog-character');
+            const poseDown = document.getElementById('bulldog-pose-down');
+            const poseUp = document.getElementById('bulldog-pose-up');
+            const poseAwake = document.getElementById('bulldog-pose-awake');
+            const zzzGroup = document.getElementById('bulldog-zzz-group');
+            const poseText = document.getElementById('bulldog-pose-status-text');
+
+            if (state.bulldogAwake) {
+                bulldogEl.setAttribute('transform', `translate(${BULLDOG_COORDS.bowl.x}, ${BULLDOG_COORDS.bowl.y})`);
+                poseDown.classList.add('hidden');
+                poseUp.classList.add('hidden');
+                poseAwake.classList.remove('hidden');
+                zzzGroup.classList.add('hidden');
+            } else {
+                bulldogEl.setAttribute('transform', `translate(${BULLDOG_COORDS.bed.x}, ${BULLDOG_COORDS.bed.y})`);
+                poseAwake.classList.add('hidden');
+                zzzGroup.classList.remove('hidden');
+                if (state.bulldogBellyUp) {
+                    poseDown.classList.add('hidden');
+                    poseUp.classList.remove('hidden');
+                    if (poseText) poseText.textContent = 'Pose: Belly-Up (Paws in Air & Tongue Out)';
+                } else {
+                    poseDown.classList.remove('hidden');
+                    poseUp.classList.add('hidden');
+                    if (poseText) poseText.textContent = 'Pose: Belly-Down (Frog-Legged Sploot)';
+                }
+            }
+        }
+
+        // Spawn interactive poppable Zzz sleep bubbles from Barnaby's nose
+        function spawnPoppableZzzBubble() {
+            if (state.bulldogAwake) return;
+            const zzzContainer = document.getElementById('bulldog-zzz-group');
+            if (!zzzContainer || zzzContainer.children.length > 4) return;
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'cursor-pointer');
+            const offsetX = Math.floor(Math.random() * 18) - 6;
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', offsetX);
+            circle.setAttribute('cy', 0);
+            circle.setAttribute('r', 13);
+            circle.setAttribute('fill', '#fffbeb');
+            circle.setAttribute('fill-opacity', '0.82');
+            circle.setAttribute('stroke', '#94a3b8');
+            circle.setAttribute('stroke-width', '1.5');
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', offsetX);
+            text.setAttribute('y', 5);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('font-family', 'Fredoka');
+            text.setAttribute('font-weight', '700');
+            text.setAttribute('font-size', '14');
+            text.setAttribute('fill', '#475569');
+            text.textContent = 'Zzz';
+
+            g.appendChild(circle);
+            g.appendChild(text);
+            g.style.animation = 'floatUp 3.6s ease-in forwards';
+
+            g.onclick = (e) => {
+                e.stopPropagation();
+                playSound('pop');
+                text.textContent = '✨';
+                circle.setAttribute('stroke', '#facc15');
+                showToast('Popped a sleepy dream bubble! 🫧💤');
+                setTimeout(() => g.remove(), 180);
+            };
+
+            zzzContainer.appendChild(g);
+            setTimeout(() => {
+                if (g.parentNode) g.remove();
+            }, 3550);
+        }
+
+        setInterval(spawnPoppableZzzBubble, 1600);
+
+        function toggleBulldogBellyPose() {
+            state.bulldogAwake = false;
+            state.bulldogBellyUp = !state.bulldogBellyUp;
+            playSound('snore');
+            renderBulldogState();
+            saveState();
+            showToast(state.bulldogBellyUp ? 'Barnaby rolled onto his back, all 4 paws in the air! 🐾' : 'Barnaby curled into a frog-legged sploot loaf 🥔');
+        }
+
+        function setSleepPreset(hrs) {
+            document.getElementById('sleep-hours-slider').value = hrs;
+            document.getElementById('sleep-hours-val').textContent = hrs;
+            playSound('pop');
+        }
+
+        function handleBulldogClick(e) {
+            if (e) e.stopPropagation();
+            closeAllModals(false);
+            playSound('snore');
+            state.bulldogBellyUp = !state.bulldogBellyUp;
+            renderBulldogState();
+
+            if (state.sleep.hours) {
+                document.getElementById('sleep-hours-slider').value = state.sleep.hours;
+                document.getElementById('sleep-hours-val').textContent = state.sleep.hours;
+            }
+            openModal('sleep-modal');
+        }
+
+        function selectSleepQuality(quality) {
+            selectedSleepQuality = quality;
+            document.querySelectorAll('.sq-btn').forEach(btn => {
+                const isMatch = btn.getAttribute('data-sq') === quality;
+                btn.classList.toggle('border-indigo-400', isMatch);
+                btn.classList.toggle('bg-indigo-50', isMatch);
+                btn.classList.toggle('border-[#e5dec9]', !isMatch);
+                btn.classList.toggle('bg-white/70', !isMatch);
+            });
+        }
+
+        function saveSleepLog() {
+            const hrs = parseFloat(document.getElementById('sleep-hours-slider').value);
+            state.sleep = { hours: hrs, quality: selectedSleepQuality };
+            playSound('snore');
+            addTimelineEntry('💤', `Slept ${hrs} hours (${selectedSleepQuality} rest)`);
+            showToast(`Logged ${hrs}h of sleep! Barnaby snores in approval 💤`);
+            closeAllModals();
+        }
+
+        // Clicking Bulldog's Food Bowl -> THE ONLY THING THAT WAKES HIM!
+        function handleBulldogBowlClick(e) {
+            if (e) e.stopPropagation();
+            closeAllModals(false);
+            clearTimeout(bulldogSleepTimer);
+
+            state.bulldogAwake = true;
+            playSound('wakeup');
+            renderBulldogState();
+
+            setTimeout(() => {
+                playSound('kibble');
+                spawnCrumbs('bulldog-crumb-particles', '#9a3412');
+            }, 450);
+
+            showToast('🔔 DING! Barnaby scrambled awake for his food bowl!!');
+            openModal('bulldog-bowl-modal');
+        }
+
+        function logBulldogTreat(treatName) {
+            playSound('kibble');
+            spawnCrumbs('bulldog-crumb-particles', '#9a3412');
+            state.meals.push({ type: 'Treat', vibe: '🧁 Treat', note: treatName, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            addTimelineEntry('🥩', `Enjoyed ${treatName} alongside Barnaby`);
+            showToast(`Logged ${treatName}! Barnaby lets out a happy burp & waddles back to nap 💤`);
+            putBulldogBackToSleep();
+        }
+
+        function putBulldogBackToSleep() {
+            state.bulldogAwake = false;
+            playSound('snore');
+            renderBulldogState();
+            closeAllModals();
+        }
+
+        /* ----------------------------------------------------
+           6. LIVING GARDEN PROGRESSION, LANTERN & WEATHER
+           ---------------------------------------------------- */
+        function getBloomCount() {
+            let count = 1; // Always at least 1 starter flower
+            count += Math.min(3, Math.floor(state.waterGlasses / 2));
+            count += Math.min(2, state.meals.length);
+            count += Math.min(2, state.activities.length);
+            if (state.sleep.hours) count += 1;
+            return Math.min(8, count);
+        }
+
+        function renderLivingGardenProgression() {
+            const bloomCount = getBloomCount();
+            const layer = document.getElementById('living-flowers-layer');
+            if (!layer) return;
+
+            layer.innerHTML = '';
+            for (let i = 0; i < bloomCount; i++) {
+                const spot = WILDFLOWER_SPOTS[i];
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('transform', `translate(${spot.x}, ${spot.y}) scale(${spot.scale})`);
+                g.setAttribute('class', 'bloom-enter');
+                g.innerHTML = `
+                    <path d="M0,12 Q-2,4 0,0" stroke="#5c9447" stroke-width="2.2" fill="none" />
+                    <circle cx="-4" cy="-3" r="4" fill="${spot.color}" />
+                    <circle cx="4" cy="-3" r="4" fill="${spot.color}" />
+                    <circle cx="-3" cy="3" r="4" fill="${spot.color}" />
+                    <circle cx="3" cy="3" r="4" fill="${spot.color}" />
+                    <circle cx="0" cy="-5" r="4" fill="${spot.color}" />
+                    <circle cx="0" cy="0" r="3" fill="${spot.center}" />
+                `;
+                layer.appendChild(g);
+            }
+
+            // Unlock Fence Bluebird when bloomCount >= 3, and Extra Butterfly when bloomCount >= 5
+            const bird = document.getElementById('fence-bluebird');
+            const butterfly2 = document.getElementById('extra-butterfly');
+            if (bird) bird.classList.toggle('hidden', bloomCount < 3);
+            if (butterfly2) butterfly2.classList.toggle('hidden', bloomCount < 5);
+
+            // Update HUD & Journal badges
+            document.getElementById('hud-bloom-count').textContent = bloomCount;
+            const badge = document.getElementById('journal-bloom-badge');
+            if (badge) badge.textContent = `${bloomCount} / 8`;
+            const title = document.getElementById('journal-flourish-title');
+            if (title) {
+                title.textContent = bloomCount >= 7 ? 'Garden Flourish: Full Lush Bloom! 🌺' :
+                                    bloomCount >= 4 ? 'Garden Flourish: Blossoming & Lively 🐦' :
+                                    'Garden Flourish: Sprouting 🌱';
+            }
+        }
+
+        function handleBirdClick(e) {
+            if (e) e.stopPropagation();
+            playSound('chirp');
+            showToast('The little bluebird chirps a cheerful melody for your self-care streak! 🐦🎶');
+        }
+
+        function rustleBush(e, x, y) {
+            if (e) e.stopPropagation();
+            playSound('pop');
+            const target = e.currentTarget;
+            target.classList.remove('rustle-anim');
+            void target.offsetWidth;
+            target.classList.add('rustle-anim');
+
+            const layer = document.getElementById('env-particles-layer');
+            for (let i = 0; i < 5; i++) {
+                const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                leaf.setAttribute('cx', x + (Math.random() * 40 - 20));
+                leaf.setAttribute('cy', y + (Math.random() * 20 - 10));
+                leaf.setAttribute('rx', 5);
+                leaf.setAttribute('ry', 2.5);
+                leaf.setAttribute('fill', i % 2 === 0 ? '#84cc16' : '#fda4af');
+                leaf.style.setProperty('--tx', `${Math.random() * 60 - 30}px`);
+                leaf.style.setProperty('--ty', `${-20 - Math.random() * 30}px`);
+                leaf.style.animation = 'crumbFly 0.85s ease-out forwards';
+                layer.appendChild(leaf);
+                setTimeout(() => leaf.remove(), 900);
+            }
+        }
+
+        function toggleGardenLantern(e) {
+            if (e) e.stopPropagation();
+            state.lanternOn = !state.lanternOn;
+            playSound('pop');
+            renderLanternState();
+            saveState();
+            showToast(state.lanternOn ? 'Lit the warm garden lantern 🏮✨' : 'Turned off the garden lantern 🏮');
+        }
+
+        function renderLanternState() {
+            const halo = document.getElementById('lantern-halo');
+            const glass = document.getElementById('lantern-glass');
+            const flame = document.getElementById('lantern-flame');
+            const isLit = state.lanternOn || state.timeOfDay !== 'day';
+            halo.setAttribute('opacity', isLit ? '1' : '0');
+            glass.setAttribute('fill', isLit ? '#fef08a' : '#fef3c7');
+            flame.setAttribute('opacity', isLit ? '1' : '0.35');
+        }
+
+        function cycleTimeOfDay() {
+            const order = ['day', 'sunset', 'night', 'rain'];
+            const nextIdx = (order.indexOf(state.timeOfDay) + 1) % order.length;
+            state.timeOfDay = order[nextIdx];
+            applyTimeOfDay();
+            playSound('chime');
+            saveState();
+        }
+
+        function applyTimeOfDay() {
+            const skyRect = document.getElementById('sky-rect');
+            const sunEl = document.getElementById('sun-element');
+            const nightStars = document.getElementById('night-stars');
+            const sunbeams = document.getElementById('sunbeams-layer');
+            const tint = document.getElementById('lighting-tint');
+            const fireflies = document.getElementById('fireflies-layer');
+            const rainLayer = document.getElementById('rain-layer');
+            const icon = document.getElementById('time-icon');
+            const label = document.getElementById('time-label');
+
+            if (state.timeOfDay === 'day') {
+                skyRect.setAttribute('fill', 'url(#sky-day)');
+                sunEl.setAttribute('transform', 'translate(220, 105)');
+                sunEl.setAttribute('opacity', '1');
+                nightStars.setAttribute('opacity', '0');
+                sunbeams.setAttribute('opacity', '0.7');
+                tint.setAttribute('opacity', '0');
+                fireflies.setAttribute('opacity', '0');
+                rainLayer.setAttribute('opacity', '0');
+                icon.textContent = '☀️';
+                if (label) label.textContent = 'Morning';
+            } else if (state.timeOfDay === 'sunset') {
+                skyRect.setAttribute('fill', 'url(#sky-sunset)');
+                sunEl.setAttribute('transform', 'translate(320, 240)');
+                sunEl.setAttribute('opacity', '0.9');
+                nightStars.setAttribute('opacity', '0.25');
+                sunbeams.setAttribute('opacity', '0.45');
+                tint.setAttribute('fill', '#ea580c');
+                tint.setAttribute('opacity', '0.15');
+                fireflies.setAttribute('opacity', '0.55');
+                rainLayer.setAttribute('opacity', '0');
+                icon.textContent = '🌅';
+                if (label) label.textContent = 'Sunset';
+            } else if (state.timeOfDay === 'night') {
+                skyRect.setAttribute('fill', 'url(#sky-night)');
+                sunEl.setAttribute('transform', 'translate(320, 380)');
+                sunEl.setAttribute('opacity', '0');
+                nightStars.setAttribute('opacity', '1');
+                sunbeams.setAttribute('opacity', '0');
+                tint.setAttribute('fill', '#0f172a');
+                tint.setAttribute('opacity', '0.36');
+                fireflies.setAttribute('opacity', '1');
+                rainLayer.setAttribute('opacity', '0');
+                icon.textContent = '🌙';
+                if (label) label.textContent = 'Starry Night';
+            } else if (state.timeOfDay === 'rain') {
+                skyRect.setAttribute('fill', 'url(#sky-rain)');
+                sunEl.setAttribute('transform', 'translate(220, 260)');
+                sunEl.setAttribute('opacity', '0');
+                nightStars.setAttribute('opacity', '0');
+                sunbeams.setAttribute('opacity', '0');
+                tint.setAttribute('fill', '#334155');
+                tint.setAttribute('opacity', '0.22');
+                fireflies.setAttribute('opacity', '0');
+                rainLayer.setAttribute('opacity', '1');
+                icon.textContent = '🌧️';
+                if (label) label.textContent = 'Cozy Rain';
+            }
+            renderLanternState();
+            updateAmbientSoundscape();
+        }
+
+        function updateHUD() {
+            const totalMins = state.activities.reduce((acc, item) => acc + (item.duration || 0), 0);
+            document.getElementById('hud-water-count').textContent = state.waterGlasses;
+            document.getElementById('hud-food-count').textContent = state.meals.length;
+            document.getElementById('hud-activity-mins').textContent = `${totalMins}m`;
+            document.getElementById('hud-sleep-hrs').textContent = state.sleep.hours ? `${state.sleep.hours}h` : '--';
+
+            document.getElementById('summary-water').textContent = `${state.waterGlasses} glasses`;
+            document.getElementById('summary-meals').textContent = `${state.meals.length} logged`;
+            document.getElementById('summary-activity').textContent = `${totalMins} mins`;
+            document.getElementById('summary-sleep').textContent = state.sleep.hours ? `${state.sleep.hours} hrs` : '-- hrs';
+
+            const timelineEl = document.getElementById('journal-timeline');
+            if (state.timeline.length === 0) {
+                timelineEl.innerHTML = `<div class="text-center py-8 text-xs text-[#8c7a66]">No check-ins logged yet today. Tap Sunny's water bowl, food bowl, ball, or Barnaby in the garden!</div>`;
+            } else {
+                timelineEl.innerHTML = state.timeline.map(item => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/80 border border-[#e5dec9] text-xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base">${item.icon}</span>
+                            <span class="font-medium text-[#3d342b]">${item.text}</span>
+                        </div>
+                        <span class="text-[10px] text-[#8c7a66] font-semibold ml-2 whitespace-nowrap">${item.time}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function resetTodayData() {
+            state.waterGlasses = 0;
+            state.meals = [];
+            state.activities = [];
+            state.sleep = { hours: null, quality: 'Good' };
+            state.timeline = [];
+            saveState();
+            renderWaterModal();
+            showToast('Today\'s garden log has been freshly reset 🌱');
+        }
+
+        /* ----------------------------------------------------
+           7. MODAL, CURSOR EYE TRACKING & IDLE LIFE LOOPS
+           ---------------------------------------------------- */
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+        }
+
+        function closeAllModals(returnGoldenHome = true) {
+            ['mood-modal', 'water-modal', 'food-modal', 'activity-modal', 'sleep-modal', 'bulldog-bowl-modal', 'journal-modal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            });
+            if (returnGoldenHome && goldenStation !== 'home') {
+                moveGoldenTo('home');
+            }
+        }
+
+        function dismissInteractionModal() {
+            closeAllModals(true);
+        }
+
+        function showTooltip(e, text) {
+            const tooltip = document.getElementById('garden-tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = `${e.clientX}px`;
+            tooltip.style.top = `${e.clientY - 10}px`;
+            tooltip.style.opacity = '1';
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('garden-tooltip');
+            tooltip.style.opacity = '0';
+        }
+
+        let toastTimer = null;
+        function showToast(message) {
+            const toast = document.getElementById('helper-toast');
+            toast.innerHTML = `<span>${message}</span>`;
+            toast.classList.add('scale-105');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('scale-105');
+            }, 300);
+        }
+
+        // Cursor / Touch Tracking for Sunny's Eyes & Subtle Head Tilt when Idle
+        window.addEventListener('mousemove', (e) => {
+            const tooltip = document.getElementById('garden-tooltip');
+            if (tooltip.style.opacity === '1') {
+                tooltip.style.left = `${e.clientX}px`;
+                tooltip.style.top = `${e.clientY - 10}px`;
+            }
+
+            if (goldenStation === 'home') {
+                const normX = (e.clientX / window.innerWidth) - 0.5;
+                const normY = (e.clientY / window.innerHeight) - 0.5;
+                const pupil = document.getElementById('golden-pupil-group');
+                const headTracker = document.getElementById('golden-head-tracker');
+                if (pupil) {
+                    pupil.setAttribute('transform', `translate(${(normX * 3.2).toFixed(2)}, ${(normY * 2.6).toFixed(2)})`);
+                }
+                if (headTracker) {
+                    headTracker.setAttribute('transform', `translate(${(normX * 2.5).toFixed(2)}, ${(normY * 2).toFixed(2)}) rotate(${(normX * -4).toFixed(2)})`);
+                }
+            }
+        });
+
+        // Natural periodic eye blinking for Sunny when his eyes are open
+        setInterval(() => {
+            if (state.mood === 'tired') return;
+            const eyesOpen = document.getElementById('golden-eyes-open');
+            const eyesTired = document.getElementById('golden-eyes-tired');
+            if (!eyesOpen || !eyesTired) return;
+            eyesOpen.classList.add('hidden');
+            eyesTired.classList.remove('hidden');
+            setTimeout(() => {
+                if (state.mood !== 'tired') {
+                    eyesOpen.classList.remove('hidden');
+                    eyesTired.classList.add('hidden');
+                }
+            }, 150);
+        }, 4200);
+
+        // Periodically let sleeping Barnaby roll over on his own if idle
+        setInterval(() => {
+            if (!state.bulldogAwake && document.getElementById('sleep-modal').classList.contains('hidden')) {
+                if (Math.random() < 0.35) {
+                    state.bulldogBellyUp = !state.bulldogBellyUp;
+                    renderBulldogState();
+                }
+            }
+        }, 25000);
+
+        // Initialize Garden on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('sound-icon').textContent = state.soundEnabled ? '🔊' : '🔇';
+            document.getElementById('journal-date-str').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+            applyTimeOfDay();
+            applyGoldenMood(state.mood);
+            renderBulldogState();
+            renderWaterModal();
+            updateHUD();
+            renderLivingGardenProgression();
+            spawnPoppableZzzBubble();
+        });
+    </script>
+</body>
+</html>

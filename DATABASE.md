@@ -20,9 +20,11 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 | Key | Type | Notes |
 |---|---|---|
 | `profile` (single doc) | `Profile` | `id` (random install id, also the anonymous telemetry id and every check-in's `user_id`), `name` (optional, from onboarding), `created_at` (install day, used for `app_opened.day_index`). Created on first read. |
-| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` and `intention` (unused, always null now), `engine_version` (`'garden-1'` for new rows), `created_at`. **A day is one check-in:** re-picking today's mood updates the row. Each becomes a flower. Optional `unwell` (true = feeling unwell today, gentle rain in the garden; absent on older rows; never sent to analytics). |
+| `check_ins` | `CheckIn` | `energy_score` 1–5 (tiles write 1/2/4/5), `sleep_quality` and `intention` (unused, always null now), `engine_version` (`'garden-1'` for new rows), `created_at`. **A day is one check-in:** re-picking today's mood updates the row. Each becomes a flower. Optional `unwell` (true = feeling unwell today, gentle rain in the garden; absent on older rows; never sent to analytics). Optional `mood`: the yard mood (`tired\|low\|frustrated\|steady\|buzzing`), written with a matching `energy_score` (1/2/3/4/5) so the garden and Changes keep working. Older rows lack it; `yardMoodOf` derives it from `energy_score`. The old four-mood picker clears it. |
 | `water` | `WaterLog` | One row per glass: `id`, `created_at`. Glasses today fill the stream. `db.water.remove` undoes a glass. |
 | `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the tree. Editable and deletable. |
+| `meals` | `MealLog` | One row per meal eaten: `meal` (`breakfast\|lunch\|dinner\|snack`), `created_at`. **Only which meal**, never what, how much or how it felt. `setMealsToday` makes today's rows match the ticked set (one row per meal per day). |
+| `sleep` | `SleepLog` | One row per morning: `night_of` (localDayKey of the morning after), `hours` (half hours, 0 to 24), `feel` (`restless\|okay\|deep` or null), `created_at`. Logging again that morning edits the row. |
 
 **Legacy:** the guided-session app stored `sessions`, `session_blocks`, `post_ratings` and
 `user_exercise_stats`. `db.dropLegacy()` removes them at every launch (idempotent).

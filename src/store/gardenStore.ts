@@ -3,13 +3,22 @@ import { db } from '@/services/db';
 import { telemetry } from '@/services/telemetry';
 import { friendlyErrorMessage } from '@/services/network';
 import { requestStepsAccess, stepsByDay, stepsStatus, type StepsStatus } from '@/services/steps';
-import { mapEnergyToState, moodToEnergy } from '@/domain/checkin/moods';
+import { mapEnergyToState, moodToEnergy, yardMoodOf, yardMoodToEnergy } from '@/domain/checkin/moods';
 import { isSameLocalDay, localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import type { GardenInput } from '@/domain/garden/garden';
-import type { CheckIn, UserState, WaterLog, Workout, WorkoutType } from '@/types';
+import type { CheckIn, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
 
 /** Stamped on check-ins logged by the garden app (the old session engine is gone). */
 export const GARDEN_VERSION = 'garden-1';
+
+/** The meals the food sheet offers, in display order. */
+export const MEALS: readonly Meal[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+/** Sleep hours are kept to the half hour, between 0 and 24. */
+export function tidySleepHours(hours: number): number {
+  if (!Number.isFinite(hours)) return 0;
+  return Math.min(24, Math.max(0, Math.round(hours * 2) / 2));
+}
 
 const HISTORY_DAYS = 60;
 /** Two weeks: this week and last, for the Changes comparison. */
@@ -19,6 +28,8 @@ interface GardenStoreState {
   checkIns: CheckIn[];
   water: WaterLog[];
   workouts: Workout[];
+  meals: MealLog[];
+  sleep: SleepLog[];
   /** Today's steps; null until the phone shares them (then the grass keeps a calm default). */
   stepsToday: number | null;
   /** Daily steps for the last two weeks, keyed by localDayKey. */
@@ -43,6 +54,17 @@ interface GardenStoreState {
   /** Marks today's check-in as feeling unwell (or not). Needs a mood picked today first. */
   setUnwell: (unwell: boolean) => Promise<void>;
   todayUnwell: () => boolean;
+  /** Logs today's yard mood (re-picking edits today's check-in). */
+  logYardMood: (mood: YardMood) => Promise<void>;
+  todayYardMood: () => YardMood | null;
+  /** Which meals were logged today, in MEALS order. */
+  mealsToday: () => Meal[];
+  /** Makes today's meals exactly this set: adds the new ones, removes the unticked ones. */
+  setMealsToday: (meals: Meal[]) => Promise<void>;
+  /** This morning's sleep log, if there is one. */
+  lastNightSleep: () => SleepLog | null;
+  /** Logs last night's sleep (logging again this morning edits it). */
+  logSleep: (hours: number, feel: SleepFeel | null) => Promise<void>;
   gardenInput: () => GardenInput;
 }
 
@@ -69,6 +91,8 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     checkIns: [],
     water: [],
     workouts: [],
+    meals: [],
+    sleep: [],
     stepsToday: null,
     stepsByDay: {},
     stepsStatus: 'unknown',
@@ -78,12 +102,14 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     load: async () => {
       try {
         const since = startOfLocalDay(new Date(), -HISTORY_DAYS).toISOString();
-        const [checkIns, water, workouts] = await Promise.all([
+        const [checkIns, water, workouts, meals, sleep] = await Promise.all([
           db.checkIns.since(since),
           db.water.since(since),
           db.workouts.all(),
+          db.meals.since(since),
+          db.sleep.since(since),
         ]);
-        set({ checkIns, water, workouts, loaded: true, error: null });
+        set({ checkIns, water, workouts, meals, sleep, loaded: true, error: null });
       } catch (err) {
         set({ error: friendlyErrorMessage(err), loaded: true });
       }
@@ -110,8 +136,11 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
         const today = get().checkIns.find((c) => isToday(c.created_at));
         const energy_score = moodToEnergy(mood);
         if (today) {
-          await db.checkIns.update(today.id, { energy_score });
-          set((s) => ({ checkIns: s.checkIns.map((c) => (c.id === today.id ? { ...c, energy_score } : c)) }));
+          // Clears any yard mood, so the two pickers can never disagree about today.
+          await db.checkIns.update(today.id, { energy_score, mood: undefined });
+          set((s) => ({
+            checkIns: s.checkIns.map((c) => (c.id === today.id ? { ...c, energy_score, mood: undefined } : c)),
+          }));
         } else {
           const row = await db.checkIns.add({
             energy_score,
@@ -173,6 +202,69 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
       const today = get().checkIns.find((c) => isToday(c.created_at));
       return today ? mapEnergyToState(today.energy_score) : null;
     },
+
+    logYardMood: (mood) =>
+      guarded(async () => {
+        const today = get().checkIns.find((c) => isToday(c.created_at));
+        const energy_score = yardMoodToEnergy(mood);
+        if (today) {
+          await db.checkIns.update(today.id, { energy_score, mood });
+          set((s) => ({ checkIns: s.checkIns.map((c) => (c.id === today.id ? { ...c, energy_score, mood } : c)) }));
+        } else {
+          const row = await db.checkIns.add({
+            energy_score,
+            mood,
+            sleep_quality: null,
+            intention: null,
+            engine_version: GARDEN_VERSION,
+          });
+          set((s) => ({ checkIns: [row, ...s.checkIns] }));
+        }
+        telemetry.capture('logged', { kind: 'mood' });
+      }),
+
+    todayYardMood: () => {
+      const today = get().checkIns.find((c) => isToday(c.created_at));
+      return today ? yardMoodOf(today) : null;
+    },
+
+    mealsToday: () => {
+      const eaten = new Set(get().meals.filter((m) => isToday(m.created_at)).map((m) => m.meal));
+      return MEALS.filter((m) => eaten.has(m));
+    },
+
+    setMealsToday: (meals) =>
+      guarded(async () => {
+        const wanted = new Set(meals);
+        const todays = get().meals.filter((m) => isToday(m.created_at));
+        const have = new Set(todays.map((m) => m.meal));
+        const toRemove = todays.filter((m) => !wanted.has(m.meal));
+        const toAdd = MEALS.filter((m) => wanted.has(m) && !have.has(m));
+        try {
+          for (const row of toRemove) await db.meals.remove(row.id);
+          for (const meal of toAdd) await db.meals.add(meal);
+        } finally {
+          // Re-read, so memory matches disk even if a write in the middle failed.
+          set({ meals: await db.meals.since(startOfLocalDay(new Date(), -HISTORY_DAYS).toISOString()) });
+        }
+        if (toAdd.length) telemetry.capture('logged', { kind: 'food' });
+      }),
+
+    lastNightSleep: () => get().sleep.find((s) => s.night_of === localDayKey(new Date())) ?? null,
+
+    logSleep: (hours, feel) =>
+      guarded(async () => {
+        const tidy = tidySleepHours(hours);
+        const existing = get().lastNightSleep();
+        if (existing) {
+          await db.sleep.update(existing.id, { hours: tidy, feel });
+          set((s) => ({ sleep: s.sleep.map((r) => (r.id === existing.id ? { ...r, hours: tidy, feel } : r)) }));
+        } else {
+          const row = await db.sleep.add({ night_of: localDayKey(new Date()), hours: tidy, feel });
+          set((s) => ({ sleep: [row, ...s.sleep] }));
+        }
+        telemetry.capture('logged', { kind: 'sleep' });
+      }),
 
     gardenInput: () => {
       const { checkIns, water, workouts, stepsToday } = get();

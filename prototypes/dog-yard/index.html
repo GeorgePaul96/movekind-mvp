@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoveKind · Maple's yard (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Tokens mirror src/constants/colors.ts ("Sage"). `buzz*` is a new mood colour this design needs. */
+  :root {
+    --background:#F6FAF5; --surface:#FFFFFF; --surfaceSecondary:#EEF4EF;
+    --textPrimary:#181D1A; --textSecondary:#404943; --textMuted:#5A635D;
+    --primary:#20684A; --primaryPressed:#185239; --primarySoft:#DCEFE3; --onPrimary:#FFFFFF;
+    --border:#BFC9C1; --divider:#E5E9E4; --scrim:rgba(24,29,26,0.35);
+    --tiredSoft:#E3E5FA; --tiredInk:#363C8C; --tiredTint:#6F78D8;
+    --lowSoft:#D5EEE0;   --lowInk:#1F5C3A;   --lowTint:#3F9468;
+    --frusSoft:#FAD9D1;  --frusInk:#8A3220;  --frusTint:#D0573F;
+    --steadySoft:#FBEBC4;--steadyInk:#6B4A0E;--steadyTint:#B07A1C;
+    --buzzSoft:#FFF1B8;  --buzzInk:#5E4A00;  --buzzTint:#E0B400;
+
+    --gold:#E3A857; --goldDark:#C98A3E; --cream:#F6D9A6; --nose:#3A2A20; --tongue:#E87A86;
+    --fawn:#D8B08C; --fawnDark:#B8906C; --bullWhite:#F4EDE4;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:#DDE6DE; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:var(--textPrimary); }
+  body { display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  #phone { position:relative; width:390px; height:844px; overflow:hidden; border-radius:44px; background:var(--background);
+           box-shadow:0 30px 80px rgba(36,68,52,.25); transform-origin:center; flex:none; }
+  svg#yard { position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  /* ---------- top bar ---------- */
+  .topbar { position:absolute; top:52px; left:20px; right:20px; display:flex; align-items:center; justify-content:space-between; pointer-events:none; }
+  .hello { font-weight:800; font-size:22px; }
+  .hello small { display:block; font-weight:600; font-size:13px; color:var(--textSecondary); margin-bottom:2px; }
+  .moodchip { pointer-events:auto; border:0; min-height:44px; padding:0 14px 0 10px; border-radius:999px; display:flex; gap:8px; align-items:center;
+              font:700 14px 'Plus Jakarta Sans',sans-serif; background:var(--surface); color:var(--textPrimary); box-shadow:0 6px 16px rgba(36,68,52,.08); cursor:pointer; }
+  .dot { width:12px; height:12px; border-radius:50%; background:var(--border); flex:none; }
+
+  /* ---------- today tray ---------- */
+  .tray { position:absolute; left:16px; right:16px; bottom:30px; background:var(--surface); border-radius:24px; padding:14px 14px 12px;
+          box-shadow:0 6px 20px rgba(36,68,52,.08); }
+  .tray h3 { margin:0 4px 10px; font-size:13px; font-weight:700; color:var(--textSecondary); letter-spacing:.02em; }
+  .tray .row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .tray button { border:0; background:var(--surfaceSecondary); border-radius:16px; min-height:64px; padding:8px 4px; cursor:pointer;
+                 font:600 13px 'Plus Jakarta Sans',sans-serif; color:var(--textSecondary); display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .tray button b { font-weight:800; font-size:15px; color:var(--textPrimary); }
+  .tray button.done { background:var(--primarySoft); }
+  .tray button.done b { color:var(--primary); }
+
+  /* ---------- speech bubble ---------- */
+  .bubble { position:absolute; max-width:230px; padding:10px 14px; background:var(--surface); border-radius:18px; font-size:14px; font-weight:600;
+            color:var(--textPrimary); box-shadow:0 8px 24px rgba(36,68,52,.14); transform:translate(-50%,-100%) scale(.9); opacity:0;
+            transition:opacity .25s, transform .25s; pointer-events:none; text-align:center; z-index:5; }
+  .bubble::after { content:''; position:absolute; left:50%; bottom:-7px; width:14px; height:14px; background:var(--surface); transform:translateX(-50%) rotate(45deg); border-radius:3px; }
+  .bubble.show { opacity:1; transform:translate(-50%,-100%) scale(1); }
+  .bubble .who { display:block; font-size:12px; color:var(--textMuted); font-weight:700; }
+
+  /* ---------- sheet ---------- */
+  .scrim { position:absolute; inset:0; background:transparent; opacity:0; pointer-events:none; transition:opacity .3s; z-index:10; }
+  .scrim.show { opacity:1; pointer-events:auto; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--surface); border-radius:28px 28px 0 0; padding:12px 22px 30px;
+           transform:translateY(105%); transition:transform .38s cubic-bezier(.2,.9,.25,1); z-index:11; box-shadow:0 -10px 30px rgba(36,68,52,.12); min-height:340px; }
+  .sheet.show { transform:translateY(0); }
+  .grab { width:40px; height:5px; border-radius:3px; background:var(--divider); margin:0 auto 14px; }
+  .sheet h2 { margin:0; font-size:21px; font-weight:800; line-height:1.25; }
+  .sheet p.sub { margin:6px 0 18px; font-size:14px; color:var(--textSecondary); }
+  .label { font-size:13px; font-weight:700; color:var(--textSecondary); margin:16px 0 8px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { border:1.5px solid var(--border); background:var(--surface); min-height:44px; padding:0 16px; border-radius:999px; cursor:pointer;
+          font:600 14px 'Plus Jakarta Sans',sans-serif; color:var(--textPrimary); }
+  .chip[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:var(--onPrimary); }
+  .glasses { display:flex; gap:6px; flex-wrap:wrap; }
+  .glass { border:0; background:none; padding:0; width:36px; height:46px; cursor:pointer; }
+  .stepper { display:flex; align-items:center; gap:16px; }
+  .stepper button { width:48px; height:48px; border-radius:50%; border:1.5px solid var(--border); background:var(--surface); font:700 22px 'Plus Jakarta Sans'; color:var(--primary); cursor:pointer; }
+  .stepper output { font-size:28px; font-weight:800; min-width:120px; text-align:center; }
+  .stepper output small { font-size:14px; font-weight:600; color:var(--textSecondary); }
+  .actions { display:flex; gap:10px; margin-top:24px; }
+  .btn { flex:1; min-height:52px; border-radius:999px; border:0; font:700 16px 'Plus Jakarta Sans',sans-serif; cursor:pointer; }
+  .btn.primary { background:var(--primary); color:var(--onPrimary); }
+  .btn.primary:disabled { background:var(--border); color:var(--textSecondary); cursor:default; }
+  .btn.link { flex:0 0 auto; padding:0 18px; background:none; color:var(--primary); }
+
+  /* ---------- mood screen ---------- */
+  .moodscreen { position:absolute; inset:0; z-index:20; display:flex; flex-direction:column; justify-content:flex-end;
+                background:linear-gradient(to bottom, rgba(246,250,245,0) 0%, rgba(246,250,245,.0) 35%, rgba(246,250,245,.96) 52%);
+                padding:0 20px 34px; transition:opacity .4s; }
+  .moodscreen.hide { opacity:0; pointer-events:none; }
+  .moodscreen h1 { margin:0; font-size:26px; font-weight:800; }
+  .moodscreen p { margin:6px 0 18px; color:var(--textSecondary); font-size:15px; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { border:2px solid transparent; border-radius:20px; min-height:78px; padding:12px 14px; text-align:left; cursor:pointer;
+          font:800 16px 'Plus Jakarta Sans',sans-serif; display:flex; flex-direction:column; justify-content:center; gap:3px; }
+  .tile span { font-weight:600; font-size:13px; }
+  .tile:last-child { grid-column:1 / -1; }
+  .t-tired  { background:var(--tiredSoft);  color:var(--tiredInk); }
+  .t-low    { background:var(--lowSoft);    color:var(--lowInk); }
+  .t-frus   { background:var(--frusSoft);   color:var(--frusInk); }
+  .t-steady { background:var(--steadySoft); color:var(--steadyInk); }
+  .t-buzz   { background:var(--buzzSoft);   color:var(--buzzInk); }
+  .tile:hover, .tile:focus-visible { border-color:currentColor; outline:none; }
+
+  /* =========================================================
+     Maple (golden retriever). Local origin = between the feet.
+     ========================================================= */
+  #dog .tail   { transform-origin:24px -16px; animation:wag 1.3s ease-in-out infinite; }
+  #dog .head   { transform-origin:0px -68px; transition:transform .5s; }
+  #dog .bodyall{ transform-origin:0px 0px; transition:transform .5s; }
+  #dog .ear    { transition:transform .5s; }
+  #dog .earL   { transform-origin:-22px -104px; }
+  #dog .earR   { transform-origin:22px -104px; }
+  #dog .lid, #dog .brow, #dog .tongue, #dog .sparkles, #dog .scribble, #dog .smile-open { opacity:0; transition:opacity .4s; }
+  #dog .pupil  { transition:transform .4s; }
+  #dog .blink  { transform-origin:0 -97px; animation:blink 5s infinite; }
+
+  @keyframes wag { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(16deg)} }
+  @keyframes wagSlow { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+  @keyframes flick { 0%,70%,100%{transform:rotate(10deg)} 80%{transform:rotate(-10deg)} 90%{transform:rotate(14deg)} }
+  @keyframes blink { 0%,94%,100%{transform:scaleY(1)} 97%{transform:scaleY(.1)} }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  @keyframes dip { 0%,100%{transform:translateY(0) scaleY(1)} 50%{transform:translateY(16px) scaleY(.94)} }
+  @keyframes twinkle { 0%,100%{opacity:.2; transform:scale(.7)} 50%{opacity:1; transform:scale(1.1)} }
+  @keyframes huff { 0%,85%,100%{transform:translateY(0)} 90%{transform:translateY(-3px)} }
+  @keyframes drift { 0%,100%{transform:translateX(-2px) rotate(-3deg)} 50%{transform:translateX(2px) rotate(3deg)} }
+  @keyframes hop { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-22px)} 70%{transform:translateY(0)} 85%{transform:translateY(-6px)} }
+  @keyframes legL { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+  @keyframes legR { 0%,100%{transform:translateY(-5px)} 50%{transform:translateY(0)} }
+
+  /* moods */
+  #dog.mood-tired .bodyall { transform:scale(1.03,.95); }
+  #dog.mood-tired .head { transform:translateY(5px) rotate(-6deg); }
+  #dog.mood-tired .earL { transform:rotate(14deg); } #dog.mood-tired .earR { transform:rotate(-14deg); }
+  #dog.mood-tired .lid { opacity:1; }
+  #dog.mood-tired .tail { animation:wagSlow 3.6s ease-in-out infinite; }
+
+  #dog.mood-low .head { transform:translateY(3px) rotate(7deg); }
+  #dog.mood-low .pupil { transform:translateY(1.6px); }
+  #dog.mood-low .earL { transform:rotate(8deg); } #dog.mood-low .earR { transform:rotate(-8deg); }
+  #dog.mood-low .tail { animation:wagSlow 4.5s ease-in-out infinite; }
+
+  #dog.mood-frus .brow, #dog.mood-frus .scribble { opacity:1; }
+  #dog.mood-frus .earL { transform:rotate(-12deg); } #dog.mood-frus .earR { transform:rotate(12deg); }
+  #dog.mood-frus .bodyall { animation:huff 3s ease-in-out infinite; }
+  #dog.mood-frus .tail { animation:flick 2.4s ease-in-out infinite; }
+  #dog .scribble { transform-origin:0 -140px; animation:drift 2.5s ease-in-out infinite; }
+
+  #dog.mood-steady .tail { animation:wag 1.6s ease-in-out infinite; }
+
+  #dog.mood-buzz .tongue, #dog.mood-buzz .sparkles { opacity:1; }
+  #dog.mood-buzz .bodyall { animation:bounce .6s ease-in-out infinite; }
+  #dog.mood-buzz .tail { animation:wag .32s ease-in-out infinite; }
+  #dog.mood-buzz .earL { transform:rotate(-8deg); } #dog.mood-buzz .earR { transform:rotate(8deg); }
+  #dog .sparkles path { transform-box:fill-box; transform-origin:center; animation:twinkle 1.2s ease-in-out infinite; }
+  #dog .sparkles path:nth-child(2){ animation-delay:.4s } #dog .sparkles path:nth-child(3){ animation-delay:.8s }
+
+  /* actions (override mood) */
+  #dog.walking .bodyall { animation:bob .32s ease-in-out infinite; }
+  #dog.walking .legL { animation:legL .32s infinite; } #dog.walking .legR { animation:legR .32s infinite; }
+  #dog.drinking .head, #dog.eating .head { animation:dip .7s ease-in-out infinite; }
+  #dog.drinking .tongue { opacity:1; }
+  #dog.drinking .lid, #dog.eating .lid { opacity:1; }
+  #dog.playing .bodyall { animation:bounce .45s ease-in-out infinite; }
+  #dog.playing .tongue { opacity:1; }
+  #dog.playing .tail { animation:wag .3s ease-in-out infinite; }
+  #dog.playing .brow, #dog.playing .scribble, #dog.playing .lid { opacity:0; }
+  #dog.hopping .bodyall { animation:hop .7s ease-out 1; }
+
+  /* =========================================================
+     Pudding (bulldog). Local origin = ground under his middle.
+     ========================================================= */
+  #bull .pose { opacity:0; transition:opacity .35s; }
+  #bull.pose-down .p-down, #bull.pose-up .p-up, #bull.pose-awake .p-awake { opacity:1; }
+  #bull .breathe { transform-origin:10px 0px; animation:breathe 3.2s ease-in-out infinite; }
+  #bull .zz { opacity:0; transition:opacity .3s; }
+  #bull.pose-down .zz, #bull.pose-up .zz { opacity:1; }
+  #bull .zz text { animation:zz 3s ease-in infinite; font:800 14px 'Plus Jakarta Sans',sans-serif; fill:var(--textMuted); }
+  #bull .zz text:nth-child(2){ animation-delay:1s; font-size:18px } #bull .zz text:nth-child(3){ animation-delay:2s; font-size:22px }
+  #bull.snoring .zz text { fill:var(--tiredInk); }
+  #bull .rollwrap { transform-origin:10px -16px; }
+  #bull.rolling .rollwrap { animation:roll .7s ease-in-out 1; }
+  #bull.walking .rollwrap { animation:waddle .28s ease-in-out infinite; }
+  #bull.eating .bhead { animation:dip .8s ease-in-out infinite; }
+  #bull .stub { transform-origin:44px -38px; animation:wag .5s infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(1,1)} 50%{transform:scale(1.02,1.05)} }
+  @keyframes zz { 0%{opacity:0; transform:translate(0,0)} 25%{opacity:1} 100%{opacity:0; transform:translate(-14px,-34px)} }
+  @keyframes roll { 0%{transform:rotate(0)} 50%{transform:rotate(-18deg) translateY(-6px)} 100%{transform:rotate(0)} }
+  @keyframes waddle { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg) translateY(-2px)} }
+
+  /* props */
+  .hot { cursor:pointer; outline:none; }
+  .hot:focus-visible .ring { stroke:var(--primary); stroke-width:3; opacity:1; }
+  .ring { fill:none; stroke:#fff; stroke-width:2.5; opacity:0; }
+  .untended .ring { animation:shimmer 2.6s ease-in-out infinite; }
+  @keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:.85} }
+  #ball .spin { transform-origin:0 -12px; }
+  #ball.bouncing .spin { animation:ballhop .45s ease-out infinite; }
+  @keyframes ballhop { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-26px) rotate(160deg)} }
+  .ripple { opacity:0; }
+  .drinking-on .ripple { animation:ripple 1s ease-out infinite; }
+  @keyframes ripple { 0%{opacity:.9; transform:scale(.4)} 100%{opacity:0; transform:scale(1.3)} }
+  .kibble-bit { transition:opacity .4s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+
+<svg id="yard" viewBox="0 0 390 844" role="img" aria-label="A garden yard with Maple the golden retriever and Pudding the sleeping bulldog">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4F1EE"/><stop offset="1" stop-color="#F3F8EC"/>
+    </linearGradient>
+    <linearGradient id="lawn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A8D9B6"/><stop offset="1" stop-color="#8FCB9F"/>
+    </linearGradient>
+    <radialGradient id="sunGlow"><stop offset="0" stop-color="#FFF2C7"/><stop offset="1" stop-color="#FFF2C7" stop-opacity="0"/></radialGradient>
+
+    <!-- Pudding's head, sleeping, centred on 0,0, facing left -->
+    <g id="bullHeadSleep">
+      <path d="M8 -17 q9 -8 15 1 q-8 2 -15 -1z" fill="#8E6A4E"/>
+      <ellipse cx="0" cy="0" rx="25" ry="20" fill="var(--fawn)"/>
+      <path d="M-12 -13 q6 -3 12 0 M-10 -8 q5 -2 9 0" stroke="var(--fawnDark)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-12" cy="7" rx="15" ry="11" fill="var(--bullWhite)"/>
+      <ellipse cx="-22" cy="1" rx="5.5" ry="4" fill="var(--nose)"/>
+      <path d="M-24 10 q7 7 16 2" stroke="#9C7C66" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M-9 -4 q4 3.5 9 0" stroke="var(--nose)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="6" cy="6" rx="5" ry="3" fill="#F2B7B0" opacity=".6"/>
+    </g>
+    <g id="bullHeadAwake">
+      <path d="M8 -17 q9 -8 15 1 q-8 2 -15 -1z" fill="#8E6A4E"/>
+      <ellipse cx="0" cy="0" rx="25" ry="20" fill="var(--fawn)"/>
+      <path d="M-12 -13 q6 -3 12 0" stroke="var(--fawnDark)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="-12" cy="7" rx="15" ry="11" fill="var(--bullWhite)"/>
+      <ellipse cx="-22" cy="1" rx="5.5" ry="4" fill="var(--nose)"/>
+      <path d="M-24 11 q7 7 16 2" stroke="#9C7C66" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <rect x="-20" y="9" width="3" height="4" rx="1" fill="#fff"/><rect x="-13" y="10" width="3" height="4" rx="1" fill="#fff"/>
+      <circle cx="-5" cy="-5" r="3.6" fill="var(--nose)"/><circle cx="-6" cy="-6.2" r="1.2" fill="#fff"/>
+    </g>
+  </defs>
+
+  <!-- sky -->
+  <rect width="390" height="844" fill="url(#sky)"/>
+  <circle cx="318" cy="150" r="70" fill="url(#sunGlow)"/>
+  <circle cx="318" cy="150" r="26" fill="#FFE08F"/>
+  <g fill="#fff" opacity=".9">
+    <ellipse cx="70" cy="170" rx="34" ry="12"/><ellipse cx="92" cy="162" rx="22" ry="12"/>
+    <ellipse cx="210" cy="200" rx="26" ry="9"/>
+  </g>
+
+  <!-- hills -->
+  <path d="M0 240 Q90 190 190 225 T390 215 V300 H0Z" fill="#BFE3CC"/>
+  <path d="M0 262 Q120 225 230 255 T390 248 V320 H0Z" fill="#9ED3B2"/>
+
+  <!-- fence -->
+  <g fill="#F3EBDD" stroke="#D9CBB2" stroke-width="1.5">
+    <rect x="0" y="252" width="390" height="6" rx="3"/>
+    <rect x="0" y="272" width="390" height="6" rx="3"/>
+    <g id="pickets"></g>
+  </g>
+
+  <!-- lawn -->
+  <path d="M0 286 Q195 270 390 286 V844 H0Z" fill="url(#lawn)"/>
+  <!-- path to the lower lawn -->
+  <path d="M175 480 Q150 560 190 640 T200 844 H250 Q235 720 245 640 T215 480Z" fill="#E9DFC9" opacity=".7"/>
+  <g id="tufts" stroke="#6FB585" stroke-width="2" stroke-linecap="round" fill="none"></g>
+  <g id="flowers"></g>
+
+  <!-- tree behind Pudding -->
+  <g>
+    <rect x="342" y="210" width="16" height="96" rx="7" fill="#9A7B5A"/>
+    <circle cx="350" cy="196" r="44" fill="#5FB585"/>
+    <circle cx="322" cy="214" r="28" fill="#5FB585"/>
+    <circle cx="336" cy="178" r="22" fill="#8ED3A8"/>
+  </g>
+  <!-- little dog house, left -->
+  <g transform="translate(44 300)">
+    <path d="M-34 0 V-38 L0 -64 L34 -38 V0Z" fill="#F3EBDD" stroke="#D9CBB2" stroke-width="1.5"/>
+    <path d="M-40 -36 L0 -68 L40 -36" fill="none" stroke="#B5694E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-13 0 V-20 a13 13 0 0 1 26 0 V0Z" fill="#5E4B3A"/>
+    <text x="0" y="-32" text-anchor="middle" font-size="9" font-weight="800" fill="#8A6A50" font-family="Plus Jakarta Sans">MAPLE</text>
+  </g>
+
+  <!-- Pudding's cushion -->
+  <g transform="translate(300 342)">
+    <ellipse cx="0" cy="2" rx="66" ry="15" fill="#7E9CC0" opacity=".35"/>
+    <ellipse cx="0" cy="-2" rx="62" ry="14" fill="#A9C0DD"/>
+    <ellipse cx="0" cy="-5" rx="50" ry="9" fill="#C3D4EA"/>
+  </g>
+
+  <!-- ============ Pudding ============ -->
+  <g id="bullPos" style="transform:translate(300px,340px)">
+    <g id="bull" class="pose-down" >
+      <ellipse cx="4" cy="0" rx="54" ry="6" fill="#244434" opacity=".1"/>
+      <g class="rollwrap">
+        <!-- belly down -->
+        <g class="pose p-down"><g class="breathe">
+          <circle cx="50" cy="-30" r="5" fill="var(--fawn)"/>
+          <ellipse cx="10" cy="-22" rx="41" ry="22" fill="var(--fawn)"/>
+          <ellipse cx="34" cy="-14" rx="16" ry="12" fill="#CFA47E"/>
+          <ellipse cx="32" cy="-3" rx="10" ry="4" fill="var(--bullWhite)"/>
+          <ellipse cx="-24" cy="-3" rx="11" ry="4.5" fill="var(--bullWhite)"/>
+          <ellipse cx="-38" cy="-4" rx="13" ry="5" fill="var(--bullWhite)"/>
+          <use href="#bullHeadSleep" transform="translate(-34 -24)"/>
+        </g></g>
+        <!-- belly up -->
+        <g class="pose p-up"><g class="breathe">
+          <g stroke="var(--fawn)" stroke-width="10" stroke-linecap="round">
+            <line x1="-10" y1="-28" x2="-15" y2="-46"/><line x1="3" y1="-30" x2="5" y2="-48"/>
+            <line x1="28" y1="-30" x2="32" y2="-46"/><line x1="40" y1="-26" x2="47" y2="-41"/>
+          </g>
+          <g fill="var(--bullWhite)"><circle cx="-15" cy="-47" r="5.5"/><circle cx="5" cy="-49" r="5.5"/><circle cx="32" cy="-47" r="5.5"/><circle cx="47" cy="-42" r="5.5"/></g>
+          <ellipse cx="9" cy="-17" rx="40" ry="17" fill="var(--fawn)"/>
+          <ellipse cx="11" cy="-25" rx="30" ry="10" fill="#F6E9DE"/>
+          <circle cx="4" cy="-26" r="1.6" fill="#E9B9AE"/><circle cx="16" cy="-26" r="1.6" fill="#E9B9AE"/>
+          <use href="#bullHeadSleep" transform="translate(-36 -17) scale(1 -1)"/>
+          <path d="M-46 -3 q-2 9 4 10 q5 -1 3 -10z" fill="var(--tongue)"/>
+        </g></g>
+        <!-- awake, standing -->
+        <g class="pose p-awake">
+          <g class="stub"><circle cx="46" cy="-40" r="5" fill="var(--fawn)"/></g>
+          <g fill="var(--fawn)">
+            <rect x="-30" y="-22" width="11" height="20" rx="5"/><rect x="-15" y="-22" width="11" height="20" rx="5"/>
+            <rect x="20" y="-22" width="11" height="20" rx="5"/><rect x="33" y="-22" width="11" height="20" rx="5"/>
+          </g>
+          <g fill="var(--bullWhite)"><ellipse cx="-25" cy="-2" rx="7" ry="3.5"/><ellipse cx="-10" cy="-2" rx="7" ry="3.5"/><ellipse cx="25" cy="-2" rx="7" ry="3.5"/><ellipse cx="38" cy="-2" rx="7" ry="3.5"/></g>
+          <ellipse cx="8" cy="-32" rx="40" ry="19" fill="var(--fawn)"/>
+          <ellipse cx="-20" cy="-27" rx="13" ry="12" fill="var(--bullWhite)"/>
+          <g class="bhead"><use href="#bullHeadAwake" transform="translate(-36 -46)"/></g>
+        </g>
+      </g>
+      <g class="zz"><text x="-30" y="-62">z</text><text x="-22" y="-74">z</text><text x="-12" y="-88">Z</text></g>
+    </g>
+  </g>
+  <!-- tap target for Pudding -->
+  <g id="hotBull" class="hot untended" role="button" tabindex="0" aria-label="Pudding the bulldog, log your sleep">
+    <ellipse class="ring" cx="300" cy="320" rx="72" ry="44"/>
+    <ellipse cx="300" cy="318" rx="70" ry="44" fill="transparent"/>
+  </g>
+
+  <!-- ============ Maple ============ -->
+  <g id="dogPos" style="transform:translate(195px,430px)">
+    <g id="dog" class="mood-steady">
+      <ellipse cx="0" cy="0" rx="42" ry="7" fill="#244434" opacity=".12"/>
+      <g class="bodyall">
+        <g class="tail"><path d="M24 -16 C 46 -18, 58 -34, 52 -56" stroke="var(--gold)" stroke-width="13" fill="none" stroke-linecap="round"/>
+          <path d="M50 -40 C 56 -46, 56 -52, 52 -58" stroke="var(--cream)" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+        <ellipse cx="-24" cy="-14" rx="19" ry="14" fill="var(--goldDark)"/>
+        <ellipse cx="24" cy="-14" rx="19" ry="14" fill="var(--goldDark)"/>
+        <ellipse cx="0" cy="-38" rx="30" ry="38" fill="var(--gold)"/>
+        <path d="M-15 -66 Q0 -56 15 -66 Q20 -36 0 -18 Q-20 -36 -15 -66Z" fill="var(--cream)"/>
+        <g class="legL"><rect x="-17" y="-34" width="13" height="32" rx="6.5" fill="var(--gold)"/><ellipse cx="-10.5" cy="-3" rx="8.5" ry="5" fill="var(--cream)"/></g>
+        <g class="legR"><rect x="4" y="-34" width="13" height="32" rx="6.5" fill="var(--gold)"/><ellipse cx="10.5" cy="-3" rx="8.5" ry="5" fill="var(--cream)"/></g>
+        <!-- collar -->
+        <path d="M-19 -69 Q0 -60 19 -69" stroke="var(--primary)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-60" r="4.5" fill="#F2B84B" stroke="#D99A2B" stroke-width="1"/>
+
+        <g class="head">
+          <circle cx="0" cy="-94" r="27" fill="var(--gold)"/>
+          <path d="M-10 -119 q10 -6 20 0" stroke="var(--goldDark)" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+          <g class="ear earL"><path d="M-20 -110 C -38 -106, -40 -80, -30 -70 C -24 -66, -18 -76, -17 -90 Z" fill="var(--goldDark)"/></g>
+          <g class="ear earR"><path d="M20 -110 C 38 -106, 40 -80, 30 -70 C 24 -66, 18 -76, 17 -90 Z" fill="var(--goldDark)"/></g>
+          <ellipse cx="0" cy="-80" rx="15" ry="11" fill="var(--cream)"/>
+          <!-- eyes -->
+          <g class="blink">
+            <g class="pupil"><circle cx="-10" cy="-97" r="3.6" fill="var(--nose)"/><circle cx="-11" cy="-98.3" r="1.2" fill="#fff"/></g>
+            <g class="pupil"><circle cx="10" cy="-97" r="3.6" fill="var(--nose)"/><circle cx="9" cy="-98.3" r="1.2" fill="#fff"/></g>
+          </g>
+          <g class="lid">
+            <path d="M-15 -97 Q-10 -102.5 -5 -97Z M5 -97 Q10 -102.5 15 -97Z" fill="var(--gold)"/>
+            <path d="M-15 -97 H-5 M5 -97 H15" stroke="var(--nose)" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+          <g class="brow"><path d="M-16 -103 L-6 -106 M16 -103 L6 -106" stroke="var(--nose)" stroke-width="2.2" stroke-linecap="round"/></g>
+          <ellipse cx="0" cy="-87" rx="5.5" ry="4" fill="var(--nose)"/>
+          <ellipse cx="-1.5" cy="-88.3" rx="1.6" ry="1" fill="#fff" opacity=".6"/>
+          <path class="tongue" d="M-5 -77 Q-5 -64 0 -64 Q5 -64 5 -77Z" fill="var(--tongue)"/>
+          <path d="M-7 -79 Q-3.5 -75 0 -79 Q3.5 -75 7 -79" stroke="var(--nose)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <circle cx="-17" cy="-84" r="3.5" fill="#F2A08E" opacity=".35"/><circle cx="17" cy="-84" r="3.5" fill="#F2A08E" opacity=".35"/>
+        </g>
+        <g class="sparkles" fill="#E0B400">
+          <path d="M-44 -116 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2z"/>
+          <path d="M44 -104 l1.5 -4.5 l1.5 4.5 l4.5 1.5 l-4.5 1.5 l-1.5 4.5 l-1.5 -4.5 l-4.5 -1.5z"/>
+          <path d="M30 -134 l1.5 -4.5 l1.5 4.5 l4.5 1.5 l-4.5 1.5 l-1.5 4.5 l-1.5 -4.5 l-4.5 -1.5z"/>
+        </g>
+        <g class="scribble"><path d="M-16 -136 c4 -8 8 6 12 -2 s8 6 12 -2 s8 6 10 0" stroke="#7A8780" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="0" cy="-138" rx="24" ry="10" fill="#E3E8E5" opacity=".7"/></g>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============ water bowl ============ -->
+  <g id="hotWater" class="hot untended" role="button" tabindex="0" aria-label="Water bowl, log glasses of water">
+    <g transform="translate(82 460)">
+      <ellipse class="ring" cx="0" cy="-6" rx="40" ry="20"/>
+      <ellipse cx="0" cy="4" rx="32" ry="6" fill="#244434" opacity=".1"/>
+      <path d="M-28 -10 Q-26 6 0 6 Q26 6 28 -10Z" fill="#4F8FC0"/>
+      <ellipse cx="0" cy="-10" rx="28" ry="8" fill="#6BB6D9"/>
+      <ellipse cx="0" cy="-10" rx="22" ry="5.5" fill="#A9D8EE"/>
+      <g id="waterRipple"><ellipse class="ripple" cx="0" cy="-10" rx="12" ry="3" fill="none" stroke="#fff" stroke-width="1.5" style="transform-box:fill-box;transform-origin:center"/></g>
+      <text x="0" y="-1" text-anchor="middle" font-size="7" font-weight="800" fill="#E4F1FA" font-family="Plus Jakarta Sans">WATER</text>
+      <rect x="-40" y="-36" width="80" height="50" fill="transparent"/>
+    </g>
+  </g>
+
+  <!-- ============ food bowl ============ -->
+  <g id="hotFood" class="hot untended" role="button" tabindex="0" aria-label="Food bowl, log what you ate">
+    <g transform="translate(300 466)">
+      <ellipse class="ring" cx="0" cy="-6" rx="42" ry="20"/>
+      <ellipse cx="0" cy="4" rx="34" ry="6" fill="#244434" opacity=".1"/>
+      <path d="M-30 -10 Q-28 6 0 6 Q28 6 30 -10Z" fill="#D0573F"/>
+      <ellipse cx="0" cy="-10" rx="30" ry="8" fill="#EE7A63"/>
+      <g id="kibble" fill="#9A6A3A">
+        <circle class="kibble-bit" cx="-12" cy="-12" r="4"/><circle class="kibble-bit" cx="-2" cy="-14" r="4"/><circle class="kibble-bit" cx="9" cy="-12" r="4"/>
+        <circle class="kibble-bit" cx="-6" cy="-9" r="3.6"/><circle class="kibble-bit" cx="5" cy="-8.5" r="3.6"/><circle class="kibble-bit" cx="15" cy="-9" r="3.4"/>
+      </g>
+      <path d="M-6 -1 a3 3 0 1 1 0.1 0 M6 -1 a3 3 0 1 1 0.1 0 M0 2 a4 3 0 1 1 0.1 0" fill="#FBD3C8"/>
+      <rect x="-42" y="-36" width="84" height="50" fill="transparent"/>
+    </g>
+  </g>
+
+  <!-- ============ ball ============ -->
+  <g id="ballPos" style="transform:translate(140px,350px)">
+    <g id="ball" class="hot untended" role="button" tabindex="0" aria-label="Maple's ball, log an activity">
+      <ellipse class="ring" cx="0" cy="-12" rx="26" ry="26"/>
+      <ellipse cx="0" cy="1" rx="12" ry="3" fill="#244434" opacity=".12"/>
+      <g class="spin">
+        <circle cx="0" cy="-12" r="12" fill="#D7E36A"/>
+        <path d="M-9 -20 Q0 -12 -9 -4 M9 -20 Q0 -12 9 -4" stroke="#fff" stroke-width="2" fill="none"/>
+      </g>
+      <circle cx="0" cy="-12" r="26" fill="transparent"/>
+    </g>
+  </g>
+</svg>
+
+<div class="topbar">
+  <div class="hello"><small id="greet">Good afternoon</small>Maple's yard</div>
+  <button class="moodchip" id="moodChip" aria-label="Change how you're feeling"><span class="dot" id="moodDot"></span><span id="moodLabel">How are you?</span></button>
+</div>
+
+<div class="bubble" id="bubble"></div>
+
+<div class="tray" aria-label="Today">
+  <h3>TODAY</h3>
+  <div class="row">
+    <button id="tWater"><span>Water</span><b id="vWater">tap bowl</b></button>
+    <button id="tFood"><span>Food</span><b id="vFood">tap bowl</b></button>
+    <button id="tMove"><span>Moved</span><b id="vMove">tap ball</b></button>
+    <button id="tSleep"><span>Slept</span><b id="vSleep">tap Pudding</b></button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><div class="grab"></div><div id="sheetBody"></div></div>
+
+<div class="moodscreen" id="moodScreen">
+  <h1>Hi, I'm Maple.</h1>
+  <p>How are you feeling right now? I'll feel it with you.</p>
+  <div class="tiles">
+    <button class="tile t-tired" data-mood="tired">Tired<span>Low battery</span></button>
+    <button class="tile t-low" data-mood="low">A bit low<span>Quiet inside</span></button>
+    <button class="tile t-frus" data-mood="frus">Frustrated<span>Head is busy</span></button>
+    <button class="tile t-steady" data-mood="steady">Steady<span>Doing okay</span></button>
+    <button class="tile t-buzz" data-mood="buzz">Buzzing<span>Lots of energy</span></button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- scene dressing ---------- */
+(() => {
+  let p = '';
+  for (let x = 6; x < 390; x += 22) p += `<rect x="${x}" y="240" width="12" height="48" rx="5"/>`;
+  $('#pickets').innerHTML = p;
+  let t = '';
+  [[30,520],[120,560],[300,540],[350,600],[60,640],[280,680],[150,700],[330,500],[20,420],[365,420],[240,380]].forEach(([x,y]) =>
+    t += `<path d="M${x} ${y} l-3 -8 M${x} ${y} l0 -10 M${x} ${y} l3 -8"/>`);
+  $('#tufts').innerHTML = t;
+  let f = '';
+  [[40,580,'#F6C1C9'],[330,560,'#FFE08A'],[110,610,'#B9C0F0'],[300,640,'#F6C1C9'],[360,680,'#FFE08A'],[70,690,'#F6C1C9']].forEach(([x,y,c]) =>
+    f += `<g transform="translate(${x} ${y})"><path d="M0 0 V-12" stroke="#4E9A6F" stroke-width="2"/>${[0,72,144,216,288].map(a=>`<circle cx="${Math.cos(a*Math.PI/180)*4}" cy="${-14+Math.sin(a*Math.PI/180)*4}" r="3.4" fill="${c}"/>`).join('')}<circle cx="0" cy="-14" r="2.4" fill="#FFE08A"/></g>`);
+  $('#flowers').innerHTML = f;
+  const h = new Date().getHours();
+  $('#greet').textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+})();
+
+/* fit the phone to the window */
+function fit() { const s = Math.min(1, (innerHeight - 24) / 844, (innerWidth - 24) / 390); $('#phone').style.transform = `scale(${s})`; }
+addEventListener('resize', fit); fit();
+
+/* ---------- state ---------- */
+const HOME = { x:195, y:430 }, BALL_HOME = { x:140, y:350 }, BULL_HOME = { x:300, y:340 };
+const state = { mood:null, water:0, meals:new Set(), activity:null, minutes:null, sleep:null, quality:null };
+let dogAt = { ...HOME }, bullAt = { ...BULL_HOME }, ballAt = { ...BALL_HOME }, busy = false;
+
+const dogPos = $('#dogPos'), dog = $('#dog'), bullPos = $('#bullPos'), bull = $('#bull'), ballPos = $('#ballPos'), ball = $('#ball');
+
+function move(el, from, to, speed = 4.5) {
+  const d = Math.hypot(to.x - from.x, to.y - from.y);
+  const ms = reduce ? 1 : Math.max(350, Math.min(1500, d * speed));
+  el.style.transition = `transform ${ms}ms ease-in-out`;
+  el.style.transform = `translate(${to.x}px,${to.y}px)`;
+  Object.assign(from, to);
+  return wait(ms);
+}
+async function walkDog(to, speed) { dog.classList.add('walking'); await move(dogPos, dogAt, to, speed); dog.classList.remove('walking'); }
+async function walkBull(to) { bull.classList.add('walking'); await move(bullPos, bullAt, to, 9); bull.classList.remove('walking'); }
+
+/* ---------- speech ---------- */
+let bubbleTimer;
+function say(text, who = 'Maple', at = dogAt, lift = 150) {
+  const b = $('#bubble');
+  b.innerHTML = `<span class="who">${who}</span>${text}`;
+  b.style.left = Math.max(125, Math.min(265, at.x)) + 'px';
+  b.style.top = (at.y - lift) + 'px';
+  b.classList.add('show');
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => b.classList.remove('show'), 3200);
+}
+const hush = () => $('#bubble').classList.remove('show');
+
+/* ---------- mood ---------- */
+const MOODS = {
+  tired:  { label:'Tired',      tint:'var(--tiredTint)',  line:"Let's take it slow today." },
+  low:    { label:'A bit low',  tint:'var(--lowTint)',    line:"I'll sit right here with you." },
+  frus:   { label:'Frustrated', tint:'var(--frusTint)',   line:'Busy head? Me too. No rush.' },
+  steady: { label:'Steady',     tint:'var(--steadyTint)', line:'Nice. Happy just hanging out.' },
+  buzz:   { label:'Buzzing',    tint:'var(--buzzTint)',   line:'Ooh! Is it ball time?' },
+};
+function setMood(m) {
+  state.mood = m;
+  dog.classList.remove(...Object.keys(MOODS).map(k => 'mood-' + k));
+  dog.classList.add('mood-' + m);
+  $('#moodLabel').textContent = MOODS[m].label;
+  $('#moodDot').style.background = MOODS[m].tint;
+}
+document.querySelectorAll('.tile').forEach(t => t.addEventListener('click', async () => {
+  setMood(t.dataset.mood);
+  $('#moodScreen').classList.add('hide');
+  await wait(400);
+  say(MOODS[t.dataset.mood].line);
+}));
+$('#moodChip').addEventListener('click', () => { if (!busy) $('#moodScreen').classList.remove('hide'); });
+
+/* ---------- sheet ---------- */
+let closeSheet = null;
+function openSheet(html, wire) {
+  $('#sheetBody').innerHTML = html;
+  $('#sheet').classList.add('show'); $('#scrim').classList.add('show');
+  return new Promise(resolve => {
+    closeSheet = saved => {
+      $('#sheet').classList.remove('show'); $('#scrim').classList.remove('show');
+      closeSheet = null; resolve(saved);
+    };
+    wire($('#sheetBody'));
+    $('#sheetBody').querySelector('[data-skip]').onclick = () => closeSheet(false);
+  });
+}
+$('#scrim').addEventListener('click', () => closeSheet && closeSheet(false));
+const chips = (opts, sel) => `<div class="chips">${opts.map(o => `<button class="chip" data-v="${o}" aria-pressed="${sel(o)}">${o}</button>`).join('')}</div>`;
+const actions = (label = 'Save') => `<div class="actions"><button class="btn link" data-skip>Not now</button><button class="btn primary" data-save>${label}</button></div>`;
+
+/* ---------- tray ---------- */
+function renderTray() {
+  const set = (id, v, tb) => { $(id).textContent = v ?? ({ '#vWater':'tap bowl', '#vFood':'tap bowl', '#vMove':'tap ball', '#vSleep':'tap Pudding' })[id]; $(tb).classList.toggle('done', v != null); };
+  set('#vWater', state.water ? `${state.water} ${state.water === 1 ? 'glass' : 'glasses'}` : null, '#tWater');
+  set('#vFood', state.meals.size ? `${state.meals.size} ${state.meals.size === 1 ? 'meal' : 'meals'}` : null, '#tFood');
+  set('#vMove', state.activity ? (state.minutes ? `${state.minutes}m` : state.activity) : null, '#tMove');
+  set('#vSleep', state.sleep != null ? `${state.sleep}h` : null, '#tSleep');
+  $('#hotWater').classList.toggle('untended', !state.water);
+  $('#hotFood').classList.toggle('untended', !state.meals.size);
+  ball.classList.toggle('untended', !state.activity);
+  $('#hotBull').classList.toggle('untended', state.sleep == null);
+}
+
+/* =========================================================
+   1. Water bowl: Maple goes for a drink
+   ========================================================= */
+async function doWater() {
+  if (busy) return; busy = true; hush();
+  await walkDog({ x:82, y:446 });
+  dog.classList.add('drinking'); $('#hotWater').classList.add('drinking-on');
+  await wait(reduce ? 0 : 900);
+  let n = state.water;
+  const glass = (i, full) => `<button class="glass" data-i="${i}" aria-label="${i + 1} glasses"><svg viewBox="0 0 36 46" width="36" height="46">
+      <path d="M5 4 H31 L27 42 H9 Z" fill="${full ? '#A9D8EE' : '#fff'}" stroke="${full ? '#4F8FC0' : '#BFC9C1'}" stroke-width="2" stroke-linejoin="round"/>
+      ${full ? '<path d="M7 14 H29" stroke="#6BB6D9" stroke-width="2"/>' : ''}</svg></button>`;
+  const saved = await openSheet(`
+    <h2 id="sheetTitle">How many glasses of water today?</h2>
+    <p class="sub">Maple's having one too.</p>
+    <div class="glasses" id="g"></div>
+    <div class="stepper" style="margin-top:14px"><button data-d="-1" aria-label="One less">−</button><output id="gn"></output><button data-d="1" aria-label="One more">+</button></div>
+    ${actions()}`, el => {
+      const draw = () => {
+        el.querySelector('#g').innerHTML = Array.from({ length: Math.max(8, n) }, (_, i) => glass(i, i < n)).join('');
+        el.querySelector('#gn').innerHTML = `${n} <small>${n === 1 ? 'glass' : 'glasses'}</small>`;
+        el.querySelectorAll('.glass').forEach(b => b.onclick = () => { const i = +b.dataset.i; n = (n === i + 1) ? i : i + 1; draw(); });
+      };
+      el.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { n = Math.max(0, Math.min(20, n + +b.dataset.d)); draw(); });
+      el.querySelector('[data-save]').onclick = () => { state.water = n; closeSheet(true); };
+      draw();
+    });
+  dog.classList.remove('drinking'); $('#hotWater').classList.remove('drinking-on');
+  await finish(saved, 'Ahh. That hit the spot.');
+}
+
+/* =========================================================
+   2. Food bowl: Maple eats, and Pudding finally wakes up
+   ========================================================= */
+async function doFood() {
+  if (busy) return; busy = true; hush();
+  clearInterval(rollTimer);
+  bull.setAttribute('class', 'pose-awake'); dogPos.after(bullPos);
+  say('Food?!', 'Pudding', bullAt, 70);
+  await wait(reduce ? 0 : 500);
+  await Promise.all([walkDog({ x:262, y:450 }), walkBull({ x:346, y:474 })]);
+  dog.classList.add('eating'); bull.classList.add('eating');
+  await wait(reduce ? 0 : 900);
+  const sel = new Set(state.meals);
+  const saved = await openSheet(`
+    <h2 id="sheetTitle">Did you get something to eat?</h2>
+    <p class="sub">Pick any. Pudding got up for this, which is a big deal.</p>
+    <div id="c"></div>
+    ${actions()}`, el => {
+      const draw = () => {
+        el.querySelector('#c').innerHTML = chips(['Breakfast', 'Lunch', 'Dinner', 'A snack'], o => sel.has(o));
+        el.querySelectorAll('.chip').forEach(c => c.onclick = () => { sel.has(c.dataset.v) ? sel.delete(c.dataset.v) : sel.add(c.dataset.v); draw(); });
+      };
+      el.querySelector('[data-save]').onclick = () => { state.meals = sel; closeSheet(true); };
+      draw();
+    });
+  dog.classList.remove('eating'); bull.classList.remove('eating');
+  if (saved) say('Thanks! That was the good stuff.', 'Pudding', bullAt, 70);
+  await Promise.all([walkDog(HOME), (async () => { await wait(300); await walkBull(BULL_HOME); })()]);
+  await wait(reduce ? 0 : 400);
+  bull.setAttribute('class', 'pose-down rolling'); dogPos.before(bullPos);
+  startRolling();
+  await finish(saved, null, true);
+}
+
+/* =========================================================
+   3. Ball: Maple plays, and we ask what you did
+   ========================================================= */
+let playing = false;
+async function playLoop() {
+  while (playing) {
+    const to = { x: 50 + Math.random() * 190, y: 330 + Math.random() * 90 };
+    ball.classList.add('bouncing');
+    move(ballPos, ballAt, to, 3.2);
+    await wait(reduce ? 0 : 250);
+    if (!playing) break;
+    await walkDog({ x: to.x + (to.x > 150 ? -26 : 26), y: to.y + 10 }, 3.4);
+    ball.classList.remove('bouncing');
+    await wait(reduce ? 400 : 500);
+  }
+}
+async function doBall() {
+  if (busy) return; busy = true; hush();
+  await walkDog({ x: ballAt.x + 26, y: ballAt.y + 10 }, 3.4);
+  dog.classList.add('playing');
+  playing = true; playLoop();
+  await wait(reduce ? 0 : 1200);
+  let act = state.activity, mins = state.minutes;
+  const saved = await openSheet(`
+    <h2 id="sheetTitle">What did you get up to today?</h2>
+    <p class="sub">Anything counts, anywhere you did it.</p>
+    <div id="a"></div>
+    <div class="label">About how long?</div>
+    <div id="m"></div>
+    ${actions()}`, el => {
+      const draw = () => {
+        el.querySelector('#a').innerHTML = chips(['Walk', 'Run', 'Gym', 'Yoga', 'Cycle', 'Swim', 'Sport', 'Dance', 'Something else'], o => o === act);
+        el.querySelector('#m').innerHTML = chips(['10 min', '20 min', '30 min', '45 min', '1 hr+'], o => o === mins);
+        el.querySelectorAll('#a .chip').forEach(c => c.onclick = () => { act = c.dataset.v; draw(); });
+        el.querySelectorAll('#m .chip').forEach(c => c.onclick = () => { mins = c.dataset.v; draw(); });
+        el.querySelector('[data-save]').disabled = !act;
+      };
+      el.querySelector('[data-save]').onclick = () => { state.activity = act; state.minutes = mins && mins.replace(' min', '').replace('1 hr+', '60+'); closeSheet(true); };
+      draw();
+    });
+  playing = false;
+  await wait(reduce ? 0 : 600);
+  dog.classList.remove('playing'); ball.classList.remove('bouncing');
+  await Promise.all([move(ballPos, ballAt, BALL_HOME, 3), walkDog(HOME)]);
+  await finish(saved, 'That was fun. Good game!');
+}
+
+/* =========================================================
+   4. Pudding: tap him, he stays asleep, we ask about sleep
+   ========================================================= */
+async function doSleep() {
+  if (busy) return; busy = true; hush();
+  bull.classList.add('snoring');
+  say('Mmmf. Five more minutes.', 'Pudding', bullAt, 70);
+  await wait(reduce ? 0 : 900);
+  let h = state.sleep ?? 7, q = state.quality;
+  const saved = await openSheet(`
+    <h2 id="sheetTitle">How did you sleep last night?</h2>
+    <p class="sub">Pudding is something of an expert.</p>
+    <div class="stepper"><button data-d="-0.5" aria-label="Half an hour less">−</button><output id="hn"></output><button data-d="0.5" aria-label="Half an hour more">+</button></div>
+    <div class="label">How did it feel?</div>
+    <div id="q"></div>
+    ${actions()}`, el => {
+      const draw = () => {
+        el.querySelector('#hn').innerHTML = `${h} <small>hours</small>`;
+        el.querySelector('#q').innerHTML = chips(['Restless', 'Okay', 'Deep'], o => o === q);
+        el.querySelectorAll('#q .chip').forEach(c => c.onclick = () => { q = c.dataset.v; draw(); });
+      };
+      el.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { h = Math.max(0, Math.min(16, h + +b.dataset.d)); draw(); });
+      el.querySelector('[data-save]').onclick = () => { state.sleep = h; state.quality = q; closeSheet(true); };
+      draw();
+    });
+  bull.classList.remove('snoring');
+  if (saved) { rollOver(); say('Snrk. Good sleep is good.', 'Pudding', bullAt, 70); }
+  busy = false; renderTray();
+}
+
+/* Pudding rolls between belly up and belly down while he sleeps */
+let rollTimer;
+function rollOver() {
+  if (bull.classList.contains('pose-awake')) return;
+  const up = bull.classList.contains('pose-up');
+  bull.setAttribute('class', (up ? 'pose-down' : 'pose-up') + ' rolling');
+  setTimeout(() => bull.classList.remove('rolling'), 720);
+}
+function startRolling() { clearInterval(rollTimer); rollTimer = setInterval(() => { if (!busy) rollOver(); }, 7000 + Math.random() * 4000); }
+startRolling();
+
+/* shared ending: a happy hop, a line, home */
+async function finish(saved, line, alreadyHome) {
+  if (!alreadyHome) await walkDog(HOME);
+  if (saved) {
+    dog.classList.add('hopping'); setTimeout(() => dog.classList.remove('hopping'), 720);
+    if (line) say(line);
+  }
+  busy = false; renderTray();
+}
+
+/* ---------- wiring ---------- */
+const tap = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } }); };
+tap($('#hotWater'), doWater); tap($('#hotFood'), doFood); tap(ball, doBall); tap($('#hotBull'), doSleep);
+tap($('#tWater'), doWater); tap($('#tFood'), doFood); tap($('#tMove'), doBall); tap($('#tSleep'), doSleep);
+tap(dog, () => { if (!busy && state.mood) say(MOODS[state.mood].line); });
+renderTray();
+</script>
+</body>
+</html>

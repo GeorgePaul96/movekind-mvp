@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { CheckIn, Profile, WaterLog, Workout } from '@/types';
+import type { CheckIn, MealLog, Profile, SleepLog, WaterLog, Workout } from '@/types';
 import { createDoc, createTable, PREFIX } from './table';
 
 export { __resetDbCacheForTests } from './table';
@@ -27,6 +27,8 @@ const profileDoc = createDoc<Profile>('profile', () => ({
 const checkInTable = createTable<CheckIn>('check_ins');
 const waterTable = createTable<WaterLog>('water');
 const workoutTable = createTable<Workout>('workouts');
+const mealTable = createTable<MealLog>('meals');
+const sleepTable = createTable<SleepLog>('sleep');
 
 /** Tables the guided-session app kept; testers' phones may still have them. */
 const LEGACY_TABLES = ['sessions', 'session_blocks', 'post_ratings', 'user_exercise_stats'];
@@ -40,7 +42,9 @@ export const db = {
   },
 
   checkIns: {
-    add: async (input: Pick<CheckIn, 'energy_score' | 'sleep_quality' | 'intention' | 'engine_version'>) =>
+    add: async (
+      input: Pick<CheckIn, 'energy_score' | 'sleep_quality' | 'intention' | 'engine_version'> & Pick<Partial<CheckIn>, 'mood'>,
+    ) =>
       checkInTable.insert({ ...input, id: newId(), user_id: await userId(), created_at: nowIso() }),
     update: (id: string, patch: Partial<CheckIn>) => checkInTable.update(id, patch),
     all: async () => newestFirst(await checkInTable.all()),
@@ -61,6 +65,19 @@ export const db = {
     remove: (id: string) => workoutTable.remove(id),
   },
 
+  meals: {
+    add: (meal: MealLog['meal']) => mealTable.insert({ id: newId(), meal, created_at: nowIso() }),
+    since: async (iso: string) => (await mealTable.all()).filter((m) => m.created_at >= iso),
+    remove: (id: string) => mealTable.remove(id),
+  },
+
+  sleep: {
+    add: (input: Pick<SleepLog, 'night_of' | 'hours' | 'feel'>) =>
+      sleepTable.insert({ ...input, id: newId(), created_at: nowIso() }),
+    update: (id: string, patch: Partial<Pick<SleepLog, 'hours' | 'feel'>>) => sleepTable.update(id, patch),
+    since: async (iso: string) => newestFirst((await sleepTable.all()).filter((s) => s.created_at >= iso)),
+  },
+
   /** Removes the old session app's tables. Safe to run on every launch. */
   dropLegacy: async () => {
     await AsyncStorage.multiRemove(LEGACY_TABLES.map((t) => PREFIX + t));
@@ -68,6 +85,13 @@ export const db = {
 
   /** Deletes everything this app stored, including the profile. */
   eraseAll: async () => {
-    await Promise.all([profileDoc.clear(), checkInTable.clear(), waterTable.clear(), workoutTable.clear()]);
+    await Promise.all([
+      profileDoc.clear(),
+      checkInTable.clear(),
+      waterTable.clear(),
+      workoutTable.clear(),
+      mealTable.clear(),
+      sleepTable.clear(),
+    ]);
   },
 };
