@@ -193,18 +193,19 @@ export const ME_COPY = {
 } as const;
 
 export const GARDEN_INTRO_COPY = {
-  tag: 'Your garden',
-  title: 'A garden that grows with you',
-  subtitle: 'Everything you do gently nurtures this space.',
+  tag: "Maple's yard",
+  title: 'Meet Maple and Pudding',
+  subtitle: 'Tap around the yard to look after yourself, and they come along.',
   lines: [
-    { icon: 'water-outline', text: 'Water makes the stream flow', detail: 'Every glass makes it a little livelier.' },
-    { icon: 'shoe-print', text: 'Steps grow the grass', detail: 'Walks carpet the hills in green.' },
-    { icon: 'tree-outline', text: 'Workouts grow the tree', detail: 'Any movement you enjoy brings leaves, blossom and fruit.' },
-    { icon: 'flower-outline', text: 'Each mood check-in plants a flower', detail: 'Every feeling adds a colour to the meadow.' },
+    { icon: 'emoticon-happy-outline', text: 'Tell Maple how you feel', detail: 'She takes on your mood, whatever it is today.' },
+    { icon: 'water-outline', text: 'Tap the water bowl', detail: 'Maple has a drink while you note your glasses.' },
+    { icon: 'food-apple-outline', text: 'Tap the food bowl', detail: 'Pudding wakes up for this, and only this.' },
+    { icon: 'tennis-ball', text: 'Tap the ball', detail: 'Maple plays while you note any movement you enjoyed.' },
+    { icon: 'sleep', text: 'Tap Pudding', detail: 'He is an expert sleeper. Tell him how you slept.' },
   ],
   sanctuary: 'Gentle sanctuary',
-  promise: 'Nothing ever wilts. If you are away, your garden simply rests until you are back.',
-  start: 'Start my garden',
+  promise: 'Every bit of care you log blooms a flower. Nothing ever wilts, and if you are away, the yard simply rests until you are back.',
+  start: 'Go to the yard',
   next: 'Continue',
 } as const;
 

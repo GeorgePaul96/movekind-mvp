@@ -42,7 +42,24 @@ pills, welcome card, honest workout growth line, night scene sign-up, new app ic
 **Feeling unwell** (a choice beside the day's mood; a gentle rainy garden) and **time-of-day skies**
 (dawn / day / dusk / night; what has grown stays grown) ✅.
 
-### The park (2026-10-27, in progress)
+### Maple's yard (2026-11-09, now home)
+
+The park is replaced by **Maple's yard**: a golden retriever, Maple, sits in the middle and reflects
+the day's mood (tired, a bit low, frustrated, steady, buzzing); Pudding, a lazy bulldog, sleeps belly
+up or belly down and wakes only for the food bowl. Water bowl = water, food bowl = meals (which ones,
+never what), ball = movement, Pudding = last night's sleep. Each save blooms a flower. Data layer
+(yard moods, meals, sleep) and the yard UI are on `main` (`ec1c92a`, `fba54f8`). Critique of the
+reference design: `docs/dog-yard-critique.md`; Gemini brief: `docs/gemini-dog-yard-prompt.md`.
+
+| Yard step | What | Status |
+|---|---|---|
+| 1 | Moods, meals and sleep stored on device | ✅ built 2026-11-06 |
+| 2 | The yard: Maple, Pudding, bowls, ball, sheets, drawer, blooms | ✅ on main 2026-11-09, **owner testing** |
+| 3 | Polish: Pudding's "Food?!" bubble briefly covers Maple; the mood sheet is nearly full screen | next |
+| 4 | Test on a real phone (only checked in the web preview so far) | next |
+| Later | Ambient sound (off by default; owner approves the files) · gentle mind games | after the yard settles |
+
+### The park (2026-10-27, replaced by the yard)
 
 Home becomes a full-screen park you pan by swiping (portrait, about 2.2 screens wide, parallax and
 mist). Each object is how you log: river = water, tree = workouts, flowerbed = mood / unwell,
@@ -52,7 +69,7 @@ bar). Untended objects shimmer softly; a short tour on the first visit. Design:
 
 | Park stage | What | Status |
 |---|---|---|
-| 1 | The panning park, sheets, drawer, shimmer, first-visit tour | ✅ built 2026-10-27, **owner testing** |
+| 1 | The panning park, sheets, drawer, shimmer, first-visit tour | built 2026-10-27, replaced by the yard 2026-11-09 |
 | 2 | Sleep at the hammock (rested / okay / restless, hours) | next |
 | 3 | A rabbit whose mood follows the day | after 2 |
 | 4 | Ambient sound (owner approves the CC0 files first) | after 3 |

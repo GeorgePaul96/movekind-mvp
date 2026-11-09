@@ -1,20 +1,20 @@
 # MoveKind
 
-A calm self-care tracker with a garden that grows because of you. Built with React Native, Expo, TypeScript and Zustand. **Local-first:** no account, no backend; everything you log stays on your phone.
+A calm self-care companion: Maple, a golden retriever, and Pudding, a very lazy bulldog, keep you company in a little back yard. Built with React Native, Expo, TypeScript and Zustand. **Local-first:** no account, no backend; everything you log stays on your phone.
 
-MoveKind doesn't tell you how to move. It collects the everyday care you already spread across several apps (water, the workouts you did anywhere, how you feel) and turns it into a living garden, then tells you in plain words what your activity is changing. No streaks, no targets, no guilt: the garden only grows or rests.
+MoveKind doesn't tell you how to move. It collects the everyday care you already spread across several apps (water, meals, movement done anywhere, sleep, how you feel), lets you log it by tapping things in the yard, then tells you in plain words what your activity is changing. No streaks, no targets, no guilt, and food is never judged: the yard only grows or rests.
 
 ## How it works
 
-1. **Log in one or two taps.** A glass of water, a workout (what and roughly how long), and a once-a-day mood check-in. Steps arrive automatically in the next build.
-2. **Watch the garden respond.** Water fills the stream, steps grow the grass, workouts grow the tree (birds, blossom, fruit, a second tree), and every mood plants a flower. Away for a few days? The garden rests under the moon and wakes when you're back. Nothing wilts.
-3. **See what's changing.** Changes (in the pull-up drawer) compares this week with the same stretch of last week in plain sentences, shows your garden a month ago next to today, and lays out your mood flowers week by week.
+1. **Say how you feel.** Tired, a bit low, frustrated, steady or buzzing. Maple takes on your mood, and you can skip it.
+2. **Tap the yard to log.** The water bowl (Maple has a drink; how many glasses?), the food bowl (Pudding wakes up for this, and only this; which meals?), the ball (Maple plays; what movement?) and Pudding himself (how did you sleep?). Every save blooms a flower. Steps are read from the phone and shown in the drawer.
+3. **See what's changing.** Changes (in the pull-up drawer) compares this week with the same stretch of last week in plain sentences, shows your garden a month ago next to today, and lays out your mood flowers week by week. Away for a few days? The yard rests under the moon. Nothing wilts.
 
 ## Features
 
-- No accounts: first launch → optional name → "how your garden grows" → Garden
-- Garden home: stream, grass, tree and flowers drawn in code (react-native-svg), gentle motion that respects Reduce Motion
-- One-tap water (with undo), two-tap workout log (edit / delete), one-tap mood check-in
+- No accounts: first launch → optional name → "Meet Maple and Pudding" → the yard
+- Yard home: Maple and Pudding drawn in code (react-native-svg); light follows the clock, rain only when you say you feel unwell; gentle motion that respects Reduce Motion
+- Water, meals (which ones, never what), movement, sleep (hours and how it felt), one-tap mood check-in
 - Changes (in the drawer): kind weekly sentences, then-and-now garden, mood flowerbed
 - Optional 9am reminder, off by default; permission asked only when you turn it on
 - All data on the device (AsyncStorage repository in `src/services/db`); "Erase all my data" in Me
@@ -89,7 +89,8 @@ movekind-mvp/
 ├── app.json
 ├── src/
 │   ├── components/
-│   │   ├── park/              # the park home: scene, layers, hotspots, drawer, sheets, tour
+│   │   ├── yard/              # Maple's yard: scene, Maple, Pudding, drawer, mood/food/sleep sheets
+│   │   ├── park/              # shared: Sheet, Hotspot, Motion, Water and Steps sheets
 │   │   ├── garden/            # Garden (SVG scene), WorkoutSheet
 │   │   ├── home/MoodPicker.tsx
 │   │   └── Button, Chip, MoodTile, Card
@@ -97,10 +98,11 @@ movekind-mvp/
 │   │   ├── garden/garden.ts   # gardenState(): logs → garden (pure, unit-tested)
 │   │   ├── garden/changes.ts  # weeklyChanges(), flowersByWeek()
 │   │   ├── garden/days.ts     # local-day helpers
+│   │   ├── yard/             # layout, script (tap choreography), moods (pure)
 │   │   └── checkin/moods.ts   # mood tiles → energy → mood
 │   ├── screens/
-│   │   ├── onboarding/        # name + how the garden grows
-│   │   └── main/              # ParkScreen (home), ChangesView, MeView
+│   │   ├── onboarding/        # name + meet Maple and Pudding
+│   │   └── main/              # YardScreen (home), ChangesView, MeView
 │   ├── services/              # db (local repository), telemetry, appOpens, notifications
 │   ├── store/                 # gardenStore, profileStore, settingsStore
 │   ├── constants/             # colors (incl. gardenColors), copy

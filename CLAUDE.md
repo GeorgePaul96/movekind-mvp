@@ -5,20 +5,21 @@
 
 ## What this is
 
-MoveKind is a **calm, anti-guilt self-care tracker with a garden that grows** (Expo / React
-Native / TypeScript). People log the everyday care they already spread across several apps
-(**water, workouts done anywhere, a one-tap mood check-in**, and soon **steps**) and see it
-turn into a living garden: water fills the stream, steps grow the grass, workouts grow the
-tree, each mood plants a flower. Home is a **full-screen, one-screen park**; tapping
-the river, tree, flowerbed or path is how you log. **Changes** (in the pull-up drawer) says in
-plain sentences what their activity is changing. MoveKind **never tells anyone how to move** (no exercise instructions).
-No streaks, no targets, no guilt: the garden only grows or rests.
+MoveKind is a **calm, anti-guilt self-care companion** (Expo / React Native / TypeScript). Home is
+**Maple's yard**: Maple, a golden retriever, sits in the middle, and Pudding, a lazy bulldog, sleeps
+on his cushion. People log everyday care by tapping the yard: **the water bowl** (glasses of water),
+**the food bowl** (which meals; Pudding wakes only for this), **the ball** (movement done anywhere),
+**Pudding** (last night's sleep), and a **mood check-in** that Maple reflects (tired, a bit low,
+frustrated, steady, buzzing). Each thing logged blooms a flower. **Steps** are read from the phone and
+shown in the drawer. **Changes** (in the pull-up drawer) says in plain sentences what their activity is
+changing. MoveKind **never tells anyone how to move** (no exercise instructions). No streaks, no targets,
+no guilt, and food is never judged (only whether you ate): the yard only grows or rests.
 
 ## Tech stack
 
 Expo SDK 58 · React Native 0.88 · React 19.3 · TypeScript 6 (strict) · **local-first: all
 data on the device (AsyncStorage via `src/services/db`), no backend, no accounts** · Zustand (state) ·
-React Navigation 6 · react-native-svg (the garden) · NativeWind 4 · PostHog (optional, anonymous) ·
+React Navigation 6 · react-native-svg (the yard) · NativeWind 4 · PostHog (optional, anonymous) ·
 Jest + Testing Library.
 
 ## Commands
@@ -52,46 +53,56 @@ Verify changes with `npm run typecheck` and `npm test`.
 
 ## Core concepts (memorize these)
 
-- **The garden is pure and derived.** [gardenState(input, now)](src/domain/garden/garden.ts) turns
-  logged water / workouts / check-ins / steps into what the garden shows. **No I/O, no React,
-  no clock** (`now` is a parameter, so `gardenState(input, aMonthAgo)` is the past garden).
-  Stream and grass reset each local morning and have a floor (a trickle, short grass); the tree
-  grows from all-time workout minutes (`TREE_STAGE_MINUTES`) and **never shrinks**; one flower per
-  day with a check-in (latest mood wins); `resting` after 3 quiet days (moon, nothing lost).
+- **The yard is home.** [YardScreen](src/screens/main/YardScreen.tsx) runs it: one sheet at a time,
+  the speech bubble, and today's blooms (one flower per kind logged today, plus one per save this visit).
+  [yardLayout](src/domain/yard/layout.ts) places every object (pure; the drawing and the tap targets
+  share it). The objects sit in a band at 29 to 51% of the screen height so the dogs stay visible above
+  an open sheet. [yardScript(target)](src/domain/yard/script.ts) is the pure choreography for a tap
+  (walk, drink, eat, play, wake Pudding) and what happens after a save or a cancel. Drawing:
+  [YardScene](src/components/yard/YardScene.tsx), [Maple](src/components/yard/Maple.tsx),
+  [Pudding](src/components/yard/Pudding.tsx) (belly up or belly down; wakes only for the food bowl),
+  [SpeechBubble](src/components/yard/SpeechBubble.tsx), art in `src/components/yard/art/`, sheets in
+  `src/components/yard/sheets/` (Mood, Food, Sleep) plus the shared Water / Steps sheets in
+  `src/components/park/sheets/` and `WorkoutSheet` in `src/components/garden/`. Copy is `YARD_COPY`;
+  colours are `yardColors`. Tapping Maple pets her and she says her mood line. No tab bar:
+  [YardDrawer](src/components/yard/YardDrawer.tsx) holds today's log rows, steps, the note, `ChangesView`
+  and `MeView`. The mood sheet opens by itself when today has no mood; "Not now" saves nothing.
+  `src/components/park/` now only holds shared pieces (Sheet, Hotspot, Motion, Water/Steps sheets).
+- **The garden state is pure and derived.** [gardenState(input, now)](src/domain/garden/garden.ts) turns
+  logged water / workouts / check-ins / steps into stage numbers. **No I/O, no React, no clock** (`now`
+  is a parameter). The yard uses it for `resting` (after 3 quiet days: moon, both dogs asleep, nothing
+  lost) and `weather`; Changes and the a11y summary use the rest.
 - **Weather and light.** `gardenState().weather` is `'rain'` when today's check-in has `unwell: true`
-  (the "Feeling unwell today" choice, shown once a mood is picked): soft rain, grey clouds, mist, a
-  resting card; nothing grown changes, and `unwell` is never sent to telemetry. The sky follows the
-  phone clock via [skyPhase(now)](src/domain/garden/sky.ts) (dawn 5-8, day 8-17, dusk 17-20, night):
-  only the light changes. Resting always shows the night sky.
+  (the "Feeling unwell today" choice, shown once a mood is picked): soft rain and Maple shelters at
+  her rain spot; nothing logged changes, and `unwell` is never sent to telemetry. The light follows the
+  phone clock via [skyPhase(now)](src/domain/garden/sky.ts) (dawn 5-8, day 8-17, dusk 17-20, night).
+  Resting always shows night.
 - **Changes are gentle.** [weeklyChanges](src/domain/garden/changes.ts) compares this week so far
   with the *same stretch* of last week. Ups are celebrated; quieter weeks are named kindly and
   never state a shortfall (no numbers, no "less/fewer/missed").
 - **Days are local.** Use `localDayKey` / `startOfLocalDay` / `weekBounds` from
   [days.ts](src/domain/garden/days.ts). Never UTC day maths.
-- **Moods.** Four tiles ("Running on empty / A bit low / Steady / Buzzing", `MOOD_COPY`) →
-  `moodToEnergy` (1/2/4/5) → `mapEnergyToState` in [moods.ts](src/domain/checkin/moods.ts). A day is
-  one check-in: re-picking edits it. Mood colour = `stateColors[mood].tint` (the flower).
-- **The park is home.** [parkLayout(w, h)](src/domain/park/layout.ts) places every object (pure; the
-  drawing and the tap targets share it). [ParkScene](src/components/park/ParkScene.tsx) keeps the ground
-  still; a drag only nudges the sky and hills a few points. The art is static vector drawing
-  (`src/components/park/art/`) and all motion runs on the UI thread from one clock (Reanimated). Untended objects shimmer ([untendedToday](src/domain/park/tending.ts)).
-  **Pip**, a honey seed by the tree, is the park's character ([pip.ts](src/domain/park/pip.ts)): napping at night or
-  when resting, a leaf umbrella in rain, a hop after any log. A tap shows one line (`PIP_COPY`) about what is
-  there; Pip never asks for anything or names what didn't happen.
-  No tab bar: [ParkDrawer](src/components/park/ParkDrawer.tsx) holds today's log rows, the note,
-  `ChangesView` and `MeView`. A short [ParkTour](src/components/park/ParkTour.tsx) runs once
-  (`settingsStore.parkTourSeen`).
+- **Moods.** Five yard moods (`YardMood`: tired, low, frustrated, steady, buzzing; `YARD_MOODS`,
+  labels in `YARD_COPY.moods`). `logYardMood` stores the mood on the day's check-in *and* an
+  `energy_score` via `yardMoodToEnergy` (1/2/3/4/5) so the garden state and Changes keep working;
+  `yardMoodOf(checkIn)` reads it back (old rows without `mood` map from energy). A day is one check-in:
+  re-picking edits it. Maple's pose and line follow the mood ([domain/yard/moods.ts](src/domain/yard/moods.ts)).
+  The older four-tile `logMood` / `MOOD_COPY` path still exists and clears `mood`.
+- **Meals and sleep.** `db.meals` (one row per meal, today's set edited with `setMealsToday`, telemetry
+  only when a meal is added) and `db.sleep` (one row per night, `night_of` = the morning's local day key,
+  half-hour `hours` via `tidySleepHours`, optional `feel`: restless / okay / deep; upserted by `logSleep`).
+  Food is only "did you eat, which meals": never what, how much, or whether it was "good".
 - **One store.** [gardenStore](src/store/gardenStore.ts) owns loading and every log action; screens
-  stay thin. Each log sends telemetry `logged {kind}` only — never values.
+  stay thin. Each log sends telemetry `logged {kind}` only, never values.
 - **Local-first, no accounts.** [src/services/db/](src/services/db/index.ts) is the **only** data
-  access path. First launch → onboarding (optional name, then "how your garden grows") → Garden.
+  access path. First launch → onboarding (optional name, then "Meet Maple and Pudding") → the yard.
 - **Reminder is opt-in.** One 9am reminder, **off by default**, permission asked only when switched
   on in Me. Nothing is requested at launch.
 - **Steps.** [services/steps.ts](src/services/steps.ts) reads daily steps from the phone: the iOS
   pedometer (works in Expo Go too) or Health Connect on Android (**development/store build only**;
   Expo Go on Android reports `needs-full-app`). Never asked at launch: `refreshSteps()` reads only if
   access was already given; `allowSteps()` asks, from a tap on Steps. Steps are not stored; with no
-  access `stepsToday` stays `null` and the grass keeps a calm default.
+  access `stepsToday` stays `null` and the drawer shows a calm placeholder.
 
 ## Conventions
 
@@ -107,7 +118,7 @@ Verify changes with `npm run typecheck` and `npm test`.
 - **Type:** Plus Jakarta Sans, loaded in `App.tsx`. Pick weights with `...font.bold` etc. from
   [typography.ts](src/constants/typography.ts), never `fontWeight` (Android ignores it for custom fonts).
 - **Controls:** `<Button>` (pill: `primary` / `secondary` / `link`), `<Chip>` for choice sets, `<MoodTile>` for
-  moods, `<Hotspot>` for park objects, RN `Switch` for on/off settings, `<Icon>` (decorative
+  moods, `<Hotspot>` for yard objects, RN `Switch` for on/off settings, `<Icon>` (decorative
   MaterialCommunityIcons) instead of emoji. No hand-rolled
   `Pressable` buttons in screens. Minimum font size 13; 44pt touch targets; every control labelled.
 - **Copy:** user-facing strings live in [src/constants/copy.ts](src/constants/copy.ts). **No em dashes**
@@ -121,11 +132,13 @@ Verify changes with `npm run typecheck` and `npm test`.
 - Android steps need a **development build** (`npm run build:dev:android`); Expo Go can't read daily
   steps on Android. Use `npm run go` to keep testing everything else in Expo Go.
 - Testers' phones may hold the old session app's tables; `db.dropLegacy()` clears them at launch.
+- `settingsStore.parkTourSeen` is left over from the park tour and no longer read by the yard. Harmless; remove it with a settings migration when convenient.
 
 ## Doing work efficiently
 
-- To change **what the garden shows** → `src/domain/garden/garden.ts` (+ `__tests__/garden.test.ts`),
-  then the drawing in `src/components/garden/Garden.tsx`.
+- To change **what happens when an object is tapped** → `src/domain/yard/script.ts` (+ `__tests__/yardScript.test.ts`),
+  then `YardScreen.tsx`. To move objects → `src/domain/yard/layout.ts` (+ `__tests__/yardLayout.test.ts`).
+- To change **the dogs** → `src/components/yard/Maple.tsx` / `Pudding.tsx`; mood poses and lines in `src/domain/yard/moods.ts` + `YARD_COPY`.
 - To change **the Changes sentences** → `changes.ts` + `CHANGES_COPY` (+ `__tests__/changes.test.ts`).
 - To change **the data model** → `src/services/db/` + `src/types/index.ts` + [DATABASE.md](DATABASE.md). Keep all three in sync.
 - To change **a screen** → `src/screens/**`; shared UI in `src/components/**`.
