@@ -14,25 +14,24 @@ import Animated, {
 import { Button } from '@/components/Button';
 import { Icon, type IconName } from '@/components/Icon';
 import { colors, elevation } from '@/constants/colors';
-import { DRAWER_COPY, GARDEN_COPY, MOOD_COPY, STEPS_COPY, WATER_COPY, WORKOUT_COPY } from '@/constants/copy';
-import type { Workout } from '@/types';
+import { DRAWER_COPY, GARDEN_COPY, STEPS_COPY, WATER_COPY, WORKOUT_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { weeklyChanges } from '@/domain/garden/changes';
 import { isSameLocalDay } from '@/domain/garden/days';
-import type { ParkObject } from '@/domain/park/layout';
+import type { ScriptTarget } from '@/domain/yard/script';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
-import { useGardenStore } from '@/store/gardenStore';
 import ChangesView from '@/screens/main/ChangesView';
 import MeView from '@/screens/main/MeView';
+import { useGardenStore } from '@/store/gardenStore';
+import type { Workout } from '@/types';
 
 const PEEK = 56;
 
 interface Props {
   height: number;
   bottomInset: number;
-  /** Open the same sheet a park object opens. */
-  onOpenSheet: (o: ParkObject) => void;
-  /** Re-open the workout log prefilled with this workout. */
+  onTriggerScript: (target: ScriptTarget) => void;
+  onOpenSteps: () => void;
   onEditWorkout: (w: Workout) => void;
 }
 
@@ -58,7 +57,9 @@ function Row({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.rowTitle}>{title}</Text>
-        <Text style={styles.rowValue} numberOfLines={1}>{value}</Text>
+        <Text style={styles.rowValue} numberOfLines={1}>
+          {value}
+        </Text>
       </View>
       <View style={styles.rowAction}>
         <Button label={action} size="sm" variant={primary ? 'primary' : 'secondary'} onPress={onPress} />
@@ -67,11 +68,13 @@ function Row({
   );
 }
 
-/**
- * The drawer over the park. Closed it is only a light arrow, so the park stays whole; tap it or
- * swipe up to open: plain log buttons (also the screen-reader path), the gentle note, Changes and Me.
- */
-export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: Props) {
+export function YardDrawer({
+  height,
+  bottomInset,
+  onTriggerScript,
+  onOpenSteps,
+  onEditWorkout,
+}: Props) {
   const reduce = useReduceMotion();
   const [open, setOpen] = useState(false);
   const openRef = useRef(open);
@@ -83,7 +86,6 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
   const startY = useSharedValue(closedY);
   const bob = useSharedValue(0);
 
-  // Only a change of screen size repositions the drawer directly; open and close run the spring.
   useEffect(() => {
     translateY.value = openRef.current ? openY : closedY;
   }, [closedY, openY, translateY]);
@@ -105,7 +107,6 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
 
   const snapTo = (nextOpen: boolean, velocityY = 0) => {
     const target = nextOpen ? openY : closedY;
-    // Opening shows the panel at once; closing keeps it until it has slid away.
     if (nextOpen) setOpen(true);
     if (reduce) {
       translateY.value = target;
@@ -150,15 +151,10 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
     transform: [{ translateY: bob.value }],
   }));
 
-  const checkIns = useGardenStore((s) => s.checkIns);
-  const water = useGardenStore((s) => s.water);
-  const workouts = useGardenStore((s) => s.workouts);
-  const stepsToday = useGardenStore((s) => s.stepsToday);
-  const stepsByDay = useGardenStore((s) => s.stepsByDay);
-  const stepsStatus = useGardenStore((s) => s.stepsStatus);
-  const todayMood = useGardenStore((s) => s.todayMood());
-  const addGlass = useGardenStore((s) => s.addGlass);
-  const removeWorkout = useGardenStore((s) => s.removeWorkout);
+  const store = useGardenStore();
+  const { checkIns, water, workouts, stepsToday, stepsByDay, stepsStatus, removeWorkout } = store;
+  const meals = store.mealsToday();
+  const lastSleep = store.lastNightSleep();
 
   const today = (iso: string) => isSameLocalDay(new Date(iso), new Date());
   const glasses = water.filter((w) => today(w.created_at)).length;
@@ -169,6 +165,11 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
     { checkIns, water, workouts, stepsToday, stepsByDay: stepsStatus === 'granted' ? stepsByDay : undefined },
     new Date(),
   )[0]?.text;
+
+  const runFromDrawer = (target: ScriptTarget) => {
+    snapTo(false);
+    onTriggerScript(target);
+  };
 
   return (
     <Animated.View
@@ -182,35 +183,96 @@ export function ParkDrawer({ height, bottomInset, onOpenSheet, onEditWorkout }: 
           style={styles.peek}
         >
           <Animated.View style={chevronStyle}>
-            <Icon name={open ? 'chevron-down' : 'chevron-up'} size={40} color={open ? colors.textSecondary : colors.onInverse} />
+            <Icon
+              name={open ? 'chevron-down' : 'chevron-up'}
+              size={40}
+              color={open ? colors.textSecondary : colors.textPrimary}
+            />
           </Animated.View>
         </Pressable>
       </GestureDetector>
 
       {open && (
         <ScrollView contentContainerStyle={{ paddingBottom: 40 + bottomInset }}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">{DRAWER_COPY.todayTitle}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {DRAWER_COPY.todayTitle}
+          </Text>
           {note ? (
             <View style={styles.note}>
               <Icon name="creation" size={18} color={colors.onInverse} />
               <Text style={styles.noteText}>{note}</Text>
             </View>
           ) : null}
-          <Row icon="water-outline" title={DRAWER_COPY.rows.water.title} value={WATER_COPY.count(glasses)} action={DRAWER_COPY.rows.water.action} onPress={() => addGlass().catch(() => {})} primary />
-          <Row icon="run" title={DRAWER_COPY.rows.workout.title} value={minutes ? DRAWER_COPY.minutesToday(minutes) : DRAWER_COPY.noWorkoutYet} action={DRAWER_COPY.rows.workout.action} onPress={() => onOpenSheet('tree')} />
+
+          <Row
+            icon="water-outline"
+            title={DRAWER_COPY.rows.water.title}
+            value={WATER_COPY.count(glasses)}
+            action={DRAWER_COPY.rows.water.action}
+            onPress={() => runFromDrawer('water')}
+            primary
+          />
+          <Row
+            icon="food-apple-outline"
+            title={DRAWER_COPY.rows.food.title}
+            value={DRAWER_COPY.mealsCount(meals.length)}
+            action={DRAWER_COPY.rows.food.action}
+            onPress={() => runFromDrawer('food')}
+          />
+          <Row
+            icon="run"
+            title={DRAWER_COPY.rows.workout.title}
+            value={minutes ? DRAWER_COPY.minutesToday(minutes) : DRAWER_COPY.noWorkoutYet}
+            action={DRAWER_COPY.rows.workout.action}
+            onPress={() => runFromDrawer('ball')}
+          />
           {todaysWorkouts.map((w) => (
             <View key={w.id} style={styles.workout}>
               <Text style={styles.workoutText}>{WORKOUT_COPY.entry(w.type, w.minutes)}</Text>
-              <Button label={WORKOUT_COPY.edit} variant="link" size="sm" accessibilityLabel={WORKOUT_COPY.editA11y(w.type, w.minutes)} onPress={() => onEditWorkout(w)} />
-              <Button label={WORKOUT_COPY.delete} variant="link" size="sm" accessibilityLabel={WORKOUT_COPY.deleteA11y(w.type, w.minutes)} onPress={() => removeWorkout(w.id).catch(() => {})} />
+              <Button
+                label={WORKOUT_COPY.edit}
+                variant="link"
+                size="sm"
+                accessibilityLabel={WORKOUT_COPY.editA11y(w.type, w.minutes)}
+                onPress={() => {
+                  snapTo(false);
+                  onEditWorkout(w);
+                }}
+              />
+              <Button
+                label={WORKOUT_COPY.delete}
+                variant="link"
+                size="sm"
+                accessibilityLabel={WORKOUT_COPY.deleteA11y(w.type, w.minutes)}
+                onPress={() => removeWorkout(w.id).catch(() => {})}
+              />
             </View>
           ))}
-          <Row icon="flower-outline" title={DRAWER_COPY.rows.mood.title} value={todayMood ? MOOD_COPY[todayMood].label : DRAWER_COPY.noMoodYet} action={DRAWER_COPY.rows.mood.action} onPress={() => onOpenSheet('flowerbed')} />
-          <Row icon="shoe-print" title={DRAWER_COPY.rows.steps.title} value={steps} action={DRAWER_COPY.rows.steps.action} onPress={() => onOpenSheet('path')} />
+          <Row
+            icon="power-sleep"
+            title={DRAWER_COPY.rows.sleep.title}
+            value={lastSleep ? DRAWER_COPY.sleepCount(lastSleep.hours) : DRAWER_COPY.noSleepYet}
+            action={DRAWER_COPY.rows.sleep.action}
+            onPress={() => runFromDrawer('pudding')}
+          />
+          <Row
+            icon="shoe-print"
+            title={DRAWER_COPY.rows.steps.title}
+            value={steps}
+            action={DRAWER_COPY.rows.steps.action}
+            onPress={() => {
+              snapTo(false);
+              onOpenSteps();
+            }}
+          />
 
-          <Text style={styles.sectionTitle} accessibilityRole="header">{DRAWER_COPY.changesTitle}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {DRAWER_COPY.changesTitle}
+          </Text>
           <ChangesView />
-          <Text style={styles.sectionTitle} accessibilityRole="header">{DRAWER_COPY.meTitle}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {DRAWER_COPY.meTitle}
+          </Text>
           <MeView />
         </ScrollView>
       )}
@@ -223,10 +285,34 @@ const styles = StyleSheet.create({
   panel: { backgroundColor: colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, ...elevation.raised },
   peek: { height: PEEK, alignSelf: 'center', minWidth: 120, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: { ...font.bold, fontSize: 20, color: colors.textPrimary, marginTop: 18, marginBottom: 10 },
-  note: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.inverse, borderRadius: 24, padding: 14, marginBottom: 10 },
+  note: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    backgroundColor: colors.inverse,
+    borderRadius: 24,
+    padding: 14,
+    marginBottom: 10,
+  },
   noteText: { ...font.medium, flex: 1, fontSize: 15, lineHeight: 22, color: colors.onInverse },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 24, padding: 14, marginBottom: 10, ...elevation.card },
-  rowIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    padding: 14,
+    marginBottom: 10,
+    ...elevation.card,
+  },
+  rowIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rowTitle: { ...font.bold, fontSize: 16, color: colors.textPrimary },
   rowValue: { ...font.regular, fontSize: 14, color: colors.textSecondary },
   rowAction: { minWidth: 120 },

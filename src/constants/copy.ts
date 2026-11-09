@@ -1,4 +1,4 @@
-import type { UserState, WorkoutType } from '@/types';
+import type { Meal, SleepLog, UserState, WorkoutType, YardMood } from '@/types';
 
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',
@@ -6,7 +6,6 @@ export const ERROR_FALLBACK = {
   action: 'Start fresh',
 } as const;
 
-/** The four moods. `flavor` is the small word in the tile's corner; every mood is equally welcome. */
 export const MOOD_COPY: Record<UserState, { label: string; flavor: string }> = {
   overloaded: { label: 'Running on empty', flavor: 'rest' },
   recovering: { label: 'A bit low', flavor: 'gentle' },
@@ -47,8 +46,6 @@ export const PROFILE_COPY = {
 export function checkInPrompt(name?: string | null): string {
   return name ? `How's your energy, ${name}?` : "How's your energy?";
 }
-
-// ---- Garden ---------------------------------------------------------------
 
 const STREAM_LINE = [
   'A gentle trickle runs through your garden',
@@ -104,7 +101,6 @@ export const GARDEN_COPY = {
   todayMood: (label: string) => `Today: ${label}`,
   changeMood: 'Change',
   todayWorkouts: 'Today',
-  /** What a screen reader says about the garden. Never negative, whatever the state. */
   a11ySummary(s: { stream: number; grass: number; tree: number; flowers: unknown[]; resting: boolean; weather?: 'clear' | 'rain' }): string {
     const flowers =
       s.flowers.length === 0 ? '' : s.flowers.length === 1 ? ' One flower blooms.' : ` ${s.flowers.length} flowers bloom.`;
@@ -115,28 +111,27 @@ export const GARDEN_COPY = {
 } as const;
 
 export const WORKOUT_COPY = {
-  title: 'What did you do?',
-  subtitle: 'Any movement counts. Stretches, strolling, or dancing in your kitchen.',
+  title: 'What did you get up to today?',
+  subtitle: 'Anything counts, anywhere you did it.',
   lengthTitle: 'About how many minutes?',
   save: 'Add to my garden',
   update: 'Save changes',
   cancel: 'Not now',
   types: {
-    walk: '🚶 Walk',
-    run: '🏃 Run',
-    yoga: '🧘 Yoga',
-    gym: '🏋️ Gym',
-    cycle: '🚴 Cycle',
-    sport: '⚽ Sport',
-    dance: '💃 Dance',
-    other: '✨ Other',
+    walk: 'Walk',
+    run: 'Run',
+    yoga: 'Yoga',
+    gym: 'Gym',
+    cycle: 'Cycle',
+    sport: 'Sport',
+    dance: 'Dance',
+    other: 'Other',
   } as Record<WorkoutType, string>,
   names: {
     walk: 'Walk', run: 'Run', yoga: 'Yoga', gym: 'Gym', cycle: 'Cycle', sport: 'Sport', dance: 'Dance', other: 'Other',
   } as Record<WorkoutType, string>,
   durations: [10, 20, 30, 45, 60] as const,
   minutes: (m: number) => (m >= 60 ? '1 hr+' : `${m} min`),
-  /** Short chip label; the question above says "minutes". */
   durationChip: (m: number) => (m >= 60 ? '60+' : String(m)),
   durationA11y: (m: number) => (m >= 60 ? 'An hour or more' : `${m} minutes`),
   entry: (type: WorkoutType, m: number) => `${WORKOUT_COPY.names[type]} · ${WORKOUT_COPY.minutes(m)}`,
@@ -148,7 +143,6 @@ export const WORKOUT_COPY = {
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
-/** The Changes tab. Ups are celebrated; quieter weeks are named gently and never counted. */
 export const CHANGES_COPY = {
   tag: 'Your garden over time',
   title: 'Changes',
@@ -181,7 +175,6 @@ export const REMINDER_COPY = {
   body: 'Your garden is here whenever you are. A glass of water counts.',
 } as const;
 
-/** The Me tab. */
 export const ME_COPY = {
   tag: 'Me',
   hello: (name?: string | null) => (name ? `Hello, ${name}` : 'Hello'),
@@ -199,7 +192,6 @@ export const ME_COPY = {
   reminderDenied: "Notifications are off for MoveKind in your phone's settings, so the reminder can't be sent.",
 } as const;
 
-/** The one screen after the name: how the garden grows. */
 export const GARDEN_INTRO_COPY = {
   tag: 'Your garden',
   title: 'A garden that grows with you',
@@ -216,7 +208,6 @@ export const GARDEN_INTRO_COPY = {
   next: 'Continue',
 } as const;
 
-/** The Steps button and its week view. Counts are shown plainly, never against a target. */
 export const STEPS_COPY = {
   checking: 'Checking',
   allow: 'Tap to allow',
@@ -234,7 +225,6 @@ export const STEPS_COPY = {
   count: (n: number) => n.toLocaleString(),
 } as const;
 
-/** Small status pills on the garden card, and captions for the then-and-now cards. */
 export const BADGE_COPY = {
   resting: 'Resting under the moon',
   rain: 'Gentle rain falling',
@@ -249,7 +239,6 @@ export const BADGE_COPY = {
     'A tree full of fruit',
     'Two trees, full of fruit',
   ],
-  /** What logging a workout will grow (index = the stage it reaches). */
   growth: [
     '',
     'This will turn your sprout into a sapling.',
@@ -263,7 +252,6 @@ export const BADGE_COPY = {
   growthFull: 'This keeps your two trees thriving.',
 } as const;
 
-/** Feeling unwell: rest, never a shortfall. The garden gets gentle rain that day. */
 export const UNWELL_COPY = {
   toggle: 'Feeling unwell today',
   cardTitle: 'Rest is part of growing. Your garden is drinking the rain.',
@@ -271,42 +259,9 @@ export const UNWELL_COPY = {
   subtitle: 'Today is for resting.',
 } as const;
 
-/** The full-screen park: what each object is called and opens, for taps and screen readers. */
-export const PARK_COPY = {
-  objects: {
-    river: { label: 'River', hint: 'Opens water. Each glass makes the river livelier.' },
-    tree: { label: 'Tree', hint: 'Opens the workout log. Workouts grow the tree.' },
-    flowerbed: { label: 'Flowerbed', hint: 'Opens your mood check-in. Each mood plants a flower.' },
-    hammock: { label: 'Hammock', hint: 'Opens sleep. Rest between the trees.' },
-    path: { label: 'Grass and path', hint: 'Opens your steps. Steps grow the grass.' },
-  },
-  greeting: (partOfDay: string, name?: string | null) =>
-    name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
-  sceneLabel: 'Your park.',
-} as const;
-
-/** Pip, the seed who lives in the park. Pip only mentions what is there, and never asks for anything. */
-export const PIP_COPY = {
-  label: 'Pip',
-  hint: 'Pip tells you something it noticed in your park.',
-  lines: {
-    hello: 'Hello! I like it here with you.',
-    riverFull: 'The river is full and sparkly today.',
-    riverAwake: 'I can hear the river trickling along.',
-    treeGrowing: 'The tree feels a little taller. I checked.',
-    birds: 'The birds have settled into the tree.',
-    flowerToday: 'A new flower today. It suits you.',
-    grassTall: 'The grass is soft and tall. Good for sitting.',
-    calm: 'I am just here, enjoying the shade.',
-    rainy: 'I have a leaf. We can wait out the rain together.',
-    sleepy: 'Zzz. The park is resting. Nothing is lost.',
-  },
-} as const;
-
-/** The river's water sheet. One drop per glass; there is never an "out of". */
 export const WATER_COPY = {
-  title: 'Water',
-  subtitle: 'A cool sip from the river',
+  title: 'How many glasses of water today?',
+  subtitle: "Maple's having one too.",
   add: '+1 glass',
   remove: 'Undo last glass',
   count: (n: number) => (n === 0 ? 'Nothing yet today' : n === 1 ? '1 glass today' : `${n} glasses today`),
@@ -314,47 +269,107 @@ export const WATER_COPY = {
 } as const;
 
 export const SHEET_COPY = {
-  close: 'Close',
-  moodTitle: 'How are you feeling?',
-  moodSubtitle: 'Each mood plants a flower.',
+  close: 'Not now',
+  moodTitle: "Hi, I'm Maple. How are you feeling right now?",
+  moodSubtitle: "I'll feel it with you.",
   stepsTitle: 'Your steps',
   stepsSubtitle: 'Steps grow the grass.',
 } as const;
 
-/** The pull-up drawer over the park: today at a glance, plain log buttons, Changes and Me. */
 export const DRAWER_COPY = {
-  openLabel: 'Today in your park. Opens the drawer.',
+  openLabel: "Today in Maple's yard. Opens the drawer.",
   closeLabel: 'Close the drawer',
-  todayTitle: 'Today in your park',
+  todayTitle: "Today in Maple's yard",
   changesTitle: 'Changes',
   meTitle: 'You',
   rows: {
     water: { title: 'Water', action: '+1 glass' },
-    workout: { title: 'Workouts', action: 'Log a workout' },
+    food: { title: 'Food', action: 'Log food' },
+    workout: { title: 'Movement', action: 'Log movement' },
+    sleep: { title: 'Sleep', action: 'Log sleep' },
     mood: { title: 'Mood', action: 'Check in' },
     steps: { title: 'Steps', action: 'See your steps' },
   },
   noMoodYet: 'Not yet today',
+  noFoodYet: 'Not yet today',
   noWorkoutYet: 'Not yet today',
+  noSleepYet: 'Not yet today',
   minutesToday: (m: number) => `${m} min today`,
+  mealsCount: (n: number) => (n === 0 ? 'Not yet today' : n === 1 ? '1 meal today' : `${n} meals today`),
+  sleepCount: (h: number) => `${h} hr last night`,
 } as const;
 
-/** Stage 1: the hammock is there, sleep logging arrives in the next update. */
-export const SLEEP_SOON_COPY = {
-  title: 'The hammock',
-  body: 'Rest between the trees. Logging your sleep arrives in the next update.',
-} as const;
-
-/** The first-visit tour: one gentle line per park object, then the drawer. */
-export const TOUR_COPY = {
-  steps: {
-    flowerbed: 'This flowerbed holds your moods. Each check-in plants a flower.',
-    tree: 'Workouts grow this tree: leaves, then birds, blossom and fruit.',
-    river: 'Water fills the river. Each glass makes it a little livelier.',
-    path: 'Your steps grow the grass along this path.',
-    drawer: 'Pull up from the bottom any time for today, your changes and settings.',
+export const YARD_COPY = {
+  title: "Maple's yard",
+  greeting: (partOfDay: string, name?: string | null) =>
+    name ? `Good ${partOfDay}, ${name}` : `Good ${partOfDay}`,
+  moodButtonAsk: 'How are you?',
+  moodButtonA11y: "Change how you're feeling",
+  speakers: {
+    maple: 'Maple',
+    pudding: 'Pudding',
   },
-  next: 'Next',
-  done: 'Start exploring',
-  skip: 'Skip the tour',
+  objects: {
+    maple: { label: 'Maple the golden retriever', hint: 'Pet Maple.' },
+    water: { label: 'Water bowl. Log glasses of water', hint: 'Maple trots over for a drink and opens water.' },
+    food: { label: 'Food bowl. Log what you ate', hint: 'Maple and Pudding eat and the food sheet opens.' },
+    ball: { label: "Maple's ball. Log movement", hint: 'Maple chases her ball and opens movement.' },
+    pudding: { label: 'Pudding the sleeping bulldog. Log your sleep', hint: 'Pudding snores and opens sleep.' },
+  },
+  moods: {
+    tired: { label: 'Tired', flavor: 'Low battery', line: "Let's take it slow today." },
+    low: { label: 'A bit low', flavor: 'Quiet inside', line: "I'll sit right here with you." },
+    frustrated: { label: 'Frustrated', flavor: 'Head is busy', line: 'Busy head? Me too. No rush.' },
+    steady: { label: 'Steady', flavor: 'Doing okay', line: 'Nice. Happy just hanging out.' },
+    buzzing: { label: 'Buzzing', flavor: 'Lots of energy', line: 'Ooh! Is it ball time?' },
+  } as Record<YardMood, { label: string; flavor: string; line: string }>,
+  afterSave: {
+    water: 'Ahh. That hit the spot.',
+    food: 'Thanks! That was the good stuff.',
+    ball: 'That was fun. Good game!',
+    pudding: 'Snrk. Good sleep is good.',
+  },
+  waking: {
+    puddingFood: 'Food?!',
+    puddingSleepTap: 'Mmmf. Five more minutes.',
+  },
+  foodSheet: {
+    title: 'Did you get something to eat?',
+    subtitle: 'Pick any. Pudding got up for this, which is a big deal.',
+    save: 'Save',
+    cancel: 'Not now',
+    meals: {
+      breakfast: 'Breakfast',
+      lunch: 'Lunch',
+      dinner: 'Dinner',
+      snack: 'A snack',
+    } as Record<Meal, string>,
+  },
+  sleepSheet: {
+    title: 'How did you sleep last night?',
+    subtitle: 'Pudding is something of an expert.',
+    emptyHours: 'Tap + to add',
+    hoursLabel: (h: number) => (h === 1 ? '1 hour' : `${h} hours`),
+    lessA11y: 'Half an hour less',
+    moreA11y: 'Half an hour more',
+    feelTitle: 'How did it feel?',
+    feels: {
+      restless: 'Restless',
+      okay: 'Okay',
+      deep: 'Deep',
+    } as Record<NonNullable<SleepLog['feel']>, string>,
+    save: 'Save',
+    cancel: 'Not now',
+  },
+  sceneSummary: (mood: YardMood | null, puddingAwake: boolean, resting: boolean, raining: boolean): string => {
+    if (resting) {
+      return 'Your yard is resting under the moon. Maple and Pudding are asleep.';
+    }
+    const rainPart = raining ? 'Gentle rain is falling and Maple is sitting under the tree. ' : '';
+    const moodPart = mood
+      ? `Maple is ${mood === 'tired' ? 'lying down' : 'sitting'}, feeling ${YARD_COPY.moods[mood].label.toLowerCase()}.`
+      : 'Maple is sitting calmly in the middle of the yard.';
+    const puddingPart = puddingAwake ? 'Pudding is awake at the food bowl.' : 'Pudding is asleep on his cushion.';
+    return `${rainPart}${moodPart} ${puddingPart}`;
+  },
 } as const;

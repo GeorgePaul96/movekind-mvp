@@ -2,24 +2,29 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
-import type { ParkObject, Rect } from '@/domain/park/layout';
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
-interface Props {
-  object: ParkObject;
+interface Props<T extends string> {
+  object: T;
   rect: Rect;
   label: string;
   hint: string;
   focused?: boolean;
-  onPress: (o: ParkObject) => void;
+  onPress: (o: T) => void;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
- * An invisible, accessible button laid over a park object. The drawing is the visual, and the
- * object's own movement (see ParkWorld) is the "tap me" cue.
+ * An invisible, accessible button laid over a yard object. The drawing is the visual, and the
+ * object's own movement is the "tap me" cue.
  */
-export function Hotspot({ object, rect, label, hint, focused, onPress }: Props) {
+export function Hotspot<T extends string>({ object, rect, label, hint, focused, onPress }: Props<T>) {
   const scale = useSharedValue(1);
 
   const style = useAnimatedStyle(() => ({

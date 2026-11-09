@@ -18,11 +18,11 @@ jest.mock('../src/services/steps', () => ({
 }));
 
 import { WaterSheet } from '../src/components/park/sheets/WaterSheet';
-import { MoodSheet } from '../src/components/park/sheets/MoodSheet';
+import { MoodSheet } from '../src/components/yard/sheets/MoodSheet';
 import { StepsSheet } from '../src/components/park/sheets/StepsSheet';
 import { useGardenStore } from '../src/store/gardenStore';
 import { __resetDbCacheForTests } from '../src/services/db';
-import { MOOD_COPY, STEPS_COPY, UNWELL_COPY, WATER_COPY } from '../src/constants/copy';
+import { STEPS_COPY, UNWELL_COPY, WATER_COPY, YARD_COPY } from '../src/constants/copy';
 
 beforeEach(async () => {
   mockStatus = 'ask';
@@ -32,7 +32,7 @@ beforeEach(async () => {
   useGardenStore.setState({ checkIns: [], water: [], workouts: [], stepsToday: null, stepsByDay: {}, stepsStatus: 'ask', loaded: true, error: null });
 });
 
-describe('park sheets', () => {
+describe('sheets', () => {
   it('water sheet adds a glass and draws one more drop', async () => {
     const { getByLabelText, queryAllByTestId, findAllByTestId } = render(<WaterSheet visible onClose={() => {}} />);
     expect(queryAllByTestId('drop')).toHaveLength(0);
@@ -49,11 +49,12 @@ describe('park sheets', () => {
     expect(queryByLabelText(WATER_COPY.remove)).toBeNull(); // nothing to undo yet
   });
 
-  it('mood sheet plants a flower and then offers feeling unwell', async () => {
+  it('mood sheet saves a yard mood and then offers feeling unwell', async () => {
     const { getByLabelText, findByLabelText } = render(<MoodSheet visible onClose={() => {}} />);
-    fireEvent.press(getByLabelText(MOOD_COPY.regulated.label));
+    fireEvent.press(getByLabelText(YARD_COPY.moods.frustrated.label));
     expect(await findByLabelText(UNWELL_COPY.toggle)).toBeTruthy();
     expect(useGardenStore.getState().checkIns).toHaveLength(1);
+    expect(useGardenStore.getState().todayYardMood()).toBe('frustrated');
   });
 
   it('steps sheet asks only on tap of Allow', async () => {

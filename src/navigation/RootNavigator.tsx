@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSettingsStore } from '@/store/settingsStore';
-import ParkScreen from '@/screens/main/ParkScreen';
+import YardScreen from '@/screens/main/YardScreen';
 import OnboardingScreen from '@/screens/onboarding/OnboardingScreen';
 import { rootRoute } from './rootRoute';
 import type { RootStackParamList } from './types';
@@ -18,7 +18,7 @@ export default function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {route === 'Onboarding' && <Stack.Screen name="Onboarding" component={OnboardingScreen} />}
-        {route === 'Main' && <Stack.Screen name="Main" component={ParkScreen} />}
+        {route === 'Main' && <Stack.Screen name="Main" component={YardScreen} />}
       </Stack.Navigator>
     </NavigationContainer>
   );
