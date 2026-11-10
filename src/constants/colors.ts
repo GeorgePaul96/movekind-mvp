@@ -28,6 +28,12 @@ export const colors = {
   secondaryText: '#20684A',
   sage: '#599E7C',
 
+  // ---- Warmth (the simple home) -------------------------------------------
+  /** Honey fill for things cared for today, and the greeting card. */
+  warm: '#FBE7C6',
+  /** Text and icons on `warm`. */
+  warmInk: '#74470A',
+
   // ---- Lines & elevation -------------------------------------------------
   border: '#BFC9C1',
   ring: 'rgba(89,158,124,0.16)',

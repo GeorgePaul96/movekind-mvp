@@ -89,6 +89,15 @@ export interface Measurement {
   created_at: string;
 }
 
+/** One good thing about the day, in the person's own words. One per local day. Never sent anywhere. */
+export interface GoodThing {
+  id: string;
+  /** localDayKey of the day it is about. */
+  day: string;
+  text: string;
+  created_at: string;
+}
+
 /** A resting pulse the person counted themselves. */
 export interface PulseLog {
   id: string;

@@ -25,6 +25,7 @@ reference only at [docs/archive/supabase-schema.sql](docs/archive/supabase-schem
 | `workouts` | `Workout` | Logged by hand: `type` (`walk\|run\|yoga\|gym\|cycle\|sport\|dance\|other`), `minutes`, `created_at`. All-time minutes grow the tree. Editable and deletable. |
 | `meals` | `MealLog` | One row per meal eaten: `meal` (`breakfast\|lunch\|dinner\|snack`), `created_at`. **Only which meal**, never what, how much or how it felt. `setMealsToday` makes today's rows match the ticked set (one row per meal per day). |
 | `sleep` | `SleepLog` | One row per morning: `night_of` (localDayKey of the morning after), `hours` (half hours, 0 to 24), `feel` (`restless\|okay\|deep` or null), `created_at`. Logging again that morning edits the row. |
+| `good_things` | `GoodThing` | "One good thing": one short note per local day (`day` = localDayKey, `text` up to 280 characters). `db.goodThings.setDay` replaces that day's note; empty text removes it. The words never go to telemetry (only `logged { kind: 'good_thing' }`). |
 | `body` (single doc) | `BodyProfile` | Opt-in Body section only. `sex` (`male\|female`: which published formula set to use), `birth_year`, `height_cm` (all null until filled in), `sleep_need_hours` (7 to 9, default 7.5). |
 | `measurements` | `Measurement` | Opt-in Body section only. One row per local day (`day` = localDayKey); `db.measurements.upsertDay` merges into that day's row. Optional `weight_kg`, `neck_cm`, `waist_cm`, `hip_cm`. **Always metric**; imperial is converted at entry and display (`domain/body/units.ts`). |
 | `pulse` | `PulseLog` | Opt-in Body section only. A resting pulse the person counted: `bpm`, `created_at`. |
@@ -35,7 +36,7 @@ The three body collections are cleared by `db.eraseAll()`. Their values are neve
 **Legacy:** the guided-session app stored `sessions`, `session_blocks`, `post_ratings` and
 `user_exercise_stats`. `db.dropLegacy()` removes them at every launch (idempotent).
 
-Settings (reminder on/off, reduce motion, onboarded, `bodyEnabled`, `bodyNoticeSeen`, `units`) live separately under `@movekind/settings`
+Settings (reminder on/off, reduce motion, onboarded, `bodyEnabled`, `bodyNoticeSeen`, `units`, `yardHome`) live separately under `@movekind/settings`
 ([settingsStore](src/store/settingsStore.ts)).
 
 ## Steps are read, not stored

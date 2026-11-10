@@ -79,6 +79,19 @@ bar). Untended objects shimmer softly; a short tour on the first visit. Design:
 scores, public comparison. Weight, BMI and other body numbers exist **only inside the opt-in Body
 section** (below); the yard, Changes and the reminder never mention them.
 
+### Simple home (2026-11-10, now home)
+
+The owner cannot finish the yard's illustration work right now, so home is a plain, warm screen that
+needs no art: four tabs (Today, Changes, Insights, You), with every log done inline on Today. Five
+"cared for today" dots warm up as things are noted; they only ever fill. **Maple's yard is kept, not
+deleted**: it is an optional home behind a switch in You, off by default, until its art is ready.
+
+Two additions found by looking for safe, well-sourced, no-cost features:
+**One good thing** (a short daily note; from the "three good things" exercise, Seligman 2005) and
+**A slow breath** (in for five, out for five, as the NHS describes it). Considered and left out:
+medication or cycle tracking (liability and sensitivity), home-screen widgets (native work), camera
+heart rate (needs a development build).
+
 ### Body and Insights (2026-11-10, owner testing)
 
 The owner asked for a "where is this pace taking me" view like a body composition machine's printout,

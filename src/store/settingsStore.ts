@@ -16,6 +16,8 @@ interface SettingsState {
   bodyNoticeSeen: boolean;
   /** How lengths and weights are shown and typed. Stored values are always metric. */
   units: Units;
+  /** Home is the simple screen unless this is on; then it is Maple's yard (kept aside while its art is unfinished). */
+  yardHome: boolean;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
@@ -24,6 +26,7 @@ interface SettingsState {
   setBodyEnabled: (v: boolean) => Promise<void>;
   markBodyNoticeSeen: () => Promise<void>;
   setUnits: (v: Units) => Promise<void>;
+  setYardHome: (v: boolean) => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -38,6 +41,7 @@ interface PersistedSettings {
   bodyEnabled: boolean;
   bodyNoticeSeen: boolean;
   units: Units;
+  yardHome: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -48,6 +52,7 @@ const DEFAULTS: PersistedSettings = {
   bodyEnabled: false,
   bodyNoticeSeen: false,
   units: 'metric',
+  yardHome: false,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -64,6 +69,7 @@ async function read(): Promise<PersistedSettings> {
       bodyEnabled: v.bodyEnabled ?? DEFAULTS.bodyEnabled,
       bodyNoticeSeen: v.bodyNoticeSeen ?? DEFAULTS.bodyNoticeSeen,
       units: v.units === 'imperial' ? 'imperial' : 'metric',
+      yardHome: v.yardHome ?? DEFAULTS.yardHome,
     };
   } catch {
     return DEFAULTS;
@@ -86,6 +92,7 @@ const persisted = (s: PersistedSettings): PersistedSettings => ({
   bodyEnabled: s.bodyEnabled,
   bodyNoticeSeen: s.bodyNoticeSeen,
   units: s.units,
+  yardHome: s.yardHome,
 });
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -127,6 +134,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   setUnits: async (v) => {
     set({ units: v });
+    await write(persisted(get()));
+  },
+
+  setYardHome: async (v) => {
+    set({ yardHome: v });
     await write(persisted(get()));
   },
 

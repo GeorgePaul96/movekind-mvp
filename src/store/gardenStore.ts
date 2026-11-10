@@ -6,7 +6,7 @@ import { requestStepsAccess, stepsByDay, stepsStatus, type StepsStatus } from '@
 import { mapEnergyToState, moodToEnergy, yardMoodOf, yardMoodToEnergy } from '@/domain/checkin/moods';
 import { isSameLocalDay, localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import type { GardenInput } from '@/domain/garden/garden';
-import type { CheckIn, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
+import type { CheckIn, GoodThing, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
 
 /** Stamped on check-ins logged by the garden app (the old session engine is gone). */
 export const GARDEN_VERSION = 'garden-1';
@@ -30,6 +30,11 @@ interface GardenStoreState {
   workouts: Workout[];
   meals: MealLog[];
   sleep: SleepLog[];
+  /** "One good thing" notes, newest day first. */
+  goodThings: GoodThing[];
+  /** Saves today's good thing (saving again replaces it; empty text removes it). */
+  saveGoodThing: (text: string) => Promise<void>;
+  todayGoodThing: () => GoodThing | null;
   /** Today's steps; null until the phone shares them (then the grass keeps a calm default). */
   stepsToday: number | null;
   /** Daily steps for the last two weeks, keyed by localDayKey. */
@@ -93,6 +98,18 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     workouts: [],
     meals: [],
     sleep: [],
+    goodThings: [],
+
+    saveGoodThing: (text) =>
+      guarded(async () => {
+        const saved = await db.goodThings.setDay(localDayKey(new Date()), text.slice(0, 280));
+        set({ goodThings: await db.goodThings.all() });
+        // Only that a note was written. The words never leave the phone.
+        if (saved) telemetry.capture('logged', { kind: 'good_thing' });
+      }),
+
+    todayGoodThing: () => get().goodThings.find((g) => g.day === localDayKey(new Date())) ?? null,
+
     stepsToday: null,
     stepsByDay: {},
     stepsStatus: 'unknown',
@@ -102,14 +119,15 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     load: async () => {
       try {
         const since = startOfLocalDay(new Date(), -HISTORY_DAYS).toISOString();
-        const [checkIns, water, workouts, meals, sleep] = await Promise.all([
+        const [checkIns, water, workouts, meals, sleep, goodThings] = await Promise.all([
           db.checkIns.since(since),
           db.water.since(since),
           db.workouts.all(),
           db.meals.since(since),
           db.sleep.since(since),
+          db.goodThings.all(),
         ]);
-        set({ checkIns, water, workouts, meals, sleep, loaded: true, error: null });
+        set({ checkIns, water, workouts, meals, sleep, goodThings, loaded: true, error: null });
       } catch (err) {
         set({ error: friendlyErrorMessage(err), loaded: true });
       }

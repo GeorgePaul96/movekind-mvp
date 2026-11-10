@@ -26,6 +26,8 @@ export const BLOCKED_PROPERTY_KEYS: readonly string[] = [
   // The opt-in Body section: measurements never leave the phone
   'weight_kg', 'height_cm', 'neck_cm', 'waist_cm', 'hip_cm', 'bpm', 'birth_year', 'sex',
   'bodyFatPct', 'bmi',
+  // Free text the person wrote
+  'text',
   // Direct PII
   'email', 'name',
 ];

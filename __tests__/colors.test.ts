@@ -36,6 +36,9 @@ describe('Sage palette contrast', () => {
     ['textSecondary on surface', colors.textSecondary, colors.surface],
     ['textPrimary on primarySoft (pace note)', colors.textPrimary, colors.primarySoft],
     ['primary text on primarySoft (active tab)', colors.primary, colors.primarySoft],
+    ['warmInk on warm (cared-for dots)', colors.warmInk, colors.warm],
+    ['textPrimary on warm (greeting card)', colors.textPrimary, colors.warm],
+    ['textSecondary on warm (greeting card)', colors.textSecondary, colors.warm],
   ];
 
   it.each(textPairs)('%s clears 4.5:1', (_name, fg, bg) => {

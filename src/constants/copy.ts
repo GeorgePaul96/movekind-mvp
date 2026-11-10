@@ -1,6 +1,7 @@
 import type { Meal, SleepLog, UserState, WorkoutType, YardMood } from '@/types';
 
 export { BODY_COPY, INSIGHTS_COPY } from '@/constants/bodyCopy';
+export { HOME_COPY } from '@/constants/homeCopy';
 
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',
@@ -25,7 +26,7 @@ export const ONBOARDING_COPY = {
   nameSubtitle: 'Optional. It stays on this phone, and there are no accounts.',
   namePlaceholder: 'Your name',
   reassureTitle: 'No streaks, no pressure',
-  reassureBody: 'Your garden grows whenever you arrive.',
+  reassureBody: 'Come by whenever you like. Nothing here is ever behind.',
   skip: 'Skip for now',
 } as const;
 
@@ -195,19 +196,19 @@ export const ME_COPY = {
 } as const;
 
 export const GARDEN_INTRO_COPY = {
-  tag: "Maple's yard",
-  title: 'Meet Maple and Pudding',
-  subtitle: 'Tap around the yard to look after yourself, and they come along.',
+  tag: 'How it works',
+  title: 'A kind place to note your day',
+  subtitle: 'A tap or two for the things that look after you. That is all there is to it.',
   lines: [
-    { icon: 'emoticon-happy-outline', text: 'Tell Maple how you feel', detail: 'She takes on your mood, whatever it is today.' },
-    { icon: 'water-outline', text: 'Tap the water bowl', detail: 'Maple has a drink while you note your glasses.' },
-    { icon: 'food-apple-outline', text: 'Tap the food bowl', detail: 'Pudding wakes up for this, and only this.' },
-    { icon: 'tennis-ball', text: 'Tap the ball', detail: 'Maple plays while you note any movement you enjoyed.' },
-    { icon: 'sleep', text: 'Tap Pudding', detail: 'He is an expert sleeper. Tell him how you slept.' },
+    { icon: 'emoticon-happy-outline', text: 'Say how you feel', detail: 'Whatever it is today is fine.' },
+    { icon: 'water-outline', text: 'Note your water', detail: 'One tap a glass. Tea counts too.' },
+    { icon: 'food-apple-outline', text: 'Note your meals', detail: 'Only which ones. Never what, or how much.' },
+    { icon: 'run', text: 'Note any movement', detail: 'Anything you enjoyed, anywhere you did it.' },
+    { icon: 'sleep', text: 'Note your sleep', detail: 'Roughly how long, and how it felt.' },
   ],
-  sanctuary: 'Gentle sanctuary',
-  promise: 'Every bit of care you log blooms a flower. Nothing ever wilts, and if you are away, the yard simply rests until you are back.',
-  start: 'Go to the yard',
+  sanctuary: 'Our promise',
+  promise: 'No streaks, no targets, nothing to keep up with. Note what you like, when you like. Everything stays on this phone.',
+  start: 'Get started',
   next: 'Continue',
 } as const;
 

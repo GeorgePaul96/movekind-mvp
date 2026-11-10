@@ -50,6 +50,14 @@ export const SOURCES = {
     label: 'HUNT non-exercise fitness model (Nes and others, 2011)',
     cite: 'Nes BM and others. Estimating VO2peak from a nonexercise prediction model: the HUNT Study, Norway. Medicine and Science in Sports and Exercise, 2011.',
   },
+  breathing: {
+    label: 'NHS breathing exercises for stress',
+    cite: 'NHS. Breathing exercises for stress. nhs.uk/mental-health/self-help/guides-tools-and-activities/breathing-exercises-for-stress',
+  },
+  goodThings: {
+    label: 'The "three good things" exercise (Seligman and others, 2005)',
+    cite: 'Seligman MEP, Steen TA, Park N, Peterson C. Positive psychology progress: empirical validation of interventions. American Psychologist, 2005.',
+  },
 } satisfies Record<string, Source>;
 
 export type SourceId = keyof typeof SOURCES;

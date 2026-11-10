@@ -53,6 +53,20 @@ Verify changes with `npm run typecheck` and `npm test`.
 
 ## Core concepts (memorize these)
 
+- **Home is the simple screen (since 2026-11-10); the yard is kept aside.**
+  [HomeScreen](src/screens/main/HomeScreen.tsx) has four plain tabs: Today
+  ([TodayView](src/screens/main/TodayView.tsx): greeting, the five "cared for today" dots, then mood,
+  water, food, movement, sleep, steps, One good thing and A slow breath, all logged inline with
+  `Chip` / `Button`), Changes, Insights and You (`MeView`). Pieces live in
+  `src/components/home/parts.tsx`, copy in `HOME_COPY` (`src/constants/homeCopy.ts`), pure helpers in
+  `src/domain/home/care.ts`. The warm honey colour is `colors.warm` / `colors.warmInk`. **Maple's yard
+  is still in the code and still works**, but it is home only when `settingsStore.yardHome` is on (the
+  "Maple's yard" switch in You, off by default) because its art is unfinished. Everything below about
+  the yard describes that optional home. Both homes use the same stores, so data is shared.
+- **One good thing and A slow breath.** `db.goodThings` holds one short note per local day
+  (`saveGoodThing`; empty text removes it; the words are never sent to telemetry). The breathing pacer
+  is in for five, out for five (NHS), for 1, 3 or 5 minutes, and stores nothing.
+
 - **The yard is home.** [YardScreen](src/screens/main/YardScreen.tsx) runs it: one sheet at a time,
   the speech bubble, and today's blooms (one flower per kind logged today, plus one per save this visit).
   [yardLayout](src/domain/yard/layout.ts) places every object (pure; the drawing and the tap targets

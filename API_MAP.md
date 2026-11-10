@@ -16,6 +16,9 @@ There is no network API: every read and write goes through the local repository
 
 Each log action also sends `telemetry.capture('logged', { kind })`, nothing else.
 
+`gardenStore` also has `saveGoodThing` → `db.goodThings.setDay` (today), then `db.goodThings.all`;
+telemetry `logged { kind: 'good_thing' }`. `load` also reads `db.goodThings.all`.
+
 ## `src/store/bodyStore.ts` (opt-in Body section)
 
 | Action | Calls |
