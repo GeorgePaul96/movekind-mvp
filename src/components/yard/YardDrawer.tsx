@@ -21,6 +21,7 @@ import { isSameLocalDay } from '@/domain/garden/days';
 import type { ScriptTarget } from '@/domain/yard/script';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import ChangesView from '@/screens/main/ChangesView';
+import InsightsView from '@/screens/main/InsightsView';
 import MeView from '@/screens/main/MeView';
 import { useGardenStore } from '@/store/gardenStore';
 import type { Workout } from '@/types';
@@ -270,6 +271,10 @@ export function YardDrawer({
             {DRAWER_COPY.changesTitle}
           </Text>
           <ChangesView />
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {DRAWER_COPY.insightsTitle}
+          </Text>
+          <InsightsView />
           <Text style={styles.sectionTitle} accessibilityRole="header">
             {DRAWER_COPY.meTitle}
           </Text>

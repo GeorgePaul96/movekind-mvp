@@ -1,5 +1,7 @@
 import type { Meal, SleepLog, UserState, WorkoutType, YardMood } from '@/types';
 
+export { BODY_COPY, INSIGHTS_COPY } from '@/constants/bodyCopy';
+
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',
   body: "The app hit a snag, and it's nothing you did. Your progress is safe, and a fresh start is one tap away.",
@@ -282,6 +284,7 @@ export const DRAWER_COPY = {
   closeLabel: 'Close the drawer',
   todayTitle: "Today in Maple's yard",
   changesTitle: 'Changes',
+  insightsTitle: 'Insights',
   meTitle: 'You',
   rows: {
     water: { title: 'Water', action: '+1 glass' },

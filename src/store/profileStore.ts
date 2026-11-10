@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db } from '@/services/db';
 import { telemetry } from '@/services/telemetry';
+import { useBodyStore } from '@/store/bodyStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import type { Profile } from '@/types';
 
@@ -33,6 +34,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   eraseAll: async () => {
     await db.eraseAll();
     await useSettingsStore.getState().reset();
+    useBodyStore.getState().clear();
     telemetry.reset();
     await get().hydrate();
   },

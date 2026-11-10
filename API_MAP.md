@@ -16,6 +16,16 @@ There is no network API: every read and write goes through the local repository
 
 Each log action also sends `telemetry.capture('logged', { kind })`, nothing else.
 
+## `src/store/bodyStore.ts` (opt-in Body section)
+
+| Action | Calls |
+|---|---|
+| `load` | `db.body.get`, `db.measurements.all`, `db.pulse.all` |
+| `saveProfile` | `db.body.update` |
+| `logMeasurement` | `db.measurements.upsertDay` (today), then `db.measurements.all`; telemetry `logged { kind: 'measurement' }` |
+| `removeMeasurement` | `db.measurements.remove` |
+| `logPulse` | `db.pulse.add`; telemetry `logged { kind: 'pulse' }` |
+
 ## `src/store/profileStore.ts`
 
 | Action | Repository calls |

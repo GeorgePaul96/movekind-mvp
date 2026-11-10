@@ -53,6 +53,12 @@
 | [onboarding/OnboardingScreen.tsx](src/screens/onboarding/OnboardingScreen.tsx) | optional name → "Meet Maple and Pudding" |
 | [main/YardScreen.tsx](src/screens/main/YardScreen.tsx) | home: Maple's yard, the greeting, tap scripts, speech bubbles, blooms, the drawer, one sheet at a time |
 | [main/ChangesView.tsx](src/screens/main/ChangesView.tsx) | (in the drawer) change sentences, a month ago vs today, mood flowerbed |
+| [main/InsightsView.tsx](src/screens/main/InsightsView.tsx) | (in the drawer) Patterns and Export for everyone; behind `bodyEnabled`: `BodyView`, Sleep balance, Steps and health, Fitness estimate with the pulse counter |
+| [main/BodyView.tsx](src/screens/main/BodyView.tsx) | Opt-in Body: details form, today's measurements, the report, "at this pace" with the two figures. Shared pieces in `src/components/body/parts.tsx` |
+| `src/domain/body/` | Pure body maths: `composition.ts` (Navy body fat, BMI, bands), `energy.ts` (Mifflin-St Jeor, steps and workout energy), `projection.ts` (weight trend, Hall/Forbes simulation, guardrails), `silhouette.ts` (inverted Navy waist, figure outline), `summary.ts` (`bodySummary`, the one place screen and report read from), `units.ts` |
+| `src/domain/insights/` | Pure insights: `patterns.ts`, `sleepDebt.ts`, `stepsHealth.ts`, `fitness.ts` (HUNT VO2peak), `report.ts` (`buildReport` for Export) |
+| [constants/sources.ts](src/constants/sources.ts) · [constants/bodyCopy.ts](src/constants/bodyCopy.ts) | The citation for every formula · `BODY_COPY` and `INSIGHTS_COPY` (re-exported from `copy.ts`) |
+| [store/bodyStore.ts](src/store/bodyStore.ts) | Body profile, measurements and pulse: loading and log actions |
 | [main/MeView.tsx](src/screens/main/MeView.tsx) | (in the drawer) **Me**: name, daily reminder switch, local data note, erase |
 
 ## `src/components/`

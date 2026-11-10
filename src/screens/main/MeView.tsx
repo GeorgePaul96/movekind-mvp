@@ -5,7 +5,8 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { colors } from '@/constants/colors';
 import { font } from '@/constants/typography';
-import { ME_COPY, PROFILE_COPY } from '@/constants/copy';
+import { Chip } from '@/components/Chip';
+import { BODY_COPY, ME_COPY, PROFILE_COPY } from '@/constants/copy';
 import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { disableDailyReminder, enableDailyReminder } from '@/services/notifications';
@@ -49,6 +50,20 @@ export default function MeView() {
     const ok = await enableDailyReminder();
     if (ok) await setReminderOn(true);
     else setReminderDenied(true);
+  };
+
+  const bodyOn = useSettingsStore((s) => s.bodyEnabled);
+  const units = useSettingsStore((s) => s.units);
+  const setUnits = useSettingsStore((s) => s.setUnits);
+
+  const onBody = async (on: boolean) => {
+    const settings = useSettingsStore.getState();
+    await settings.setBodyEnabled(on);
+    if (on && !settings.bodyNoticeSeen) {
+      // Shown once: what these numbers are, and what they are not.
+      Alert.alert(BODY_COPY.noticeTitle, BODY_COPY.noticeBody, [{ text: BODY_COPY.noticeOk }]);
+      await settings.markBodyNoticeSeen();
+    }
   };
 
   const onErase = () => {
@@ -114,6 +129,33 @@ export default function MeView() {
       </Card>
 
       <Card style={styles.card}>
+        <View style={styles.switchRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{BODY_COPY.switchTitle}</Text>
+            <Text style={styles.body}>{BODY_COPY.switchBody}</Text>
+          </View>
+          <Switch
+            value={bodyOn}
+            onValueChange={(v) => {
+              onBody(v).catch((e) => console.warn('Could not change body numbers:', e));
+            }}
+            accessibilityLabel={BODY_COPY.switchLabel}
+            trackColor={{ true: colors.primary, false: colors.border }}
+            thumbColor={colors.surface}
+          />
+        </View>
+        {bodyOn && (
+          <>
+            <Text style={[styles.label, { marginTop: 12, marginBottom: 8 }]}>{BODY_COPY.unitsTitle}</Text>
+            <View style={styles.unitsRow}>
+              <Chip label={BODY_COPY.units.metric} selected={units === 'metric'} onPress={() => void setUnits('metric')} />
+              <Chip label={BODY_COPY.units.imperial} selected={units === 'imperial'} onPress={() => void setUnits('imperial')} />
+            </View>
+          </>
+        )}
+      </Card>
+
+      <Card style={styles.card}>
         <View style={styles.titleRow}>
           <Icon name="shield-check-outline" size={22} color={colors.primary} />
           <Text style={styles.cardTitle}>{PROFILE_COPY.dataTitle}</Text>
@@ -169,6 +211,7 @@ const styles = StyleSheet.create({
   saveWrap: { width: 88 },
   body: { ...font.regular, color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginTop: 2 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
+  unitsRow: { flexDirection: 'row', gap: 8 },
   dataFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   badge: { ...font.medium, fontSize: 13, color: colors.textMuted },
   philIcon: {

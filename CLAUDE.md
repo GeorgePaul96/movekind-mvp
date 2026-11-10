@@ -92,6 +92,20 @@ Verify changes with `npm run typecheck` and `npm test`.
   only when a meal is added) and `db.sleep` (one row per night, `night_of` = the morning's local day key,
   half-hour `hours` via `tidySleepHours`, optional `feel`: restless / okay / deep; upserted by `logSleep`).
   Food is only "did you eat, which meals": never what, how much, or whether it was "good".
+- **Body and Insights are opt-in and separate.** The drawer's Insights section
+  ([InsightsView](src/screens/main/InsightsView.tsx)) shows Patterns and Export to everyone. Everything
+  that states a body number (the [BodyView](src/screens/main/BodyView.tsx) report, the "at this pace"
+  projection and silhouette, Sleep balance, Steps and health, Fitness estimate) sits behind
+  `settingsStore.bodyEnabled` (the "Body and numbers" switch in Me, **off by default**, adults only).
+  **The yard, Maple, Pudding, Changes and the reminder never mention these numbers.** The maths is pure
+  and lives in `src/domain/body/` and `src/domain/insights/`; [bodySummary](src/domain/body/summary.ts)
+  is the one place the screen and the exported report read from. Every formula is cited in
+  [sources.ts](src/constants/sources.ts) and shown as "Source: ..." under its number: **never add or
+  change a coefficient without checking it against the paper and adding a worked-value test.** The
+  projection works from the person's own weigh-in trend (the app never asks what they eat), needs 4
+  weigh-ins over 14 days, is shown as a range, and is replaced by a calm "talk to a doctor" note when
+  the pace is too fast or heads under BMI 18.5. Data: `db.body`, `db.measurements`, `db.pulse` via
+  [bodyStore](src/store/bodyStore.ts), stored metric.
 - **One store.** [gardenStore](src/store/gardenStore.ts) owns loading and every log action; screens
   stay thin. Each log sends telemetry `logged {kind}` only, never values.
 - **Local-first, no accounts.** [src/services/db/](src/services/db/index.ts) is the **only** data

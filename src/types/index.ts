@@ -61,3 +61,37 @@ export interface SleepLog {
   feel: SleepFeel | null;
   created_at: string;
 }
+
+/** Which version of the published body formulas to use. They exist only as male and female sets. */
+export type FormulaSex = 'male' | 'female';
+
+/**
+ * Details the opt-in Body section needs. All null until the person fills them in.
+ * Lengths are centimetres; never sent anywhere.
+ */
+export interface BodyProfile {
+  sex: FormulaSex | null;
+  birth_year: number | null;
+  height_cm: number | null;
+  /** The person's own sleep need, within the adult 7 to 9 hour recommendation. */
+  sleep_need_hours: number;
+}
+
+/** A weigh-in and/or tape measurements for one local day. Saving again that day edits the row. */
+export interface Measurement {
+  id: string;
+  /** localDayKey of the day measured. */
+  day: string;
+  weight_kg?: number;
+  neck_cm?: number;
+  waist_cm?: number;
+  hip_cm?: number;
+  created_at: string;
+}
+
+/** A resting pulse the person counted themselves. */
+export interface PulseLog {
+  id: string;
+  bpm: number;
+  created_at: string;
+}

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { CheckIn, MealLog, Profile, SleepLog, WaterLog, Workout } from '@/types';
+import type { BodyProfile, CheckIn, MealLog, Measurement, Profile, PulseLog, SleepLog, WaterLog, Workout } from '@/types';
 import { createDoc, createTable, PREFIX } from './table';
 
 export { __resetDbCacheForTests } from './table';
@@ -29,6 +29,20 @@ const waterTable = createTable<WaterLog>('water');
 const workoutTable = createTable<Workout>('workouts');
 const mealTable = createTable<MealLog>('meals');
 const sleepTable = createTable<SleepLog>('sleep');
+const bodyDoc = createDoc<BodyProfile>('body', () => ({
+  sex: null,
+  birth_year: null,
+  height_cm: null,
+  sleep_need_hours: 7.5,
+}));
+const measurementTable = createTable<Measurement>('measurements');
+const pulseTable = createTable<PulseLog>('pulse');
+
+type MeasurementValues = Pick<Measurement, 'weight_kg' | 'neck_cm' | 'waist_cm' | 'hip_cm'>;
+/** Drops undefined keys so an upsert never erases a value measured earlier that day. */
+function defined<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
 
 /** Tables the guided-session app kept; testers' phones may still have them. */
 const LEGACY_TABLES = ['sessions', 'session_blocks', 'post_ratings', 'user_exercise_stats'];
@@ -78,6 +92,32 @@ export const db = {
     since: async (iso: string) => newestFirst((await sleepTable.all()).filter((s) => s.created_at >= iso)),
   },
 
+  /** The opt-in Body section's details (formula sex, birth year, height, sleep need). */
+  body: {
+    get: () => bodyDoc.get(),
+    update: (patch: Partial<BodyProfile>) => bodyDoc.update(patch),
+  },
+
+  measurements: {
+    /** Oldest day first. */
+    all: async () => [...(await measurementTable.all())].sort((a, b) => a.day.localeCompare(b.day)),
+    /** One row per day: merges these values into that day's row, or starts it. */
+    upsertDay: async (day: string, values: MeasurementValues): Promise<Measurement> => {
+      const existing = (await measurementTable.all()).find((m) => m.day === day);
+      if (existing) {
+        const updated = await measurementTable.update(existing.id, defined(values));
+        return updated ?? existing;
+      }
+      return measurementTable.insert({ ...defined(values), id: newId(), day, created_at: nowIso() });
+    },
+    remove: (id: string) => measurementTable.remove(id),
+  },
+
+  pulse: {
+    add: (bpm: number) => pulseTable.insert({ id: newId(), bpm, created_at: nowIso() }),
+    all: async () => newestFirst(await pulseTable.all()),
+  },
+
   /** Removes the old session app's tables. Safe to run on every launch. */
   dropLegacy: async () => {
     await AsyncStorage.multiRemove(LEGACY_TABLES.map((t) => PREFIX + t));
@@ -92,6 +132,9 @@ export const db = {
       workoutTable.clear(),
       mealTable.clear(),
       sleepTable.clear(),
+      bodyDoc.clear(),
+      measurementTable.clear(),
+      pulseTable.clear(),
     ]);
   },
 };

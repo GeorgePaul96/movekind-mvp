@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type Units = 'metric' | 'imperial';
+
 interface SettingsState {
   /** The optional 9am reminder. Off until the user turns it on in Me. */
   notificationsEnabled: boolean;
@@ -8,11 +10,20 @@ interface SettingsState {
   onboarded: boolean;
   /** The first-visit park tour has been seen (or skipped). */
   parkTourSeen: boolean;
+  /** The opt-in Body section and the other numbers. Off until switched on in Me. */
+  bodyEnabled: boolean;
+  /** The one-time "these are estimates" notice has been shown. */
+  bodyNoticeSeen: boolean;
+  /** How lengths and weights are shown and typed. Stored values are always metric. */
+  units: Units;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
   completeOnboarding: () => Promise<void>;
   markParkTourSeen: () => Promise<void>;
+  setBodyEnabled: (v: boolean) => Promise<void>;
+  markBodyNoticeSeen: () => Promise<void>;
+  setUnits: (v: Units) => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -24,6 +35,9 @@ interface PersistedSettings {
   reduceMotion: boolean;
   onboarded: boolean;
   parkTourSeen: boolean;
+  bodyEnabled: boolean;
+  bodyNoticeSeen: boolean;
+  units: Units;
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -31,6 +45,9 @@ const DEFAULTS: PersistedSettings = {
   reduceMotion: false,
   onboarded: false,
   parkTourSeen: false,
+  bodyEnabled: false,
+  bodyNoticeSeen: false,
+  units: 'metric',
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -44,6 +61,9 @@ async function read(): Promise<PersistedSettings> {
       reduceMotion: v.reduceMotion ?? DEFAULTS.reduceMotion,
       onboarded: v.onboarded ?? DEFAULTS.onboarded,
       parkTourSeen: v.parkTourSeen ?? DEFAULTS.parkTourSeen,
+      bodyEnabled: v.bodyEnabled ?? DEFAULTS.bodyEnabled,
+      bodyNoticeSeen: v.bodyNoticeSeen ?? DEFAULTS.bodyNoticeSeen,
+      units: v.units === 'imperial' ? 'imperial' : 'metric',
     };
   } catch {
     return DEFAULTS;
@@ -63,6 +83,9 @@ const persisted = (s: PersistedSettings): PersistedSettings => ({
   reduceMotion: s.reduceMotion,
   onboarded: s.onboarded,
   parkTourSeen: s.parkTourSeen,
+  bodyEnabled: s.bodyEnabled,
+  bodyNoticeSeen: s.bodyNoticeSeen,
+  units: s.units,
 });
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -89,6 +112,21 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   markParkTourSeen: async () => {
     set({ parkTourSeen: true });
+    await write(persisted(get()));
+  },
+
+  setBodyEnabled: async (v) => {
+    set({ bodyEnabled: v });
+    await write(persisted(get()));
+  },
+
+  markBodyNoticeSeen: async () => {
+    set({ bodyNoticeSeen: true });
+    await write(persisted(get()));
+  },
+
+  setUnits: async (v) => {
+    set({ units: v });
     await write(persisted(get()));
   },
 

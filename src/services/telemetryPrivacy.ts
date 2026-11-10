@@ -23,6 +23,9 @@ export const BLOCKED_PROPERTY_KEYS: readonly string[] = [
   'ratingDelta', 'rating_delta',
   'notes',
   'unwell',
+  // The opt-in Body section: measurements never leave the phone
+  'weight_kg', 'height_cm', 'neck_cm', 'waist_cm', 'hip_cm', 'bpm', 'birth_year', 'sex',
+  'bodyFatPct', 'bmi',
   // Direct PII
   'email', 'name',
 ];

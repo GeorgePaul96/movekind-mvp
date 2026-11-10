@@ -75,8 +75,24 @@ bar). Untended objects shimmer softly; a short tour on the first visit. Design:
 | 4 | Ambient sound (owner approves the CC0 files first) | after 3 |
 | Later | Gentle mind games | after the park |
 
-**Not doing:** exercise instructions, calorie counting, weight/BMI, anything that judges bodies,
-targets, streaks, scores, public comparison.
+**Not doing:** exercise instructions, calorie counting, anything that judges bodies, targets, streaks,
+scores, public comparison. Weight, BMI and other body numbers exist **only inside the opt-in Body
+section** (below); the yard, Changes and the reminder never mention them.
+
+### Body and Insights (2026-11-10, owner testing)
+
+The owner asked for a "where is this pace taking me" view like a body composition machine's printout,
+built on published science, computed on the phone (no AI, no paid API). Design:
+`docs/superpowers/specs/2026-11-10-body-and-insights-design.md`; plan:
+`docs/superpowers/plans/2026-11-10-body-and-insights.md`.
+
+| Part | What | Status |
+|---|---|---|
+| Insights section in the drawer | Patterns (your own sleep / movement / steps / water and mood links) and Export, for everyone | ✅ built 2026-11-10 |
+| Body (behind the "Body and numbers" switch in Me, off by default, adults only) | Tape-measure body composition report, "at this pace" projection at 4 / 12 / 26 weeks as a range, now-and-later silhouette, a "what if" extra-steps control | ✅ built 2026-11-10 |
+| Numbers behind the same switch | Sleep balance, steps and long-term health, fitness estimate (VO2peak) with a counted resting pulse | ✅ built 2026-11-10 |
+| Not built | "Fitness age" (its reference table could not be checked against the source); camera heart rate; weight from Apple Health / Health Connect | later |
+| Next | Try it on a real phone; a physiologist's read of the formulas and wording before any store claim | next |
 
 ---
 
