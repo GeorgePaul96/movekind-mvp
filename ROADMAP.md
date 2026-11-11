@@ -118,6 +118,16 @@ it is a streak), calorie targets and "under-fuelled" statuses, movement suggesti
 three-days-per-group pattern engine (ours needs two weeks). Haptics were also in the brief but need
 a new dependency (`expo-haptics`); add them with the next development build.
 
+**2026-11-11, Play.** The "gentle mind games" from the Later list, built as a fifth tab with five
+games: Light the tiles, In order, Ink, Shape or shade, Pairs. Untimed sets on a gentle staircase, no
+game-over, nothing scored or saved. **Claims are off limits:** the tab says plainly that these are
+games and that research has not shown games like them to help memory or thinking in daily life. The
+maker of Lumosity paid the FTC $2 million in 2016 for advertising such benefits without evidence; do
+not put "brain training" wording in the app or the store listing. The owner's prototype had a
+leaves-pointing-and-drifting game that copied a specific Lumosity game; it was replaced with an
+original rule-switching game. **Next:** sound on phones (needs a native audio module), and more
+games only if testers actually play these.
+
 ### Body and Insights (2026-11-10, owner testing)
 
 The owner asked for a "where is this pace taking me" view like a body composition machine's printout,

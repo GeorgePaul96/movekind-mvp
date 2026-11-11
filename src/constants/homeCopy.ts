@@ -6,6 +6,7 @@ export const HOME_COPY = {
     today: 'Today',
     changes: 'Changes',
     insights: 'Insights',
+    play: 'Play',
     you: 'You',
   },
   tabA11y: (label: string) => `${label} tab`,

@@ -69,11 +69,12 @@ export function Section({
   );
 }
 
-export type HomeTab = 'today' | 'changes' | 'insights' | 'you';
+export type HomeTab = 'today' | 'changes' | 'insights' | 'play' | 'you';
 const TABS: { id: HomeTab; icon: IconName }[] = [
   { id: 'today', icon: 'white-balance-sunny' },
   { id: 'changes', icon: 'sprout-outline' },
   { id: 'insights', icon: 'chart-timeline-variant' },
+  { id: 'play', icon: 'puzzle-outline' },
   { id: 'you', icon: 'account-outline' },
 ];
 
@@ -206,7 +207,7 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
   },
   tab: { flex: 1, alignItems: 'center', minHeight: 52, justifyContent: 'center' },
-  tabPill: { paddingHorizontal: 18, paddingVertical: 4, borderRadius: 16 },
+  tabPill: { paddingHorizontal: 14, paddingVertical: 4, borderRadius: 16 },
   tabPillSelected: { backgroundColor: colors.primarySoft },
   tabLabel: { ...font.medium, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   tabLabelSelected: { ...font.bold, color: colors.primary },

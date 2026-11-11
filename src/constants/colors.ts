@@ -78,6 +78,14 @@ export const paceColors = {
   bright: '#F9DCA4', // fuller amber
 } as const;
 
+/** The four inks of the Ink game. Each is readable as large text on `surface` (tested). */
+export const gameInks = {
+  red: '#B23A2E',
+  blue: '#2456B8',
+  green: '#1F7A46',
+  purple: '#7A3FA8',
+} as const;
+
 export type FlowThemeName = keyof typeof flowThemes;
 export type FlowTheme = (typeof flowThemes)[FlowThemeName];
 

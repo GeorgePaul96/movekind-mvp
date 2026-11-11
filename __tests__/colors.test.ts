@@ -1,4 +1,4 @@
-import { colors, flowThemes, paceColors, stateColors } from '../src/constants/colors';
+import { colors, flowThemes, gameInks, paceColors, stateColors } from '../src/constants/colors';
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5]
@@ -49,6 +49,10 @@ describe('Sage palette contrast', () => {
     expect(ratio(colors.textPrimary, bg)).toBeGreaterThanOrEqual(TEXT);
     expect(ratio(colors.textSecondary, bg)).toBeGreaterThanOrEqual(TEXT);
     expect(ratio(colors.primary, bg)).toBeGreaterThanOrEqual(TEXT); // the pace label
+  });
+
+  it.each(Object.entries(gameInks))('game ink "%s" is readable on a card', (_name, ink) => {
+    expect(ratio(ink, colors.surface)).toBeGreaterThanOrEqual(TEXT);
   });
 
   it.each(Object.entries(flowThemes))('check-in page "%s" is readable everywhere', (_name, t) => {

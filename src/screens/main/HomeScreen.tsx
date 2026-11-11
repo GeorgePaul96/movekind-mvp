@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CheckInFlow } from '@/components/flow/CheckInFlow';
+import { GameScreen } from '@/components/games/GameScreen';
 import { MonthView } from '@/components/home/MonthView';
 import { TabBar, type HomeTab } from '@/components/home/parts';
 import { colors } from '@/constants/colors';
 import { HOME_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { localDayKey } from '@/domain/garden/days';
+import type { GameId } from '@/domain/games/games';
 import { careToday } from '@/domain/home/care';
 import ChangesView from '@/screens/main/ChangesView';
 import InsightsView from '@/screens/main/InsightsView';
 import MeView from '@/screens/main/MeView';
+import PlayView from '@/screens/main/PlayView';
 import TodayView from '@/screens/main/TodayView';
 import { useGardenStore } from '@/store/gardenStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -25,6 +28,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<HomeTab>('today');
   const [flow, setFlow] = useState<{ step: number; single: boolean } | null>(null);
+  const [game, setGame] = useState<GameId | null>(null);
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
   const refreshSteps = useGardenStore((s) => s.refreshSteps);
@@ -48,6 +52,8 @@ export default function HomeScreen() {
     const done = careToday({ checkIns, water, meals, workouts, sleep }, new Date());
     if (!Object.values(done).some(Boolean)) setFlow({ step: 0, single: false });
   }, [loaded]);
+
+  if (game) return <GameScreen id={game} onClose={() => setGame(null)} />;
 
   if (flow) {
     return <CheckInFlow initialStep={flow.step} single={flow.single} onClose={() => setFlow(null)} />;
@@ -75,6 +81,7 @@ export default function HomeScreen() {
             </>
           ) : null}
           {tab === 'insights' ? <InsightsView /> : null}
+          {tab === 'play' ? <PlayView onPlay={setGame} /> : null}
           {tab === 'you' ? <MeView /> : null}
         </View>
       </ScrollView>

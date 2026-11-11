@@ -89,6 +89,19 @@ Verify changes with `npm run typecheck` and `npm test`.
     happened (`dayFacts`), with no calories and nothing about what was not done; "Reopen today" undoes it.
   Rejected on purpose from the brief this came from: a momentum score that falls on missed days,
   calorie targets or "under-fuelled" statuses, and movement suggestions.
+- **Play: five small games, sold as nothing more (2026-11-11).** A fifth tab,
+  [PlayView](src/screens/main/PlayView.tsx), lists Light the tiles (pattern recall), In order (order
+  recall), Ink (name the ink, not the word), Shape or shade (the rule changes) and Pairs.
+  [GameScreen](src/components/games/GameScreen.tsx) runs one set on a gentle staircase (two clean
+  rounds step up, a miss steps down, never below level 1) and then stops; the five boards are in
+  `src/components/games/boards.tsx`; all round logic is pure in
+  [games.ts](src/domain/games/games.ts) with an injectable random source. **No timers, no losing, and
+  nothing is scored or stored**: the level lives only while the screen is open, and telemetry is just
+  `played { game }`. **The honesty rule:** `PLAY_COPY` may never say or hint that playing trains the
+  brain, sharpens memory or protects against decline (Lumosity's maker paid the FTC $2 million in 2016
+  over exactly those claims); the tab shows a plain "Just games" note and a test checks the wording.
+  Sounds come from `services/chime.ts` (Web Audio, so web only; silent on phones for now). The games
+  are original takes on public, classic tasks: do not copy another product's names, art or layouts.
 - **Calories are optional and never judged.** `db.calories` holds one number per day, typed on the
   food page only if the person wants to (`setCaloriesToday`; empty clears it). The app never comments
   on it, sets no target, and sends no value to telemetry. With 3 or more days noted, the opt-in Body
