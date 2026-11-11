@@ -1,0 +1,46 @@
+/** Copy for the paged check-in. Re-exported from copy.ts. One gentle question per page. */
+export const FLOW_COPY = {
+  progress: (n: number, total: number) => `Page ${n} of ${total}`,
+  next: 'Next',
+  back: 'Back',
+  done: 'Done',
+  finish: 'Finish',
+  close: 'Close',
+  closeA11y: 'Close the check-in',
+  mood: {
+    title: 'How are you feeling?',
+    sub: 'Whatever it is, it belongs here.',
+    unwell: 'Feeling unwell today',
+  },
+  water: {
+    title: 'Any water today?',
+    sub: 'One tap for each glass. Tea and other drinks count too.',
+    glasses: (n: number) => (n === 1 ? 'glass' : 'glasses'),
+    add: 'Add a glass',
+    remove: 'Take one away',
+  },
+  food: {
+    title: 'What have you eaten?',
+    sub: 'Just which meals. Tap any that fit.',
+    caloriesTitle: 'Calories, if you track them',
+    caloriesBody: 'Completely optional. Leave it empty and nothing changes.',
+    caloriesLabel: 'Calories today',
+    caloriesInvalid: 'Please check that number.',
+  },
+  movement: {
+    title: 'Did you move today?',
+    sub: 'Anything counts, anywhere. A rest day counts as well.',
+    minutes: 'About how many minutes?',
+    add: 'Add it',
+    remove: 'Remove',
+  },
+  sleep: {
+    title: 'How did you sleep?',
+    sub: 'Last night, roughly.',
+    hours: (h: number) => (h === 1 ? 'hour' : 'hours'),
+    less: 'Half an hour less',
+    more: 'Half an hour more',
+    hint: 'Tap minus or plus to set it.',
+    feelTitle: 'How did it feel?',
+  },
+} as const;

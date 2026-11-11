@@ -36,6 +36,33 @@ export const HOME_COPY = {
   },
   careA11y: (label: string, done: boolean) => (done ? `${label}: noted today` : `${label}: not noted yet`),
 
+  startFlow: "Start today's check-in",
+  continueFlow: 'Go through today again',
+  todayTitle: 'Your day so far',
+  edit: 'Edit',
+  add: 'Add',
+  editA11y: (label: string) => `Edit ${label.toLowerCase()}`,
+  notYet: 'Not noted yet',
+  summary: {
+    mood: (label: string, unwell: boolean) => (unwell ? `${label}, and feeling unwell` : label),
+    meals: (names: string[]) => names.join(', '),
+    kcal: (n: number) => `${n.toLocaleString()} kcal`,
+    movement: (count: number, minutes: number) =>
+      count === 1 ? `1 entry, ${minutes} min` : `${count} entries, ${minutes} min`,
+    sleep: (hours: number, feel?: string) =>
+      `${hours === 1 ? '1 hour' : `${hours} hours`}${feel ? `, ${feel.toLowerCase()}` : ''}`,
+  },
+  goodEdit: 'Change it',
+  goodKept: 'Kept for today',
+
+  monthTitle: 'Looking back',
+  monthBody: 'The warmer the day, the more you noted. Tap a day to see it.',
+  monthDayA11y: (date: string, count: number) =>
+    count === 0 ? `${date}: nothing noted` : `${date}: ${count} ${count === 1 ? 'thing' : 'things'} noted`,
+  monthNothing: 'Nothing noted that day. Rest days are part of it.',
+  monthDay: (d: Date) => d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }),
+  weekdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+
   moodTitle: 'How are you feeling?',
   unwell: 'Feeling unwell today',
   waterTitle: 'Water',

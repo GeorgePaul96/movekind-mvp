@@ -7,6 +7,7 @@ import { Body, CardTitle, NumberField, ReportRow, Silhouette, SourceLine, styles
 import { BODY_COPY } from '@/constants/copy';
 import { BMI_RANGE, BODY_FAT_ERROR, WAIST_TO_HEIGHT_RANGE, bmiBand, waistToHeightBand } from '@/domain/body/composition';
 import { BURN_ERROR } from '@/domain/body/energy';
+import { localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import { PROJECTION_WEEKS, isTrend } from '@/domain/body/projection';
 import { estimateHip, silhouette, waistAtBodyFat } from '@/domain/body/silhouette';
 import { bodySummary } from '@/domain/body/summary';
@@ -37,6 +38,16 @@ export default function BodyView() {
   const { profile, measurements, saveProfile, logMeasurement } = useBodyStore();
   const workouts = useGardenStore((s) => s.workouts);
   const stepsByDay = useGardenStore((s) => (s.stepsStatus === 'granted' ? s.stepsByDay : undefined));
+
+  // Calories are optional. With a few days noted, show their plain average beside energy use.
+  const calories = useGardenStore((s) => s.calories);
+  const intake = useMemo(() => {
+    const since = localDayKey(startOfLocalDay(new Date(), -13));
+    const recent = calories.filter((c) => c.day >= since);
+    return recent.length >= 3
+      ? { average: recent.reduce((sum, c) => sum + c.kcal, 0) / recent.length, days: recent.length }
+      : null;
+  }, [calories]);
 
   const [extraSteps, setExtraSteps] = useState(0);
   const [weeks, setWeeks] = useState<number>(PROJECTION_WEEKS[1]);
@@ -279,6 +290,12 @@ export default function BodyView() {
                 />
                 {!summary.burn.hasSteps ? <Text style={styles.source}>{BODY_COPY.noStepsNote}</Text> : null}
                 <SourceLine id="activity" />
+                {intake ? (
+                  <>
+                    <ReportRow label={BODY_COPY.rows.intake} value={BODY_COPY.kcal(round10(intake.average))} />
+                    <Text style={styles.source}>{BODY_COPY.intakeNote(intake.days)}</Text>
+                  </>
+                ) : null}
               </>
             ) : null}
           </>

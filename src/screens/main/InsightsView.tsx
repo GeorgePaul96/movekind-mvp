@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Share, Text, View } from 'react-native';
+import { Share, StyleSheet, Switch, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { Chip } from '@/components/Chip';
+import { colors } from '@/constants/colors';
+import { BODY_COPY } from '@/constants/bodyCopy';
 import { Body, CardTitle, NumberField, SourceLine, StepsCurve, styles } from '@/components/body/parts';
 import { INSIGHTS_COPY } from '@/constants/copy';
 import { ageFrom, isAdult, latestMeasurement } from '@/domain/body/composition';
@@ -19,6 +22,11 @@ import { useProfileStore } from '@/store/profileStore';
 import { useSettingsStore } from '@/store/settingsStore';
 
 const PULSE_SECONDS = 30;
+
+const local = StyleSheet.create({
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, marginBottom: 6 },
+  grow: { flex: 1 },
+});
 
 /** The resting pulse counter: a 30 second timer and the count the person made. */
 function PulseCounter() {
@@ -88,6 +96,9 @@ export default function InsightsView() {
   const stepsByDay = stepsStatus === 'granted' ? allSteps : undefined;
   const { profile, measurements, pulses, loaded, load, saveProfile } = useBodyStore();
   const [exportError, setExportError] = useState(false);
+  const noticeSeen = useSettingsStore((s) => s.bodyNoticeSeen);
+  // The numbers appear only once the switch is on and the one-time notice has been read.
+  const showBody = bodyEnabled && noticeSeen;
 
   useEffect(() => {
     if (bodyEnabled && !loaded) void load();
@@ -164,7 +175,47 @@ export default function InsightsView() {
         )}
       </Card>
 
-      {bodyEnabled ? (
+      <Card style={styles.card}>
+        <View style={local.switchRow}>
+          <View style={local.grow}>
+            <Text style={styles.cardTitle}>{BODY_COPY.switchTitle}</Text>
+          </View>
+          <Switch
+            value={bodyEnabled}
+            onValueChange={(v) => void useSettingsStore.getState().setBodyEnabled(v)}
+            accessibilityLabel={BODY_COPY.switchLabel}
+            trackColor={{ true: colors.primary, false: colors.border }}
+            thumbColor={colors.surface}
+          />
+        </View>
+        <Body>{bodyEnabled ? BODY_COPY.switchOnBody : BODY_COPY.switchBody}</Body>
+        {bodyEnabled && !noticeSeen ? (
+          <>
+            <Text style={styles.strong}>{BODY_COPY.noticeTitle}</Text>
+            <Body>{BODY_COPY.noticeBody}</Body>
+            <Button label={BODY_COPY.noticeOk} onPress={() => void useSettingsStore.getState().markBodyNoticeSeen()} />
+          </>
+        ) : null}
+        {showBody ? (
+          <>
+            <Text style={styles.fieldLabel}>{BODY_COPY.unitsTitle}</Text>
+            <View style={styles.chips}>
+              <Chip
+                label={BODY_COPY.units.metric}
+                selected={units === 'metric'}
+                onPress={() => void useSettingsStore.getState().setUnits('metric')}
+              />
+              <Chip
+                label={BODY_COPY.units.imperial}
+                selected={units === 'imperial'}
+                onPress={() => void useSettingsStore.getState().setUnits('imperial')}
+              />
+            </View>
+          </>
+        ) : null}
+      </Card>
+
+      {showBody ? (
         <>
           <BodyView />
 

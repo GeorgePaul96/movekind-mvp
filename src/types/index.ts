@@ -98,6 +98,17 @@ export interface GoodThing {
   created_at: string;
 }
 
+/**
+ * Calories eaten on one local day, only if the person chooses to note them. One row per day.
+ * Never judged, never compared with a target, never sent anywhere.
+ */
+export interface CalorieLog {
+  id: string;
+  day: string;
+  kcal: number;
+  created_at: string;
+}
+
 /** A resting pulse the person counted themselves. */
 export interface PulseLog {
   id: string;

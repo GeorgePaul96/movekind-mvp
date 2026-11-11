@@ -48,7 +48,11 @@ beforeEach(async () => {
   await useSettingsStore.getState().reset();
 });
 
-const enable = () => act(async () => useSettingsStore.getState().setBodyEnabled(true));
+const enable = () =>
+  act(async () => {
+    await useSettingsStore.getState().markBodyNoticeSeen();
+    await useSettingsStore.getState().setBodyEnabled(true);
+  });
 
 describe('InsightsView', () => {
   it('shows no body numbers until they are switched on', () => {

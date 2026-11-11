@@ -18,6 +18,8 @@ interface SettingsState {
   units: Units;
   /** Home is the simple screen unless this is on; then it is Maple's yard (kept aside while its art is unfinished). */
   yardHome: boolean;
+  /** The local day the paged check-in last opened by itself, so it never opens twice in a day. */
+  flowSeenDay: string | null;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
@@ -27,6 +29,7 @@ interface SettingsState {
   markBodyNoticeSeen: () => Promise<void>;
   setUnits: (v: Units) => Promise<void>;
   setYardHome: (v: boolean) => Promise<void>;
+  markFlowSeen: (day: string) => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -42,6 +45,7 @@ interface PersistedSettings {
   bodyNoticeSeen: boolean;
   units: Units;
   yardHome: boolean;
+  flowSeenDay: string | null;
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -53,6 +57,7 @@ const DEFAULTS: PersistedSettings = {
   bodyNoticeSeen: false,
   units: 'metric',
   yardHome: false,
+  flowSeenDay: null,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -70,6 +75,7 @@ async function read(): Promise<PersistedSettings> {
       bodyNoticeSeen: v.bodyNoticeSeen ?? DEFAULTS.bodyNoticeSeen,
       units: v.units === 'imperial' ? 'imperial' : 'metric',
       yardHome: v.yardHome ?? DEFAULTS.yardHome,
+      flowSeenDay: typeof v.flowSeenDay === 'string' ? v.flowSeenDay : null,
     };
   } catch {
     return DEFAULTS;
@@ -93,6 +99,7 @@ const persisted = (s: PersistedSettings): PersistedSettings => ({
   bodyNoticeSeen: s.bodyNoticeSeen,
   units: s.units,
   yardHome: s.yardHome,
+  flowSeenDay: s.flowSeenDay,
 });
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -139,6 +146,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   setYardHome: async (v) => {
     set({ yardHome: v });
+    await write(persisted(get()));
+  },
+
+  markFlowSeen: async (day) => {
+    set({ flowSeenDay: day });
     await write(persisted(get()));
   },
 

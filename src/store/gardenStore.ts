@@ -6,7 +6,7 @@ import { requestStepsAccess, stepsByDay, stepsStatus, type StepsStatus } from '@
 import { mapEnergyToState, moodToEnergy, yardMoodOf, yardMoodToEnergy } from '@/domain/checkin/moods';
 import { isSameLocalDay, localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import type { GardenInput } from '@/domain/garden/garden';
-import type { CheckIn, GoodThing, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
+import type { CalorieLog, CheckIn, GoodThing, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
 
 /** Stamped on check-ins logged by the garden app (the old session engine is gone). */
 export const GARDEN_VERSION = 'garden-1';
@@ -30,6 +30,11 @@ interface GardenStoreState {
   workouts: Workout[];
   meals: MealLog[];
   sleep: SleepLog[];
+  /** Optional calorie notes, newest day first. */
+  calories: CalorieLog[];
+  /** Saves today's calories (null removes them). Optional, never judged. */
+  setCaloriesToday: (kcal: number | null) => Promise<void>;
+  todayCalories: () => number | null;
   /** "One good thing" notes, newest day first. */
   goodThings: GoodThing[];
   /** Saves today's good thing (saving again replaces it; empty text removes it). */
@@ -99,6 +104,18 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     meals: [],
     sleep: [],
     goodThings: [],
+    calories: [],
+
+    setCaloriesToday: (kcal) =>
+      guarded(async () => {
+        const tidy = kcal == null ? null : Math.round(kcal);
+        const saved = await db.calories.setDay(localDayKey(new Date()), tidy);
+        set({ calories: await db.calories.all() });
+        // Only that it was noted. The number never leaves the phone.
+        if (saved) telemetry.capture('logged', { kind: 'calories' });
+      }),
+
+    todayCalories: () => get().calories.find((c) => c.day === localDayKey(new Date()))?.kcal ?? null,
 
     saveGoodThing: (text) =>
       guarded(async () => {
@@ -119,15 +136,16 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     load: async () => {
       try {
         const since = startOfLocalDay(new Date(), -HISTORY_DAYS).toISOString();
-        const [checkIns, water, workouts, meals, sleep, goodThings] = await Promise.all([
+        const [checkIns, water, workouts, meals, sleep, goodThings, calories] = await Promise.all([
           db.checkIns.since(since),
           db.water.since(since),
           db.workouts.all(),
           db.meals.since(since),
           db.sleep.since(since),
           db.goodThings.all(),
+          db.calories.all(),
         ]);
-        set({ checkIns, water, workouts, meals, sleep, goodThings, loaded: true, error: null });
+        set({ checkIns, water, workouts, meals, sleep, goodThings, calories, loaded: true, error: null });
       } catch (err) {
         set({ error: friendlyErrorMessage(err), loaded: true });
       }

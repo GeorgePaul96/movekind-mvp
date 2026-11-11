@@ -92,6 +92,22 @@ Two additions found by looking for safe, well-sourced, no-cost features:
 medication or cycle tracking (liability and sensitivity), home-screen widgets (native work), camera
 heart rate (needs a development build).
 
+**2026-11-11, from the owner's first try of it:** logging moved into a **paged check-in** (mood,
+water, food with optional calories, movement, sleep; one coloured page each), and Today became a
+view-and-edit summary. Added **Looking back** (a five-week day grid) to Changes. The name field left
+You (asked once in onboarding). The Body switch moved into Insights, next to what it unlocks, because
+in You it looked blank. One good thing now shows as kept text after saving.
+**Calories** were added at the owner's request as an optional daily number: this bends the earlier
+"no calorie counting" line, so it is never judged, has no target, and is only averaged inside the
+opt-in Body report.
+
+**The owner's challenge: "might as well use a book."** Fair for typed logging. What the app does that
+paper cannot: reads steps by itself, finds patterns across weeks, projects a weight trend, and shows a
+month at a glance. The biggest remaining gap is that most things are still typed. **Next, in order:**
+(1) read sleep, weight and workouts from Apple Health / Health Connect so the pages arrive pre-filled
+(needs a development build); (2) a weekly summary that arrives by itself on Sunday; (3) finish Maple's
+yard, which is what made this app feel like more than a form.
+
 ### Body and Insights (2026-11-10, owner testing)
 
 The owner asked for a "where is this pace taking me" view like a body composition machine's printout,

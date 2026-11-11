@@ -51,6 +51,26 @@ export const colors = {
 export type ColorName = keyof typeof colors;
 
 /**
+ * One colour world per check-in page, so each feels like its own small place.
+ * - `bg`   : the whole page
+ * - `ink`  : headings, text and solid buttons on `bg`
+ * - `soft` : an unselected choice tile (carries `ink` text)
+ * - `onInk`: text on a solid `ink` button or a selected tile
+ * - `glow` : a large decorative shape behind the content
+ * Every text pair is contrast-tested in __tests__/colors.test.ts.
+ */
+export const flowThemes = {
+  mood: { bg: '#FBE7C6', ink: '#74470A', soft: '#FFF8EA', onInk: '#FFF8EA', glow: '#F7D49A' },
+  water: { bg: '#DDEFF8', ink: '#0F4C6B', soft: '#F4FAFD', onInk: '#F4FAFD', glow: '#B9DDF0' },
+  food: { bg: '#FCE3D8', ink: '#7A2E12', soft: '#FFF6F1', onInk: '#FFF6F1', glow: '#F8C7B2' },
+  movement: { bg: '#DCEFE3', ink: '#185239', soft: '#F5FBF7', onInk: '#F5FBF7', glow: '#B8DFC7' },
+  sleep: { bg: '#22304A', ink: '#F2F4FA', soft: '#33425F', onInk: '#22304A', glow: '#2C3D5E' },
+} as const;
+
+export type FlowThemeName = keyof typeof flowThemes;
+export type FlowTheme = (typeof flowThemes)[FlowThemeName];
+
+/**
  * Per-mood color sets. Distinct hues so no two moods can be confused.
  * - `soft`  : tile / surface fill
  * - `ink`   : text and borders on `soft` (and a >=3:1 outline on the canvas)

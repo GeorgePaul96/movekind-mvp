@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { BodyProfile, CheckIn, GoodThing, MealLog, Measurement, Profile, PulseLog, SleepLog, WaterLog, Workout } from '@/types';
+import type { BodyProfile, CalorieLog, CheckIn, GoodThing, MealLog, Measurement, Profile, PulseLog, SleepLog, WaterLog, Workout } from '@/types';
 import { createDoc, createTable, PREFIX } from './table';
 
 export { __resetDbCacheForTests } from './table';
@@ -38,6 +38,7 @@ const bodyDoc = createDoc<BodyProfile>('body', () => ({
 const measurementTable = createTable<Measurement>('measurements');
 const pulseTable = createTable<PulseLog>('pulse');
 const goodThingTable = createTable<GoodThing>('good_things');
+const calorieTable = createTable<CalorieLog>('calories');
 
 type MeasurementValues = Pick<Measurement, 'weight_kg' | 'neck_cm' | 'waist_cm' | 'hip_cm'>;
 /** Drops undefined keys so an upsert never erases a value measured earlier that day. */
@@ -91,6 +92,21 @@ export const db = {
       sleepTable.insert({ ...input, id: newId(), created_at: nowIso() }),
     update: (id: string, patch: Partial<Pick<SleepLog, 'hours' | 'feel'>>) => sleepTable.update(id, patch),
     since: async (iso: string) => newestFirst((await sleepTable.all()).filter((s) => s.created_at >= iso)),
+  },
+
+  calories: {
+    /** Newest day first. */
+    all: async () => [...(await calorieTable.all())].sort((a, b) => b.day.localeCompare(a.day)),
+    /** One per day: saving again replaces it; null removes it. */
+    setDay: async (day: string, kcal: number | null): Promise<CalorieLog | null> => {
+      const existing = (await calorieTable.all()).find((c) => c.day === day);
+      if (kcal == null) {
+        if (existing) await calorieTable.remove(existing.id);
+        return null;
+      }
+      if (existing) return (await calorieTable.update(existing.id, { kcal })) ?? existing;
+      return calorieTable.insert({ id: newId(), day, kcal, created_at: nowIso() });
+    },
   },
 
   goodThings: {
@@ -153,6 +169,7 @@ export const db = {
       measurementTable.clear(),
       pulseTable.clear(),
       goodThingTable.clear(),
+      calorieTable.clear(),
     ]);
   },
 };

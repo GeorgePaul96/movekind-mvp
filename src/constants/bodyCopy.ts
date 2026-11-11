@@ -8,6 +8,7 @@ export const BODY_COPY = {
   switchLabel: 'Show body numbers and estimates',
   switchBody:
     'Body composition, where your pace is heading, sleep balance and fitness estimates. Off unless you turn it on. The yard never mentions them.',
+  switchOnBody: 'On. Fill in your details and measurements just below. Switch off any time; your entries are kept.',
   noticeTitle: 'About these numbers',
   noticeBody:
     'These are wellness estimates worked out on your phone from published formulas. They are not a medical device or a diagnosis. The formulas are for adults and are not valid during pregnancy. Nothing here leaves your phone.',
@@ -65,7 +66,10 @@ export const BODY_COPY = {
     waistToHeight: 'Waist to height',
     resting: 'Resting energy use',
     daily: 'Daily energy use',
+    intake: 'Calories you noted',
   },
+  intakeNote: (days: number) =>
+    `Your own average over ${days} days in the last two weeks. Shown beside energy use for comparison only.`,
   plusMinus: (value: string, error: string) => `${value} (give or take ${error})`,
   kcalRange: (lo: number, hi: number) => `about ${lo.toLocaleString()} to ${hi.toLocaleString()} kcal a day`,
   kcal: (n: number) => `about ${n.toLocaleString()} kcal a day`,

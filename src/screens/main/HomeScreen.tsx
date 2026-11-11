@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CheckInFlow } from '@/components/flow/CheckInFlow';
+import { MonthView } from '@/components/home/MonthView';
 import { TabBar, type HomeTab } from '@/components/home/parts';
 import { colors } from '@/constants/colors';
 import { HOME_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
+import { localDayKey } from '@/domain/garden/days';
+import { careToday } from '@/domain/home/care';
 import ChangesView from '@/screens/main/ChangesView';
 import InsightsView from '@/screens/main/InsightsView';
 import MeView from '@/screens/main/MeView';
 import TodayView from '@/screens/main/TodayView';
 import { useGardenStore } from '@/store/gardenStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 /**
- * The simple home: four plain tabs, one page each. Everything the app does is reachable
- * here with ordinary controls. Maple's yard is kept aside as an optional home (see MeView).
+ * Home. Four plain tabs, and the paged check-in on top of them: it opens by itself once a
+ * day when nothing has been noted yet, and one page at a time from the homepage's Edit
+ * buttons. Maple's yard is kept aside as an optional home (see MeView).
  */
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<HomeTab>('today');
+  const [flow, setFlow] = useState<{ step: number; single: boolean } | null>(null);
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
   const refreshSteps = useGardenStore((s) => s.refreshSteps);
@@ -29,6 +36,22 @@ export default function HomeScreen() {
   useEffect(() => {
     refreshSteps().catch(() => {});
   }, [refreshSteps]);
+
+  // Once a day, and only if the day is still empty: start with the first page.
+  useEffect(() => {
+    if (!loaded) return;
+    const todayKey = localDayKey(new Date());
+    const settings = useSettingsStore.getState();
+    if (settings.flowSeenDay === todayKey) return;
+    void settings.markFlowSeen(todayKey);
+    const { checkIns, water, meals, workouts, sleep } = useGardenStore.getState();
+    const done = careToday({ checkIns, water, meals, workouts, sleep }, new Date());
+    if (!Object.values(done).some(Boolean)) setFlow({ step: 0, single: false });
+  }, [loaded]);
+
+  if (flow) {
+    return <CheckInFlow initialStep={flow.step} single={flow.single} onClose={() => setFlow(null)} />;
+  }
 
   return (
     <View style={styles.screen}>
@@ -44,8 +67,13 @@ export default function HomeScreen() {
               {HOME_COPY.tabs[tab]}
             </Text>
           ) : null}
-          {tab === 'today' ? <TodayView /> : null}
-          {tab === 'changes' ? <ChangesView /> : null}
+          {tab === 'today' ? <TodayView onOpenFlow={(step, single) => setFlow({ step, single })} /> : null}
+          {tab === 'changes' ? (
+            <>
+              <MonthView />
+              <ChangesView />
+            </>
+          ) : null}
           {tab === 'insights' ? <InsightsView /> : null}
           {tab === 'you' ? <MeView /> : null}
         </View>

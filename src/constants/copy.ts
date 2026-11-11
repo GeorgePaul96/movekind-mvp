@@ -2,6 +2,7 @@ import type { Meal, SleepLog, UserState, WorkoutType, YardMood } from '@/types';
 
 export { BODY_COPY, INSIGHTS_COPY } from '@/constants/bodyCopy';
 export { HOME_COPY } from '@/constants/homeCopy';
+export { FLOW_COPY } from '@/constants/flowCopy';
 
 export const ERROR_FALLBACK = {
   title: 'Something needed a pause',

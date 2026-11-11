@@ -63,6 +63,23 @@ Verify changes with `npm run typecheck` and `npm test`.
   is still in the code and still works**, but it is home only when `settingsStore.yardHome` is on (the
   "Maple's yard" switch in You, off by default) because its art is unfinished. Everything below about
   the yard describes that optional home. Both homes use the same stores, so data is shared.
+- **The paged check-in (2026-11-11).** [CheckInFlow](src/components/flow/CheckInFlow.tsx) is five
+  full-screen pages, one question each, in this order: mood, water, food (plus optional calories),
+  movement, sleep. Each page has its own colour world from `flowThemes` in `colors.ts`
+  (contrast-tested) and draws its own controls in those colours. `HomeScreen` opens it by itself once
+  a day when nothing is noted yet (`settingsStore.flowSeenDay`), and one page at a time (`single`) from
+  the homepage's Add / Edit buttons. Every page can be passed without noting anything; sleep is saved
+  only if it was touched. **Today is now a view-and-edit summary**, not inline logging: the greeting,
+  the dots, "Your day so far" (one line per kind with Add / Edit), then steps, One good thing and A
+  slow breath. The Changes tab starts with **Looking back** ([MonthView](src/components/home/MonthView.tsx)):
+  five weeks of days, warmer the more was noted, tap a day to read it.
+- **Calories are optional and never judged.** `db.calories` holds one number per day, typed on the
+  food page only if the person wants to (`setCaloriesToday`; empty clears it). The app never comments
+  on it, sets no target, and sends no value to telemetry. With 3 or more days noted, the opt-in Body
+  report shows the plain average beside energy use. Meals themselves stay "which ones", nothing more.
+- **The name is asked once**, in onboarding. You (`MeView`) no longer has a name field. The "Body and
+  numbers" switch, its one-time notice (shown inline, with an "I understand" button) and the units
+  choice live at the top of Insights, directly above the things to fill in.
 - **One good thing and A slow breath.** `db.goodThings` holds one short note per local day
   (`saveGoodThing`; empty text removes it; the words are never sent to telemetry). The breathing pacer
   is in for five, out for five (NHS), for 1, 3 or 5 minutes, and stores nothing.
