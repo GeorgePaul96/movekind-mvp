@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { BodyProfile, CalorieLog, CheckIn, GoodThing, MealLog, Measurement, Profile, PulseLog, SleepLog, WaterLog, Workout } from '@/types';
+import type { BodyProfile, CalorieLog, CheckIn, DayState, GoodThing, MealLog, Measurement, Profile, PulseLog, SleepLog, WaterLog, Workout } from '@/types';
 import { createDoc, createTable, PREFIX } from './table';
 
 export { __resetDbCacheForTests } from './table';
@@ -39,6 +39,7 @@ const measurementTable = createTable<Measurement>('measurements');
 const pulseTable = createTable<PulseLog>('pulse');
 const goodThingTable = createTable<GoodThing>('good_things');
 const calorieTable = createTable<CalorieLog>('calories');
+const dayStateTable = createTable<DayState>('day_states');
 
 type MeasurementValues = Pick<Measurement, 'weight_kg' | 'neck_cm' | 'waist_cm' | 'hip_cm'>;
 /** Drops undefined keys so an upsert never erases a value measured earlier that day. */
@@ -109,6 +110,16 @@ export const db = {
     },
   },
 
+  dayStates: {
+    all: async () => [...(await dayStateTable.all())].sort((a, b) => b.day.localeCompare(a.day)),
+    /** One per day: merges the patch into that day's row, or starts it. */
+    setDay: async (day: string, patch: Partial<Pick<DayState, 'pause' | 'closed'>>): Promise<DayState> => {
+      const existing = (await dayStateTable.all()).find((d) => d.day === day);
+      if (existing) return (await dayStateTable.update(existing.id, patch)) ?? existing;
+      return dayStateTable.insert({ id: newId(), day, pause: null, closed: false, created_at: nowIso(), ...patch });
+    },
+  },
+
   goodThings: {
     /** Newest day first. */
     all: async () => [...(await goodThingTable.all())].sort((a, b) => b.day.localeCompare(a.day)),
@@ -170,6 +181,7 @@ export const db = {
       pulseTable.clear(),
       goodThingTable.clear(),
       calorieTable.clear(),
+      dayStateTable.clear(),
     ]);
   },
 };

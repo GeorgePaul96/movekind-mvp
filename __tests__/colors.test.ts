@@ -1,4 +1,4 @@
-import { colors, flowThemes, stateColors } from '../src/constants/colors';
+import { colors, flowThemes, paceColors, stateColors } from '../src/constants/colors';
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5]
@@ -43,6 +43,12 @@ describe('Sage palette contrast', () => {
 
   it.each(textPairs)('%s clears 4.5:1', (_name, fg, bg) => {
     expect(ratio(fg, bg)).toBeGreaterThanOrEqual(TEXT);
+  });
+
+  it.each(Object.entries(paceColors))('greeting card for a "%s" day is readable', (_name, bg) => {
+    expect(ratio(colors.textPrimary, bg)).toBeGreaterThanOrEqual(TEXT);
+    expect(ratio(colors.textSecondary, bg)).toBeGreaterThanOrEqual(TEXT);
+    expect(ratio(colors.primary, bg)).toBeGreaterThanOrEqual(TEXT); // the pace label
   });
 
   it.each(Object.entries(flowThemes))('check-in page "%s" is readable everywhere', (_name, t) => {

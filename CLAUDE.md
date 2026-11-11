@@ -73,6 +73,22 @@ Verify changes with `npm run typecheck` and `npm test`.
   the dots, "Your day so far" (one line per kind with Add / Edit), then steps, One good thing and A
   slow breath. The Changes tab starts with **Looking back** ([MonthView](src/components/home/MonthView.tsx)):
   five weeks of days, warmer the more was noted, tap a day to read it.
+- **The day has a shape (2026-11-11).** Pure logic in [companion.ts](src/domain/home/companion.ts),
+  copy in `COMPANION_COPY` (`src/constants/companionCopy.ts`):
+  - **Today's pace.** `dayPace({ sleepHours, mood, pause })` reads last night and the mood into
+    rest / gentle / steady / bright. It is `null` until something is noted (never an assumed night or
+    mood); a very short night or a tired mood always gives rest; mixed signals give gentle. The
+    greeting line and the greeting card's colour (`paceColors`) follow it. **A pace only describes the
+    day: no targets, and no line may tell anyone how to move or what to eat** (a test checks the copy).
+  - **Pauses.** Unwell / overwhelmed / travelling / resting, chosen on the mood page without needing
+    a mood. Stored per day in `db.dayStates` (`setPause`); a paused day shows only water and sleep on
+    the homepage until "Show everything". Never sent to telemetry.
+  - **Same as yesterday.** `yesterdayRepeat` offers yesterday's meals, movement entries and calories
+    as one tap on their pages, only while today's are still empty (it never overwrites).
+  - **Close the day.** `setClosed(true)` turns the homepage into a night card listing only what
+    happened (`dayFacts`), with no calories and nothing about what was not done; "Reopen today" undoes it.
+  Rejected on purpose from the brief this came from: a momentum score that falls on missed days,
+  calorie targets or "under-fuelled" statuses, and movement suggestions.
 - **Calories are optional and never judged.** `db.calories` holds one number per day, typed on the
   food page only if the person wants to (`setCaloriesToday`; empty clears it). The app never comments
   on it, sets no target, and sends no value to telemetry. With 3 or more days noted, the opt-in Body

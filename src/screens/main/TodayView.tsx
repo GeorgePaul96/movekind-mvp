@@ -4,12 +4,13 @@ import { Button } from '@/components/Button';
 import { Icon, type IconName } from '@/components/Icon';
 import { FLOW_STEPS } from '@/components/flow/CheckInFlow';
 import { BreathPacer, CareDots, Section, styles as parts } from '@/components/home/parts';
-import { colors, elevation, flowThemes, type FlowThemeName } from '@/constants/colors';
-import { BODY_COPY, HOME_COPY, STEPS_COPY, WATER_COPY, YARD_COPY } from '@/constants/copy';
+import { colors, elevation, flowThemes, paceColors, type FlowThemeName } from '@/constants/colors';
+import { BODY_COPY, COMPANION_COPY, HOME_COPY, STEPS_COPY, WATER_COPY, YARD_COPY } from '@/constants/copy';
 import { SOURCES } from '@/constants/sources';
 import { font } from '@/constants/typography';
 import { isSameLocalDay } from '@/domain/garden/days';
 import { careToday, partOfDay } from '@/domain/home/care';
+import { dayFacts, dayPace, hasAnything, isEvening } from '@/domain/home/companion';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
 
@@ -53,7 +54,21 @@ export default function TodayView({ onOpenFlow }: Props) {
   const todaysWorkouts = workouts.filter((w) => today(w.created_at));
 
   const part = partOfDay(now);
-  const kindLine = unwell ? HOME_COPY.unwellLine : mood ? HOME_COPY.moodLine[mood] : HOME_COPY.welcome[part];
+  // The day's shape: set aside, closed for the night, or moving at the pace sleep and mood suggest.
+  const dayState = store.todayState();
+  const pause = dayState?.pause ?? null;
+  const closed = dayState?.closed ?? false;
+  const paceInfo = dayPace({ sleepHours: lastSleep?.hours ?? null, mood, pause });
+  const kindLine = pause
+    ? COMPANION_COPY.pauseLine[pause]
+    : unwell
+      ? HOME_COPY.unwellLine
+      : paceInfo
+        ? COMPANION_COPY.line(paceInfo.pace, paceInfo.reason)
+        : HOME_COPY.welcome[part];
+  const [showAll, setShowAll] = useState(false);
+  // A paused day keeps only water and rest in view, unless the person asks for the rest.
+  const shownKinds = pause && !showAll ? FLOW_STEPS.filter((k) => k === 'water' || k === 'sleep') : FLOW_STEPS;
   const done = careToday({ checkIns, water, meals, workouts, sleep }, now);
   const anything = Object.values(done).some(Boolean);
 
@@ -93,13 +108,57 @@ export default function TodayView({ onOpenFlow }: Props) {
           ? STEPS_COPY.unavailable
           : undefined;
 
+  if (closed) {
+    const facts = dayFacts({ checkIns, water, meals, workouts, sleep, goodThings }, now);
+    const D = COMPANION_COPY.did;
+    const did = [
+      facts.mood ? D.mood : '',
+      facts.glasses ? D.water(facts.glasses) : '',
+      facts.meals.length ? D.meals(facts.meals.map((m) => YARD_COPY.foodSheet.meals[m]).join(', ')) : '',
+      facts.moveMinutes ? D.movement(facts.moveMinutes) : '',
+      facts.sleepHours != null ? D.sleep(facts.sleepHours) : '',
+      facts.goodThing ? D.good(facts.goodThing) : '',
+    ].filter(Boolean);
+    const night = flowThemes.sleep;
+    return (
+      <View>
+        <View style={[styles.hello, { backgroundColor: night.bg }]}>
+          <Icon name="moon-waning-crescent" size={34} color={night.ink} />
+          <Text style={[styles.greeting, styles.closedTitle, { color: night.ink }]} accessibilityRole="header">
+            {paceInfo?.pace === 'rest' ? COMPANION_COPY.closedTitleRest : COMPANION_COPY.closedTitle}
+          </Text>
+          {(hasAnything(facts) ? did : [D.nothing]).map((line) => (
+            <Text key={line} style={[styles.didLine, { color: night.ink }]}>
+              {line}
+            </Text>
+          ))}
+          <Text style={[styles.kind, { color: night.ink }]}>{COMPANION_COPY.closedLine}</Text>
+        </View>
+        <Button label={COMPANION_COPY.reopen} variant="link" onPress={() => void store.setClosed(false).catch(() => {})} />
+        <View style={styles.gap} />
+        <Section icon="weather-windy" title={HOME_COPY.breathTitle}>
+          <Text style={parts.body}>{HOME_COPY.breathBody}</Text>
+          <BreathPacer />
+          <Text style={parts.small}>{HOME_COPY.breathCare}</Text>
+          <Text style={parts.small}>{BODY_COPY.source(SOURCES.breathing.label)}</Text>
+        </Section>
+      </View>
+    );
+  }
+
   return (
     <View>
-      <View style={styles.hello}>
+      <View style={[styles.hello, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}>
         <Text style={styles.greeting} accessibilityRole="header">
           {HOME_COPY.greeting(part, name)}
         </Text>
         <Text style={styles.kind}>{kindLine}</Text>
+        {paceInfo ? (
+          <View style={styles.pace} accessible accessibilityLabel={`${COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}. ${COMPANION_COPY.paceWhy}`}>
+            <Text style={styles.paceLabel}>{COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}</Text>
+            <Text style={styles.paceWhy}>{COMPANION_COPY.paceWhy}</Text>
+          </View>
+        ) : null}
         <CareDots done={done} />
         <View style={styles.start}>
           <Button
@@ -115,7 +174,27 @@ export default function TodayView({ onOpenFlow }: Props) {
       <Text style={styles.heading} accessibilityRole="header">
         {HOME_COPY.todayTitle}
       </Text>
-      {FLOW_STEPS.map((kind, step) => {
+      {pause ? (
+        <View style={styles.paused}>
+          <Text style={styles.pausedText}>{COMPANION_COPY.pausedBanner(COMPANION_COPY.pauses[pause])}</Text>
+          <View style={parts.row}>
+            <Button
+              label={showAll ? COMPANION_COPY.pausedShowLess : COMPANION_COPY.pausedShowAll}
+              variant="link"
+              size="sm"
+              onPress={() => setShowAll((v) => !v)}
+            />
+            <Button
+              label={COMPANION_COPY.pauseEnd}
+              variant="link"
+              size="sm"
+              onPress={() => void store.setPause(null).catch(() => {})}
+            />
+          </View>
+        </View>
+      ) : null}
+      {shownKinds.map((kind) => {
+        const step = FLOW_STEPS.indexOf(kind);
         const theme = flowThemes[kind];
         const value = values[kind];
         return (
@@ -141,6 +220,15 @@ export default function TodayView({ onOpenFlow }: Props) {
       })}
 
       <View style={styles.gap} />
+
+      <Section icon="moon-waning-crescent" title={COMPANION_COPY.closeTitle}>
+        <Text style={parts.body}>{COMPANION_COPY.closeBody}</Text>
+        <Button
+          label={COMPANION_COPY.closeButton}
+          variant={isEvening(now) ? 'primary' : 'secondary'}
+          onPress={() => void store.setClosed(true).catch(() => {})}
+        />
+      </Section>
 
       <Section icon="shoe-print" title={HOME_COPY.stepsTitle} value={steps}>
         {stepsStatus === 'granted' ? (
@@ -228,6 +316,13 @@ const styles = StyleSheet.create({
   greeting: { ...font.extrabold, fontSize: 30, lineHeight: 36, color: colors.textPrimary },
   kind: { ...font.medium, fontSize: 17, lineHeight: 25, color: colors.textSecondary, marginTop: 6 },
   start: { marginTop: 18 },
+  pace: { marginTop: 10 },
+  paceLabel: { ...font.bold, fontSize: 15, color: colors.primary },
+  paceWhy: { ...font.regular, fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 1 },
+  closedTitle: { marginTop: 10, marginBottom: 10 },
+  didLine: { ...font.medium, fontSize: 16, lineHeight: 24, marginBottom: 4 },
+  paused: { backgroundColor: paceColors.rest, borderRadius: 22, padding: 14, marginBottom: 10 },
+  pausedText: { ...font.semibold, fontSize: 15, color: colors.textPrimary },
   error: { ...font.medium, fontSize: 14, color: colors.error, marginBottom: 10 },
   heading: { ...font.bold, fontSize: 21, color: colors.textPrimary, marginBottom: 10, marginLeft: 4 },
   row: {

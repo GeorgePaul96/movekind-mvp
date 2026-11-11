@@ -67,6 +67,17 @@ export const flowThemes = {
   sleep: { bg: '#22304A', ink: '#F2F4FA', soft: '#33425F', onInk: '#22304A', glow: '#2C3D5E' },
 } as const;
 
+/**
+ * The greeting card takes the colour of the day's pace, so the home itself changes with
+ * how the person slept and feels. All carry `textPrimary` and `textSecondary` (tested).
+ */
+export const paceColors = {
+  rest: '#E3E5FA', // a quiet twilight
+  gentle: '#DCEFE3', // soft sage
+  steady: '#FBE7C6', // warm honey
+  bright: '#F9DCA4', // fuller amber
+} as const;
+
 export type FlowThemeName = keyof typeof flowThemes;
 export type FlowTheme = (typeof flowThemes)[FlowThemeName];
 

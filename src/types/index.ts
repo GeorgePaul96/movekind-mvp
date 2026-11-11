@@ -109,6 +109,18 @@ export interface CalorieLog {
   created_at: string;
 }
 
+/** A day that is deliberately set aside. Private: never sent anywhere. */
+export type PauseKind = 'unwell' | 'overwhelmed' | 'travelling' | 'resting';
+
+/** How one local day is being held: paused for a reason, and/or closed for the night. One row per day. */
+export interface DayState {
+  id: string;
+  day: string;
+  pause: PauseKind | null;
+  closed: boolean;
+  created_at: string;
+}
+
 /** A resting pulse the person counted themselves. */
 export interface PulseLog {
   id: string;

@@ -108,6 +108,16 @@ month at a glance. The biggest remaining gap is that most things are still typed
 (needs a development build); (2) a weekly summary that arrives by itself on Sunday; (3) finish Maple's
 yard, which is what made this app feel like more than a form.
 
+**2026-11-11, "the day has a shape".** From the owner's companion brief (a "guilt-free fitness
+companion" document), taking what fits and leaving what does not. Built: **today's pace** (rest /
+gentle / steady / bright, read from sleep and mood, shown as the greeting line and card colour),
+**pauses** (unwell, overwhelmed, travelling, resting: the homepage shrinks to water and rest),
+**same as yesterday** (one tap on the food and movement pages) and **close the day** (an evening
+night card of what happened). **Left out on purpose:** the momentum bar (it falls on missed days, so
+it is a streak), calorie targets and "under-fuelled" statuses, movement suggestions, and its
+three-days-per-group pattern engine (ours needs two weeks). Haptics were also in the brief but need
+a new dependency (`expo-haptics`); add them with the next development build.
+
 ### Body and Insights (2026-11-10, owner testing)
 
 The owner asked for a "where is this pace taking me" view like a body composition machine's printout,

@@ -6,7 +6,7 @@ import { requestStepsAccess, stepsByDay, stepsStatus, type StepsStatus } from '@
 import { mapEnergyToState, moodToEnergy, yardMoodOf, yardMoodToEnergy } from '@/domain/checkin/moods';
 import { isSameLocalDay, localDayKey, startOfLocalDay } from '@/domain/garden/days';
 import type { GardenInput } from '@/domain/garden/garden';
-import type { CalorieLog, CheckIn, GoodThing, Meal, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
+import type { CalorieLog, CheckIn, DayState, GoodThing, Meal, PauseKind, MealLog, SleepFeel, SleepLog, UserState, WaterLog, Workout, WorkoutType, YardMood } from '@/types';
 
 /** Stamped on check-ins logged by the garden app (the old session engine is gone). */
 export const GARDEN_VERSION = 'garden-1';
@@ -30,6 +30,13 @@ interface GardenStoreState {
   workouts: Workout[];
   meals: MealLog[];
   sleep: SleepLog[];
+  /** Paused and closed days, newest first. */
+  dayStates: DayState[];
+  todayState: () => DayState | null;
+  /** Sets today aside (or clears it with null). Private: nothing is sent anywhere. */
+  setPause: (kind: PauseKind | null) => Promise<void>;
+  /** Closes today for the night, or reopens it. */
+  setClosed: (closed: boolean) => Promise<void>;
   /** Optional calorie notes, newest day first. */
   calories: CalorieLog[];
   /** Saves today's calories (null removes them). Optional, never judged. */
@@ -105,6 +112,23 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     sleep: [],
     goodThings: [],
     calories: [],
+    dayStates: [],
+
+    todayState: () => get().dayStates.find((d) => d.day === localDayKey(new Date())) ?? null,
+
+    setPause: (kind) =>
+      guarded(async () => {
+        await db.dayStates.setDay(localDayKey(new Date()), { pause: kind });
+        set({ dayStates: await db.dayStates.all() });
+        // Deliberately no telemetry: why someone needs a pause never leaves the phone.
+      }),
+
+    setClosed: (closed) =>
+      guarded(async () => {
+        await db.dayStates.setDay(localDayKey(new Date()), { closed });
+        set({ dayStates: await db.dayStates.all() });
+        if (closed) telemetry.capture('day_closed');
+      }),
 
     setCaloriesToday: (kcal) =>
       guarded(async () => {
@@ -136,7 +160,7 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
     load: async () => {
       try {
         const since = startOfLocalDay(new Date(), -HISTORY_DAYS).toISOString();
-        const [checkIns, water, workouts, meals, sleep, goodThings, calories] = await Promise.all([
+        const [checkIns, water, workouts, meals, sleep, goodThings, calories, dayStates] = await Promise.all([
           db.checkIns.since(since),
           db.water.since(since),
           db.workouts.all(),
@@ -144,8 +168,9 @@ export const useGardenStore = create<GardenStoreState>((set, get) => {
           db.sleep.since(since),
           db.goodThings.all(),
           db.calories.all(),
+          db.dayStates.all(),
         ]);
-        set({ checkIns, water, workouts, meals, sleep, goodThings, calories, loaded: true, error: null });
+        set({ checkIns, water, workouts, meals, sleep, goodThings, calories, dayStates, loaded: true, error: null });
       } catch (err) {
         set({ error: friendlyErrorMessage(err), loaded: true });
       }

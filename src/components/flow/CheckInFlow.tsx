@@ -3,13 +3,14 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/Icon';
 import { flowThemes, type FlowTheme, type FlowThemeName } from '@/constants/colors';
-import { FLOW_COPY, WORKOUT_COPY, YARD_COPY } from '@/constants/copy';
+import { COMPANION_COPY, FLOW_COPY, WORKOUT_COPY, YARD_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { YARD_MOODS } from '@/domain/checkin/moods';
 import { isSameLocalDay } from '@/domain/garden/days';
+import { yesterdayRepeat } from '@/domain/home/companion';
 import { parseNumber } from '@/domain/body/units';
 import { MEALS, tidySleepHours, useGardenStore } from '@/store/gardenStore';
-import type { Meal, SleepFeel, WorkoutType, YardMood } from '@/types';
+import type { Meal, PauseKind, SleepFeel, WorkoutType, YardMood } from '@/types';
 
 /**
  * The paged check-in: one question per page, each page its own colour world.
@@ -45,6 +46,7 @@ const WORKOUT_ICONS: Record<WorkoutType, IconName> = {
 };
 const WORKOUT_TYPES = Object.keys(WORKOUT_ICONS) as WorkoutType[];
 const FEELS: SleepFeel[] = ['restless', 'okay', 'deep'];
+const PAUSES: PauseKind[] = ['unwell', 'overwhelmed', 'travelling', 'resting'];
 /** Fixed spots for the sleep page's stars, as shares of the page. */
 const STARS: [number, number, number][] = [
   [0.08, 0.12, 3], [0.22, 0.05, 2], [0.4, 0.14, 2], [0.63, 0.07, 3], [0.9, 0.16, 2],
@@ -146,7 +148,9 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
 
   // Mood
   const mood = store.todayYardMood();
-  const unwell = store.todayUnwell();
+  const pause = store.todayState()?.pause ?? null;
+  // What yesterday held that today does not yet: one tap instead of typing it again.
+  const same = yesterdayRepeat({ meals: store.meals, workouts: store.workouts, calories: store.calories }, now);
   // Water
   const glasses = store.water.filter((w) => today(w.created_at)).length;
   // Food
@@ -264,15 +268,21 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                   onPress={() => void store.logYardMood(m).catch(() => {})}
                 />
               ))}
-              {mood ? (
-                <Tile
-                  theme={theme}
-                  icon="thermometer"
-                  label={FLOW_COPY.mood.unwell}
-                  selected={unwell}
-                  onPress={() => void store.setUnwell(!unwell).catch(() => {})}
-                />
-              ) : null}
+              <Text style={[styles.panelTitle, { color: theme.ink, marginTop: 10 }]}>{COMPANION_COPY.pauseTitle}</Text>
+              <Text style={[styles.panelBody, { color: theme.ink, marginBottom: 2 }]}>{COMPANION_COPY.pauseBody}</Text>
+              <View style={styles.grid}>
+                {PAUSES.map((k) => (
+                  <View key={k} style={styles.half}>
+                    <Tile
+                      theme={theme}
+                      layout="stack"
+                      label={COMPANION_COPY.pauses[k]}
+                      selected={pause === k}
+                      onPress={() => void store.setPause(pause === k ? null : k).catch(() => {})}
+                    />
+                  </View>
+                ))}
+              </View>
             </View>
           ) : null}
 
@@ -300,6 +310,16 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
 
           {kind === 'food' ? (
             <View style={styles.block}>
+              {same.meals.length ? (
+                <Tile
+                  theme={theme}
+                  icon="history"
+                  label={COMPANION_COPY.sameMeals(same.meals.map((m) => YARD_COPY.foodSheet.meals[m]).join(', '))}
+                  a11y={COMPANION_COPY.sameMealsA11y}
+                  selected={false}
+                  onPress={() => void store.setMealsToday(same.meals).catch(() => {})}
+                />
+              ) : null}
               <View style={styles.grid}>
                 {MEALS.map((m) => (
                   <View key={m} style={styles.half}>
@@ -329,6 +349,14 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                   maxLength={5}
                   style={[styles.input, { color: theme.ink, borderColor: theme.ink, backgroundColor: theme.bg }]}
                 />
+                {same.kcal != null && !kcalText ? (
+                  <Link
+                    theme={theme}
+                    label={COMPANION_COPY.sameKcal(same.kcal)}
+                    a11y={COMPANION_COPY.sameKcalA11y}
+                    onPress={() => setKcalText(String(same.kcal))}
+                  />
+                ) : null}
                 {kcalError ? <Text style={[styles.panelTitle, { color: theme.ink }]}>{FLOW_COPY.food.caloriesInvalid}</Text> : null}
               </View>
             </View>
@@ -347,6 +375,17 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                     onPress={() => void store.removeWorkout(w.id).catch(() => {})}
                   />
                 </View>
+              ))}
+              {same.workouts.map((w) => (
+                <Tile
+                  key={`${w.type}:${w.minutes}`}
+                  theme={theme}
+                  icon="history"
+                  label={COMPANION_COPY.again(WORKOUT_COPY.entry(w.type, w.minutes))}
+                  a11y={COMPANION_COPY.sameWorkoutA11y(WORKOUT_COPY.entry(w.type, w.minutes))}
+                  selected={false}
+                  onPress={() => void store.addWorkout(w.type, w.minutes).catch(() => {})}
+                />
               ))}
               <View style={styles.grid}>
                 {WORKOUT_TYPES.map((t) => (
