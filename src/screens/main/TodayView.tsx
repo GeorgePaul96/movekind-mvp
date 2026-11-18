@@ -35,6 +35,8 @@ const ROW_TITLES: Record<FlowThemeName, string> = {
 };
 
 interface Props {
+  /** The height of the visible page, so the forest can fill it. */
+  viewHeight?: number;
   /** Opens the paged check-in: from its first page, or one page to edit. */
   onOpenFlow: (step: number, single: boolean) => void;
 }
@@ -43,7 +45,7 @@ interface Props {
  * The homepage: a greeting, the care dots, then the day so far. Each line shows what was
  * noted and opens its own page to add or change it. Below: steps, one good thing, a slow breath.
  */
-export default function TodayView({ onOpenFlow }: Props) {
+export default function TodayView({ onOpenFlow, viewHeight }: Props) {
   const name = useProfileStore((s) => s.profile?.name ?? null);
   const store = useGardenStore();
   const { checkIns, water, workouts, meals, sleep, goodThings, stepsToday, stepsStatus } = store;
@@ -51,6 +53,9 @@ export default function TodayView({ onOpenFlow }: Props) {
   const insets = useSafeAreaInsets();
   // The forest runs edge to edge and up under the status bar, out of the page padding.
   const bleed = { marginHorizontal: -18, marginTop: -(insets.top + 16) };
+  // The forest fills the whole first screen, like the yard did; the day's details are below it.
+  const forestHeight = Math.max(520, (viewHeight ?? 760) - insets.top);
+  const PANEL = 196;
   const today = (iso: string) => isSameLocalDay(new Date(iso), now);
 
   const mood = store.todayYardMood();
@@ -131,9 +136,22 @@ export default function TodayView({ onOpenFlow }: Props) {
     return (
       <View>
         <View style={bleed}>
-          <ForestScene done={done} goodThing={!!store.todayGoodThing()} closed dayKey={localDayKey(now)} now={now} topInset={insets.top} />
+          <ForestScene
+            done={done}
+            goodThing={!!store.todayGoodThing()}
+            closed
+            dayKey={localDayKey(now)}
+            now={now}
+            topInset={insets.top}
+            height={forestHeight}
+            bottomReserve={PANEL}
+          >
+            <View style={[styles.panel, { bottom: 12 }]}>
+              <Button label={COMPANION_COPY.reopen} variant="secondary" onPress={() => void store.setClosed(false).catch(() => {})} />
+            </View>
+          </ForestScene>
         </View>
-        <View style={[styles.hello, styles.overlap, { backgroundColor: night.bg }]}>
+        <View style={[styles.hello, { backgroundColor: night.bg }]}>
           <Icon name="moon-waning-crescent" size={34} color={night.ink} />
           <Text style={[styles.greeting, styles.closedTitle, { color: night.ink }]} accessibilityRole="header">
             {paceInfo?.pace === 'rest' ? COMPANION_COPY.closedTitleRest : COMPANION_COPY.closedTitle}
@@ -145,7 +163,6 @@ export default function TodayView({ onOpenFlow }: Props) {
           ))}
           <Text style={[styles.kind, { color: night.ink }]}>{COMPANION_COPY.closedLine}</Text>
         </View>
-        <Button label={COMPANION_COPY.reopen} variant="link" onPress={() => void store.setClosed(false).catch(() => {})} />
         <View style={styles.gap} />
         <Section icon="weather-windy" title={HOME_COPY.breathTitle}>
           <Text style={parts.body}>{HOME_COPY.breathBody}</Text>
@@ -167,29 +184,44 @@ export default function TodayView({ onOpenFlow }: Props) {
           dayKey={localDayKey(now)}
           now={now}
           topInset={insets.top}
+          height={forestHeight}
+          bottomReserve={PANEL}
           onOpen={(kind) => onOpenFlow(STEPS.indexOf(kind), true)}
-        />
-      </View>
-      <View style={[styles.hello, styles.overlap, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}>
-        <Text style={styles.greeting} accessibilityRole="header">
-          {HOME_COPY.greeting(part, name)}
-        </Text>
-        <Text style={styles.kind}>{kindLine}</Text>
-        {paceInfo ? (
-          <View style={styles.pace} accessible accessibilityLabel={`${COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}. ${COMPANION_COPY.paceWhy}`}>
-            <Text style={styles.paceLabel}>{COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}</Text>
-            <Text style={styles.paceWhy}>{COMPANION_COPY.paceWhy}</Text>
+        >
+          <View
+            pointerEvents="box-none"
+            style={[styles.greetingCard, { top: insets.top + 10 }, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}
+          >
+            <Text style={styles.greetingSmall} accessibilityRole="header">
+              {HOME_COPY.greeting(part, name)}
+            </Text>
+            <Text style={styles.kindSmall}>{kindLine}</Text>
+            {paceInfo ? (
+              <Text
+                style={styles.paceLabel}
+                accessibilityLabel={`${COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}. ${COMPANION_COPY.paceWhy}`}
+              >
+                {COMPANION_COPY.paceLabel(COMPANION_COPY.paceNames[paceInfo.pace])}
+              </Text>
+            ) : null}
           </View>
-        ) : null}
-        <CareDots done={done} />
-        <View style={styles.start}>
-          <Button
-            label={anything ? HOME_COPY.continueFlow : HOME_COPY.startFlow}
-            variant={anything ? 'secondary' : 'primary'}
-            onPress={() => onOpenFlow(0, false)}
-          />
-        </View>
+          <View style={[styles.panel, { bottom: 12 }]}>
+            <CareDots done={done} />
+            <View style={styles.start}>
+              <Button
+                label={anything ? HOME_COPY.continueFlow : HOME_COPY.startFlow}
+                variant={anything ? 'secondary' : 'primary'}
+                onPress={() => onOpenFlow(0, false)}
+              />
+            </View>
+            <View style={styles.scrollHint} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <Icon name="chevron-down" size={18} color={colors.textMuted} />
+              <Text style={styles.scrollHintText}>{HOME_COPY.forestScroll}</Text>
+            </View>
+          </View>
+        </ForestScene>
       </View>
+      <View style={styles.gap} />
 
       {store.error ? <Text style={styles.error}>{store.error}</Text> : null}
 
@@ -341,9 +373,14 @@ const styles = StyleSheet.create({
   hello: { backgroundColor: colors.warm, borderRadius: 32, padding: 22, marginBottom: 20 },
   greeting: { ...font.extrabold, fontSize: 30, lineHeight: 36, color: colors.textPrimary },
   kind: { ...font.medium, fontSize: 17, lineHeight: 25, color: colors.textSecondary, marginTop: 6 },
-  start: { marginTop: 18 },
-  // The card rises a little over the bottom of the forest.
-  overlap: { marginTop: -34 },
+  start: { marginTop: 12 },
+  // Laid over the forest: a small greeting at the top, the dots and button at the bottom.
+  greetingCard: { position: 'absolute', left: 14, right: 14, borderRadius: 24, paddingHorizontal: 18, paddingVertical: 14, backgroundColor: colors.warm },
+  greetingSmall: { ...font.extrabold, fontSize: 24, lineHeight: 30, color: colors.textPrimary },
+  kindSmall: { ...font.medium, fontSize: 15, lineHeight: 21, color: colors.textSecondary, marginTop: 2 },
+  panel: { position: 'absolute', left: 14, right: 14, backgroundColor: colors.surface, borderRadius: 28, paddingHorizontal: 16, paddingTop: 2, paddingBottom: 8, ...elevation.raised },
+  scrollHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 6 },
+  scrollHintText: { ...font.medium, fontSize: 13, color: colors.textMuted },
   pace: { marginTop: 10 },
   paceLabel: { ...font.bold, fontSize: 15, color: colors.primary },
   paceWhy: { ...font.regular, fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 1 },

@@ -1,4 +1,4 @@
-import { colors, flowThemes, gameInks, paceColors, stateColors } from '../src/constants/colors';
+import { colors, flowThemes, forestGameColors, gameInks, paceColors, stateColors } from '../src/constants/colors';
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5]
@@ -49,6 +49,17 @@ describe('Sage palette contrast', () => {
     expect(ratio(colors.textPrimary, bg)).toBeGreaterThanOrEqual(TEXT);
     expect(ratio(colors.textSecondary, bg)).toBeGreaterThanOrEqual(TEXT);
     expect(ratio(colors.primary, bg)).toBeGreaterThanOrEqual(TEXT); // the pace label
+  });
+
+  it('forest game text is readable', () => {
+    const g = forestGameColors;
+    expect(ratio(g.duskInk, g.dusk)).toBeGreaterThanOrEqual(TEXT);
+    expect(ratio(g.stoneInk, g.stone)).toBeGreaterThanOrEqual(TEXT);
+    // Fireflies and berries are things to see, not read: they need 3:1 against their ground.
+    expect(ratio(g.gold, g.dusk)).toBeGreaterThanOrEqual(UI);
+    expect(ratio(g.blue, g.dusk)).toBeGreaterThanOrEqual(UI);
+    expect(ratio(g.berry, g.moss)).toBeGreaterThanOrEqual(UI);
+    expect(ratio(g.leaf, colors.surface)).toBeGreaterThanOrEqual(UI);
   });
 
   it.each(Object.entries(gameInks))('game ink "%s" is readable on a card', (_name, ink) => {

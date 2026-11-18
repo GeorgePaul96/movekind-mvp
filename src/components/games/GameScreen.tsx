@@ -2,6 +2,14 @@ import React, { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
+import {
+  BerryPatchBoard,
+  CanopyLeafBoard,
+  CarvedStonesBoard,
+  DuskFirefliesBoard,
+  FireflyFlightBoard,
+  StreamBalanceBoard,
+} from '@/components/games/forestBoards';
 import { InkBoard, PairsBoard, PatternBoard, SequenceBoard, SwitchBoard, type BoardProps } from '@/components/games/boards';
 import { colors } from '@/constants/colors';
 import { PLAY_COPY } from '@/constants/copy';
@@ -16,6 +24,12 @@ const BOARDS: Record<GameId, React.ComponentType<BoardProps>> = {
   ink: InkBoard,
   switch: SwitchBoard,
   pairs: PairsBoard,
+  leaf: CanopyLeafBoard,
+  fireflies: DuskFirefliesBoard,
+  stones: CarvedStonesBoard,
+  berries: BerryPatchBoard,
+  balance: StreamBalanceBoard,
+  flight: FireflyFlightBoard,
 };
 
 /**

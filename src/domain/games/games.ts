@@ -154,7 +154,11 @@ export function pairsDeck(level: number, rng: Rng): PairIcon[] {
 
 // ---- The games, as the Play tab lists them ---------------------------------------
 
-export const GAME_IDS = ['pattern', 'sequence', 'ink', 'switch', 'pairs'] as const;
+export const GAME_IDS = [
+  'pattern', 'sequence', 'ink', 'switch', 'pairs',
+  // The forest games (forestGames.ts)
+  'leaf', 'fireflies', 'stones', 'berries', 'balance', 'flight',
+] as const;
 export type GameId = (typeof GAME_IDS)[number];
 
 /** Rounds in one set, and the highest level. A set always ends; there is no "game over". */
@@ -164,4 +168,10 @@ export const GAME_RULES: Record<GameId, { rounds: number; maxLevel: number }> = 
   ink: { rounds: 12, maxLevel: INK_MAX },
   switch: { rounds: 12, maxLevel: SWITCH_MAX },
   pairs: { rounds: 1, maxLevel: PAIRS_MAX },
+  leaf: { rounds: 10, maxLevel: 6 },
+  fireflies: { rounds: 10, maxLevel: 6 },
+  stones: { rounds: 10, maxLevel: 6 },
+  berries: { rounds: 10, maxLevel: 6 },
+  balance: { rounds: 10, maxLevel: 6 },
+  flight: { rounds: 8, maxLevel: 6 },
 };

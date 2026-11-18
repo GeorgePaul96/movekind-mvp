@@ -128,6 +128,11 @@ leaves-pointing-and-drifting game that copied a specific Lumosity game; it was r
 original rule-switching game. **Next:** sound on phones (needs a native audio module), and more
 games only if testers actually play these.
 
+**2026-11-18, forest home and eleven games.** The forest is now the whole first screen of Today, like
+the yard, with a spot to tap for each kind of care (faded until noted). Play gained six forest games
+from the owner's Gemini design (visual search, go / no-go, mental rotation, estimation, small sums,
+backward spatial span), rebuilt on the app's own game structure with two bugs fixed.
+
 **2026-11-18, forest round 2.** From the owner: the clearing was too small and did nothing. It is now
 edge to edge (sized by screen width, taller on bigger phones), built from the KayKit Forest Nature
 Pack (CC0) as well as Kenney's, and alive: swaying trees and grass, a visitor that hops and says

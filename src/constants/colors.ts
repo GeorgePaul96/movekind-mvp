@@ -86,6 +86,21 @@ export const gameInks = {
   purple: '#7A3FA8',
 } as const;
 
+/** The forest games. Text pairs are contrast-tested; the rest are decorative fills. */
+export const forestGameColors = {
+  dusk: '#22304A', // the night meadow (same as the sleep page)
+  duskInk: '#F2F4FA',
+  gold: '#F2C14E', // a firefly to tap
+  blue: '#7FB3D5', // a firefly to let pass
+  moss: '#DCEFE3',
+  berry: '#3E4FA3',
+  stone: '#5E6E78', // a carved stone
+  stoneInk: '#FFFFFF',
+  brook: '#A9D8EE',
+  leaf: '#2F7A52',
+  leafVein: '#DCEFE3',
+} as const;
+
 export type FlowThemeName = keyof typeof flowThemes;
 export type FlowTheme = (typeof flowThemes)[FlowThemeName];
 

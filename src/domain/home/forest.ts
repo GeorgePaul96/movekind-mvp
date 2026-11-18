@@ -33,6 +33,8 @@ export interface Placed {
   role: PlacedRole;
   /** The check-in page this piece opens, for pieces brought by care. */
   kind?: CareKind;
+  /** For care pieces: whether that kind has been noted today. Un-noted ones wait, faded, to be tapped. */
+  noted?: boolean;
   /** Whether it sways in the breeze (trees and grass). */
   sways: boolean;
   /** Mirror it left to right, so repeated trees do not look stamped. */
@@ -92,17 +94,16 @@ export function forestScene(i: {
     { key: 'rock-2', id: 'stack', x: 0.3, size: 0.1, depth: 0.25, role: 'ground', sways: false, flip: true },
   );
 
-  // What today's care brought into the clearing.
+  // A spot for each kind of care, like the yard's bowls: always there to tap. What has been
+  // noted today stands in full colour; the rest wait, faded, and fill in as they are noted.
   const care = (key: string, id: ForestSpriteId, x: number, size: number, depth: number, kind: CareKind) =>
-    out.push({ key, id, x, size, depth, role: 'care', kind, sways: false, flip: false });
-  if (i.done.sleep) care('tent', 'tent', 0.42, 0.28, 0.32, 'sleep');
-  if (i.done.water) care('pond', 'pond', 0.7, 0.13, 0.58, 'water');
-  if (i.done.food) care('mushrooms', 'mushrooms', 0.27, 0.13, 0.68, 'food');
-  if (i.done.mood) {
-    care('flowers-tall', 'flowersTall', 0.52, 0.15, 0.74, 'mood');
-    care('flowers', 'flowers', 0.08, 0.08, 0.86, 'mood');
-  }
-  if (i.done.movement) care('deer', 'deer', 0.83, 0.24, 0.76, 'movement');
+    out.push({ key, id, x, size, depth, role: 'care', kind, noted: i.done[kind], sways: false, flip: false });
+  care('tent', 'tent', 0.42, 0.28, 0.32, 'sleep');
+  care('pond', 'pond', 0.7, 0.13, 0.58, 'water');
+  care('mushrooms', 'mushrooms', 0.24, 0.13, 0.66, 'food');
+  care('flowers-tall', 'flowersTall', 0.5, 0.15, 0.74, 'mood');
+  if (i.done.mood) out.push({ key: 'flowers', id: 'flowers', x: 0.08, size: 0.08, depth: 0.86, role: 'ground', sways: false, flip: false });
+  care('deer', 'deer', 0.83, 0.24, 0.76, 'movement');
   if (i.goodThing) out.push({ key: 'lantern', id: 'lantern', x: 0.6, size: 0.3, depth: 0.42, role: 'good', sways: false, flip: false });
 
   const anything = Object.values(i.done).some(Boolean) || i.goodThing;
@@ -110,7 +111,7 @@ export function forestScene(i: {
     out.push({ key: 'bunny', id: 'bunny', x: 0.36, size: 0.2, depth: 0.92, role: 'night', sways: false, flip: false });
   } else if (anything) {
     const id = VISITORS[hash(i.dayKey) % VISITORS.length];
-    out.push({ key: 'visitor', id, x: 0.4, size: 0.19, depth: 0.9, role: 'visitor', sways: false, flip: hash(i.dayKey) % 2 === 1 });
+    out.push({ key: 'visitor', id, x: 0.36, size: 0.19, depth: 0.9, role: 'visitor', sways: false, flip: hash(i.dayKey) % 2 === 1 });
   }
 
   // Grass tufts along the front edge, again by width.

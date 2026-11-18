@@ -14,6 +14,12 @@ const GAME_ICONS: Record<GameId, IconName> = {
   ink: 'format-color-text',
   switch: 'shape-outline',
   pairs: 'cards-outline',
+  leaf: 'leaf',
+  fireflies: 'star-four-points-outline',
+  stones: 'rotate-3d-variant',
+  berries: 'dots-grid',
+  balance: 'scale-balance',
+  flight: 'lightbulb-group-outline',
 };
 
 /** The Play tab: a few small games, and a plain statement of what they are and are not. */

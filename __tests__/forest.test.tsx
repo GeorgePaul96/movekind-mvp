@@ -19,10 +19,19 @@ const scene = (over: Partial<Parameters<typeof forestScene>[0]> = {}) =>
 const isForest = (role: string) => role === 'backdrop' || role === 'frame' || role === 'ground';
 
 describe('the forest clearing', () => {
-  it('is a whole forest even on an empty day, with no visitor yet', () => {
+  it('is a whole forest even on an empty day, with every care spot waiting and no visitor yet', () => {
     const s = scene();
     expect(s.length).toBeGreaterThan(10);
-    expect(s.every((p) => isForest(p.role))).toBe(true);
+    const care = s.filter((p) => p.role === 'care');
+    expect(new Set(care.map((p) => p.kind))).toEqual(new Set(['sleep', 'water', 'food', 'mood', 'movement']));
+    expect(care.every((p) => p.noted === false)).toBe(true);
+    expect(s.filter((p) => p.role !== 'care').every((p) => isForest(p.role))).toBe(true);
+  });
+
+  it('a care spot fills in once that kind is noted', () => {
+    const pond = (done: typeof none) => scene({ done }).find((p) => p.kind === 'water')!;
+    expect(pond(none).noted).toBe(false);
+    expect(pond({ ...none, water: true }).noted).toBe(true);
   });
 
   it('fills a wider screen with more trees and grass instead of stretching them', () => {
@@ -93,6 +102,13 @@ describe('the forest on screen', () => {
     const label = screen.getByRole('image').props.accessibilityLabel as string;
     expect(label).toContain(HOME_COPY.forestThings.pond);
     expect(label).toContain(HOME_COPY.forestThings.tent);
+  });
+
+  it('a spot not yet noted is still there to tap, and says so', () => {
+    const onOpen = jest.fn();
+    render(<ForestScene done={none} goodThing={false} closed={false} dayKey="d" now={noon} onOpen={onOpen} />);
+    fireEvent.press(screen.getByLabelText(HOME_COPY.forestWaiting(HOME_COPY.forestSpot.sleep, HOME_COPY.care.sleep)));
+    expect(onOpen).toHaveBeenCalledWith('sleep');
   });
 
   it('tapping what care brought opens its page', () => {

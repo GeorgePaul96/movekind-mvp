@@ -146,7 +146,7 @@ describe('honesty', () => {
   });
 
   it('keeps no score and names every game', () => {
-    expect(GAME_IDS).toHaveLength(5);
+    expect(GAME_IDS).toHaveLength(11);
     for (const id of GAME_IDS) {
       expect(PLAY_COPY.games[id].name.length).toBeGreaterThan(2);
       expect(GAME_RULES[id].rounds).toBeGreaterThan(0);

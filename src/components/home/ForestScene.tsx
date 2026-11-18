@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions, type Lay
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { colors, gardenColors } from '@/constants/colors';
 import { FOREST_SKIES, FOREST_SPRITES } from '@/constants/forestArt';
+import { Icon } from '@/components/Icon';
 import { HOME_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { skyPhase } from '@/domain/garden/sky';
@@ -19,8 +20,14 @@ interface Props {
   now: Date;
   /** Extra height added on top, for the space under the status bar. */
   topInset?: number;
-  /** Tapping something care brought opens that check-in page. */
+  /** Tapping a care spot opens that check-in page. */
   onOpen?: (kind: CareKind) => void;
+  /** A fixed height (below the top inset), for the full-screen home. Otherwise sized from the width. */
+  height?: number;
+  /** Space kept clear at the bottom for the panel laid over the forest. */
+  bottomReserve?: number;
+  /** Drawn over the forest (the greeting and the panel). */
+  children?: React.ReactNode;
 }
 
 const ease = Easing.inOut(Easing.sin);
@@ -93,7 +100,7 @@ function Firefly({ x, y, seed, reduce }: { x: number; y: number; seed: number; r
  * motion). Tap a tree to rustle it, tap the visitor to say hello, and tap anything today's care
  * brought (the pond, the tent, the mushrooms, the flowers, the deer) to open that page.
  */
-export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0, onOpen }: Props) {
+export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0, onOpen, height: fixedHeight, bottomReserve = 6, children }: Props) {
   const reduce = useReduceMotion();
   const window = useWindowDimensions();
   const [width, setWidth] = useState(window.width);
@@ -104,10 +111,13 @@ export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0
     if (helloTimer.current) clearTimeout(helloTimer.current);
   }, []);
 
-  const height = forestHeight(width);
+  const height = fixedHeight ?? forestHeight(width);
   const total = height + topInset;
-  const groundTop = topInset + height * GROUND_LINE;
-  const groundDepth = total - groundTop - 6;
+  // Tall screens put the horizon a little higher, leaving a deep clearing to tap in.
+  const groundTop = topInset + height * (fixedHeight ? 0.4 : GROUND_LINE);
+  const groundDepth = total - groundTop - bottomReserve;
+  // Pictures are sized from this, so a tall screen gets a deeper clearing, not giant trees.
+  const unit = Math.min(height, width * 0.9);
   const sky = forestSky(skyPhase(now), closed);
   const night = sky === 'night';
   const placed = forestScene({ done, goodThing, closed, dayKey, width });
@@ -122,14 +132,16 @@ export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0
 
   const box = (p: Placed) => {
     const art = FOREST_SPRITES[p.id];
-    const h = p.size * height * (0.8 + 0.2 * p.depth);
+    const h = p.size * unit * (0.8 + 0.35 * p.depth);
     const w = (h * art.w) / art.h;
     const bottom = groundTop + p.depth * groundDepth;
     return { w, h, left: p.x * width - w / 2, top: bottom - h };
   };
 
   const summary = HOME_COPY.forestA11y(
-    placed.filter((p) => p.role === 'care' || p.role === 'good' || p.role === 'visitor' || p.role === 'night').map((p) => HOME_COPY.forestThings[p.id] ?? ''),
+    placed
+      .filter((p) => (p.role === 'care' && p.noted) || p.role === 'good' || p.role === 'visitor' || p.role === 'night')
+      .map((p) => HOME_COPY.forestThings[p.id] ?? ''),
   );
 
   return (
@@ -145,26 +157,49 @@ export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0
         const image = (
           <Image
             source={FOREST_SPRITES[p.id].src}
-            style={[styles.fill, p.flip && styles.flip, night && (p.role === 'backdrop' || p.role === 'frame') && styles.dim]}
+            style={[
+              styles.fill,
+              p.flip && styles.flip,
+              night && (p.role === 'backdrop' || p.role === 'frame') && styles.dim,
+              p.role === 'care' && !p.noted && styles.waiting,
+            ]}
             resizeMode="contain"
           />
         );
         const frame = { position: 'absolute' as const, left: b.left, top: b.top, width: b.w, height: b.h };
 
+        if (p.role === 'care' && !onOpen) {
+          // Without a way to open pages (a closed day), only what was noted is shown.
+          if (!p.noted) return null;
+          return (
+            <View key={p.key} style={frame} pointerEvents="none">
+              {image}
+            </View>
+          );
+        }
         if (p.kind && onOpen) {
           const kind = p.kind;
+          const label = p.noted
+            ? HOME_COPY.forestOpen(HOME_COPY.forestThings[p.id] || HOME_COPY.care[kind], HOME_COPY.care[kind])
+            : HOME_COPY.forestWaiting(HOME_COPY.forestSpot[kind], HOME_COPY.care[kind]);
           return (
             <Pressable
               key={p.key}
               style={frame}
               accessibilityRole="button"
-              accessibilityLabel={HOME_COPY.forestOpen(HOME_COPY.forestThings[p.id] || HOME_COPY.care[kind], HOME_COPY.care[kind])}
+              accessibilityLabel={label}
+              hitSlop={10}
               onPress={() => {
                 playSound('tap');
                 onOpen(kind);
               }}
             >
               {image}
+              {!p.noted ? (
+                <View style={styles.plus}>
+                  <Icon name="plus" size={16} color={colors.onPrimary} />
+                </View>
+              ) : null}
             </Pressable>
           );
         }
@@ -220,6 +255,8 @@ export function ForestScene({ done, goodThing, closed, dayKey, now, topInset = 0
           ))
         : null}
 
+      {children}
+
       {hello && visitor ? (
         <View pointerEvents="none" style={[styles.bubble, { left: Math.max(12, box(visitor).left - 30), top: box(visitor).top - 44 }]}>
           <Text style={styles.bubbleText} accessibilityLiveRegion="polite">
@@ -240,6 +277,19 @@ const styles = StyleSheet.create({
   rooted: { transformOrigin: 'bottom' },
   flip: { transform: [{ scaleX: -1 }] },
   dim: { opacity: 0.8 },
+  // A care spot not yet noted today: present and inviting, just quieter.
+  waiting: { opacity: 0.45 },
+  plus: {
+    position: 'absolute',
+    right: -4,
+    top: -4,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   firefly: { position: 'absolute', width: 6, height: 6, borderRadius: 3, backgroundColor: gardenColors.sunGlow },
   bubble: {
     position: 'absolute',

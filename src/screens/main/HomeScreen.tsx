@@ -29,6 +29,7 @@ export default function HomeScreen() {
   const [tab, setTab] = useState<HomeTab>('today');
   const [flow, setFlow] = useState<{ step: number; single: boolean } | null>(null);
   const [game, setGame] = useState<GameId | null>(null);
+  const [viewHeight, setViewHeight] = useState(0);
   const loaded = useGardenStore((s) => s.loaded);
   const load = useGardenStore((s) => s.load);
   const refreshSteps = useGardenStore((s) => s.refreshSteps);
@@ -66,6 +67,7 @@ export default function HomeScreen() {
         key={tab}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
         keyboardShouldPersistTaps="handled"
+        onLayout={(e) => setViewHeight(e.nativeEvent.layout.height)}
       >
         <View style={styles.column}>
           {tab !== 'today' ? (
@@ -73,7 +75,7 @@ export default function HomeScreen() {
               {HOME_COPY.tabs[tab]}
             </Text>
           ) : null}
-          {tab === 'today' ? <TodayView onOpenFlow={(step, single) => setFlow({ step, single })} /> : null}
+          {tab === 'today' ? <TodayView onOpenFlow={(step, single) => setFlow({ step, single })} viewHeight={viewHeight || undefined} /> : null}
           {tab === 'changes' ? (
             <>
               <MonthView />

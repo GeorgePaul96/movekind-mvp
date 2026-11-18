@@ -89,6 +89,18 @@ Verify changes with `npm run typecheck` and `npm test`.
     happened (`dayFacts`), with no calories and nothing about what was not done; "Reopen today" undoes it.
   Rejected on purpose from the brief this came from: a momentum score that falls on missed days,
   calorie targets or "under-fuelled" statuses, and movement suggestions.
+- **The forest is the whole home screen (2026-11-18).** On Today the forest fills the first screen
+  (`ForestScene` with `height` from the page's measured height), like the yard did: a small greeting
+  card floats at the top, the care dots and the check-in button sit in a panel at the bottom, and the
+  day's details (Your day so far, close the day, steps, one good thing, a slow breath) are below, a
+  scroll away. **Every kind of care has a spot** (tent, pond, mushroom patch, flower bed, deer): faded
+  with a small plus until noted today, then in full colour; all of them open their check-in page.
+- **Play now has eleven games.** The six forest games (Canopy leaf, Dusk fireflies, Carved stones,
+  Berry patch, Stream balance, Firefly flight) were designed with Gemini and rebuilt to fit: pure
+  rounds in [forestGames.ts](src/domain/games/forestGames.ts), boards in
+  `src/components/games/forestBoards.tsx`, the same staircase, set runner and honesty rule. Gemini's
+  own files were not used as-is: they replaced the app's colours, Play screen and set runner, and
+  Stream balance could show negative stones. Colours are `forestGameColors` (tested).
 - **Play: five small games, sold as nothing more (2026-11-11).** A fifth tab,
   [PlayView](src/screens/main/PlayView.tsx), lists Light the tiles (pattern recall), In order (order
   recall), Ink (name the ink, not the word), Shape or shade (the rule changes) and Pairs.
