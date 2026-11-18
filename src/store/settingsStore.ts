@@ -20,6 +20,8 @@ interface SettingsState {
   yardHome: boolean;
   /** The local day the paged check-in last opened by itself, so it never opens twice in a day. */
   flowSeenDay: string | null;
+  /** Soft taps and chimes. On by default; the phone's silent switch still silences them. */
+  soundsOn: boolean;
   hydrate: () => Promise<void>;
   setNotificationsEnabled: (v: boolean) => Promise<void>;
   setReduceMotion: (v: boolean) => Promise<void>;
@@ -30,6 +32,7 @@ interface SettingsState {
   setUnits: (v: Units) => Promise<void>;
   setYardHome: (v: boolean) => Promise<void>;
   markFlowSeen: (day: string) => Promise<void>;
+  setSoundsOn: (v: boolean) => Promise<void>;
   /** Back to first-launch defaults (used by "Erase all my data"). */
   reset: () => Promise<void>;
 }
@@ -46,6 +49,7 @@ interface PersistedSettings {
   units: Units;
   yardHome: boolean;
   flowSeenDay: string | null;
+  soundsOn: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
@@ -58,6 +62,7 @@ const DEFAULTS: PersistedSettings = {
   units: 'metric',
   yardHome: false,
   flowSeenDay: null,
+  soundsOn: true,
 };
 
 async function read(): Promise<PersistedSettings> {
@@ -76,6 +81,7 @@ async function read(): Promise<PersistedSettings> {
       units: v.units === 'imperial' ? 'imperial' : 'metric',
       yardHome: v.yardHome ?? DEFAULTS.yardHome,
       flowSeenDay: typeof v.flowSeenDay === 'string' ? v.flowSeenDay : null,
+      soundsOn: v.soundsOn ?? DEFAULTS.soundsOn,
     };
   } catch {
     return DEFAULTS;
@@ -100,6 +106,7 @@ const persisted = (s: PersistedSettings): PersistedSettings => ({
   units: s.units,
   yardHome: s.yardHome,
   flowSeenDay: s.flowSeenDay,
+  soundsOn: s.soundsOn,
 });
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -151,6 +158,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   markFlowSeen: async (day) => {
     set({ flowSeenDay: day });
+    await write(persisted(get()));
+  },
+
+  setSoundsOn: async (v) => {
+    set({ soundsOn: v });
     await write(persisted(get()));
   },
 

@@ -37,6 +37,29 @@ export const HOME_COPY = {
   },
   careA11y: (label: string, done: boolean) => (done ? `${label}: noted today` : `${label}: not noted yet`),
 
+  forestA11y: (things: string[]) => {
+    const list = things.filter(Boolean);
+    return list.length
+      ? `Your forest clearing today: trees, and ${list.join(', ')}.`
+      : 'Your forest clearing today: quiet trees, waiting for whatever the day brings.';
+  },
+  forestThings: {
+    tent: 'a tent for your rest',
+    pond: 'a little pond for your water',
+    mushrooms: 'mushrooms for your meals',
+    flowersTall: 'flowers for your mood',
+    flowers: '',
+    lantern: 'a lantern for your good thing',
+    deer: 'a deer for your movement',
+    bunny: 'a bunny curled up for the night',
+    fox: 'a fox visiting',
+    hedgehog: 'a hedgehog visiting',
+    chick: 'a chick visiting',
+    bee: 'a bee visiting',
+  } as Record<string, string>,
+  soundsTitle: 'Sounds',
+  soundsLabel: 'Soft sounds',
+  soundsBody: 'Small taps and chimes as you note things and play. Your phone\'s silent switch still silences them.',
   startFlow: "Start today's check-in",
   continueFlow: 'Go through today again',
   todayTitle: 'Your day so far',

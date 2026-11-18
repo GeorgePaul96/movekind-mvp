@@ -11,6 +11,9 @@ import { font } from '@/constants/typography';
 import { isSameLocalDay } from '@/domain/garden/days';
 import { careToday, partOfDay } from '@/domain/home/care';
 import { dayFacts, dayPace, hasAnything, isEvening } from '@/domain/home/companion';
+import { localDayKey } from '@/domain/garden/days';
+import { ForestScene } from '@/components/home/ForestScene';
+import { playSound } from '@/services/sound';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
 
@@ -123,6 +126,7 @@ export default function TodayView({ onOpenFlow }: Props) {
     return (
       <View>
         <View style={[styles.hello, { backgroundColor: night.bg }]}>
+          <ForestScene done={done} goodThing={!!store.todayGoodThing()} closed dayKey={localDayKey(now)} now={now} />
           <Icon name="moon-waning-crescent" size={34} color={night.ink} />
           <Text style={[styles.greeting, styles.closedTitle, { color: night.ink }]} accessibilityRole="header">
             {paceInfo?.pace === 'rest' ? COMPANION_COPY.closedTitleRest : COMPANION_COPY.closedTitle}
@@ -149,6 +153,7 @@ export default function TodayView({ onOpenFlow }: Props) {
   return (
     <View>
       <View style={[styles.hello, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}>
+        <ForestScene done={done} goodThing={!!todaysGood} closed={false} dayKey={localDayKey(now)} now={now} />
         <Text style={styles.greeting} accessibilityRole="header">
           {HOME_COPY.greeting(part, name)}
         </Text>
@@ -226,7 +231,10 @@ export default function TodayView({ onOpenFlow }: Props) {
         <Button
           label={COMPANION_COPY.closeButton}
           variant={isEvening(now) ? 'primary' : 'secondary'}
-          onPress={() => void store.setClosed(true).catch(() => {})}
+          onPress={() => {
+            playSound('close');
+            void store.setClosed(true).catch(() => {});
+          }}
         />
       </Section>
 
@@ -264,6 +272,7 @@ export default function TodayView({ onOpenFlow }: Props) {
               onPress={() =>
                 void store.saveGoodThing(good).then(
                   () => {
+                    if (good.trim()) playSound('pluck');
                     setGood('');
                     setEditingGood(false);
                   },

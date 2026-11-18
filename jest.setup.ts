@@ -49,3 +49,9 @@ jest.mock('@expo/vector-icons', () => {
   const Stub = ({ name }: { name: string }) => require('react').createElement(Text, { testID: `icon-${name}` }, '');
   return { MaterialCommunityIcons: Stub };
 });
+
+// Sounds need the native audio module, which Jest doesn't have: play silently.
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: () => ({ volume: 1, play: jest.fn(), seekTo: jest.fn(async () => {}), remove: jest.fn() }),
+  setAudioModeAsync: jest.fn(async () => {}),
+}));

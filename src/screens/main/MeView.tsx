@@ -31,6 +31,8 @@ export default function MeView() {
     else setReminderDenied(true);
   };
 
+  const soundsOn = useSettingsStore((s) => s.soundsOn);
+  const setSoundsOn = useSettingsStore((s) => s.setSoundsOn);
   const yardHome = useSettingsStore((s) => s.yardHome);
   const setYardHome = useSettingsStore((s) => s.setYardHome);
 
@@ -76,6 +78,22 @@ export default function MeView() {
           />
         </View>
         {reminderDenied && <Text style={[styles.body, { marginTop: 8 }]}>{ME_COPY.reminderDenied}</Text>}
+      </Card>
+
+      <Card style={styles.card}>
+        <View style={styles.switchRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{HOME_COPY.soundsTitle}</Text>
+            <Text style={styles.body}>{HOME_COPY.soundsBody}</Text>
+          </View>
+          <Switch
+            value={soundsOn}
+            onValueChange={(v) => void setSoundsOn(v)}
+            accessibilityLabel={HOME_COPY.soundsLabel}
+            trackColor={{ true: colors.primary, false: colors.border }}
+            thumbColor={colors.surface}
+          />
+        </View>
       </Card>
 
       <Card style={styles.card}>

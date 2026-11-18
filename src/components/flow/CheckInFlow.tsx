@@ -9,6 +9,9 @@ import { YARD_MOODS } from '@/domain/checkin/moods';
 import { isSameLocalDay } from '@/domain/garden/days';
 import { yesterdayRepeat } from '@/domain/home/companion';
 import { parseNumber } from '@/domain/body/units';
+import { Image } from 'react-native';
+import { FOREST_SPRITES, type SpriteId } from '@/constants/forestArt';
+import { playSound } from '@/services/sound';
 import { MEALS, tidySleepHours, useGardenStore } from '@/store/gardenStore';
 import type { Meal, PauseKind, SleepFeel, WorkoutType, YardMood } from '@/types';
 
@@ -47,6 +50,14 @@ const WORKOUT_ICONS: Record<WorkoutType, IconName> = {
 const WORKOUT_TYPES = Object.keys(WORKOUT_ICONS) as WorkoutType[];
 const FEELS: SleepFeel[] = ['restless', 'okay', 'deep'];
 const PAUSES: PauseKind[] = ['unwell', 'overwhelmed', 'travelling', 'resting'];
+/** Each page's piece of the forest: what it adds to the clearing on the homepage. */
+const PAGE_ART: Record<FlowThemeName, SpriteId> = {
+  mood: 'flowersTall',
+  water: 'pond',
+  food: 'mushrooms',
+  movement: 'deer',
+  sleep: 'tent',
+};
 /** Fixed spots for the sleep page's stars, as shares of the page. */
 const STARS: [number, number, number][] = [
   [0.08, 0.12, 3], [0.22, 0.05, 2], [0.4, 0.14, 2], [0.63, 0.07, 3], [0.9, 0.16, 2],
@@ -169,6 +180,8 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
   const [sleepTouched, setSleepTouched] = useState(false);
 
   const toggleMeal = (meal: Meal) => {
+    if (!eaten.includes(meal)) playSound('drop');
+    else playSound('tap');
     const next = eaten.includes(meal) ? eaten.filter((m) => m !== meal) : [...eaten, meal];
     store.setMealsToday(next).catch(() => {});
   };
@@ -192,10 +205,12 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
       }
       if (kind === 'movement' && type) {
         await store.addWorkout(type, minutes);
+        playSound('step');
         setType(null);
       }
       if (kind === 'sleep' && sleepTouched) {
         await store.logSleep(hours, feel);
+        playSound('rest');
         setSleepTouched(false);
       }
       return true;
@@ -250,6 +265,13 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.column}>
+          <Image
+            source={FOREST_SPRITES[PAGE_ART[kind]].src}
+            style={[styles.pageArt, { aspectRatio: FOREST_SPRITES[PAGE_ART[kind]].w / FOREST_SPRITES[PAGE_ART[kind]].h }]}
+            resizeMode="contain"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
           <Text style={[styles.title, { color: theme.ink }]} accessibilityRole="header">
             {copy.title}
           </Text>
@@ -265,7 +287,10 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                   label={YARD_COPY.moods[m].label}
                   detail={YARD_COPY.moods[m].flavor}
                   selected={mood === m}
-                  onPress={() => void store.logYardMood(m).catch(() => {})}
+                  onPress={() => {
+                    playSound('select');
+                    void store.logYardMood(m).catch(() => {});
+                  }}
                 />
               ))}
               <Text style={[styles.panelTitle, { color: theme.ink, marginTop: 10 }]}>{COMPANION_COPY.pauseTitle}</Text>
@@ -303,7 +328,15 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                   disabled={glasses === 0}
                   onPress={() => void store.removeLastGlassToday().catch(() => {})}
                 />
-                <Round theme={theme} icon="plus" label={FLOW_COPY.water.add} onPress={() => void store.addGlass().catch(() => {})} />
+                <Round
+                  theme={theme}
+                  icon="plus"
+                  label={FLOW_COPY.water.add}
+                  onPress={() => {
+                    playSound('water');
+                    void store.addGlass().catch(() => {});
+                  }}
+                />
               </View>
             </View>
           ) : null}
@@ -421,7 +454,10 @@ export function CheckInFlow({ initialStep = 0, single = false, onClose }: Props)
                   <Solid
                     theme={theme}
                     label={FLOW_COPY.movement.add}
-                    onPress={() => void store.addWorkout(type, minutes).then(() => setType(null), () => {})}
+                    onPress={() => {
+                      playSound('step');
+                      void store.addWorkout(type, minutes).then(() => setType(null), () => {});
+                    }}
                   />
                 </>
               ) : null}
@@ -516,6 +552,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 24 },
   column: { width: '100%', maxWidth: 520, alignSelf: 'center' },
   title: { ...font.extrabold, fontSize: 34, lineHeight: 40 },
+  pageArt: { height: 76, alignSelf: 'flex-start', marginBottom: 10 },
   sub: { ...font.medium, fontSize: 17, lineHeight: 25, marginTop: 8, opacity: 0.9 },
   block: { marginTop: 22, gap: 10 },
   centerBlock: { alignItems: 'center' },

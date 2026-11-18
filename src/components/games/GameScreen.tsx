@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { PLAY_COPY } from '@/constants/copy';
 import { font } from '@/constants/typography';
 import { GAME_RULES, START, stairStep, type GameId, type Stair, type SwitchRule } from '@/domain/games/games';
+import { playSound } from '@/services/sound';
 import { telemetry } from '@/services/telemetry';
 
 const BOARDS: Record<GameId, React.ComponentType<BoardProps>> = {
@@ -37,6 +38,7 @@ export function GameScreen({ id, onClose }: { id: GameId; onClose: () => void })
     setStair((s) => (id === 'pairs' ? { level: Math.min(rules.maxLevel, s.level + 1), streak: 0 } : stairStep(s, correct, rules.maxLevel)));
     if (round >= rules.rounds) {
       setFinished(true);
+      playSound('set');
       telemetry.capture('played', { game: id });
     } else {
       setRound(round + 1);

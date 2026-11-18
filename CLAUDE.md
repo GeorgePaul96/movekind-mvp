@@ -102,6 +102,20 @@ Verify changes with `npm run typecheck` and `npm test`.
   over exactly those claims); the tab shows a plain "Just games" note and a test checks the wording.
   Sounds come from `services/chime.ts` (Web Audio, so web only; silent on phones for now). The games
   are original takes on public, classic tasks: do not copy another product's names, art or layouts.
+- **The forest and sounds (2026-11-18).** Art and sounds come from Kenney's CC0 packs (credit
+  "Kenney, kenney.nl", not required). The packs ship 3D models and OGG audio, so they were converted
+  once: the models rendered to transparent, tightly cropped PNGs in `assets/forest/` (sprite sizes in
+  [forestArt.ts](src/constants/forestArt.ts)), three skies cropped from Kenney's skyboxes, and the
+  sounds turned into WAV in `assets/sounds/` (iPhones cannot play OGG), plus a pentatonic scale and a
+  soft miss tone made for the app. **To add more art, render it the same way rather than using the
+  packs' 64px previews, which are too small.** [ForestScene](src/components/home/ForestScene.tsx) sits
+  at the top of Today's greeting card; [forest.ts](src/domain/home/forest.ts) decides, purely, what
+  stands in the clearing: the trees always, then a tent (sleep), a pond (water), mushrooms (food),
+  flowers (mood), a lantern (one good thing), a deer (movement), a different visitor each day once
+  anything is noted, and a bunny on a closed night. It only ever gains things. Each check-in page shows
+  its own piece. Sounds play through [sound.ts](src/services/sound.ts) (`expo-audio`, half volume,
+  silent when the phone is on silent, never interrupting music) and are switched off with "Sounds" in
+  You (`settingsStore.soundsOn`, on by default). `chime.ts` now uses it, so game notes play on phones too.
 - **Calories are optional and never judged.** `db.calories` holds one number per day, typed on the
   food page only if the person wants to (`setCaloriesToday`; empty clears it). The app never comments
   on it, sets no target, and sends no value to telemetry. With 3 or more days noted, the opt-in Body

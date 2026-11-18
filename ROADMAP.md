@@ -128,6 +128,13 @@ leaves-pointing-and-drifting game that copied a specific Lumosity game; it was r
 original rule-switching game. **Next:** sound on phones (needs a native audio module), and more
 games only if testers actually play these.
 
+**2026-11-18, the forest.** The owner's Kenney asset packs (all CC0) became a small forest clearing at
+the top of Today that fills in as the day is cared for, a matching picture on each check-in page, and
+soft sounds (taps, a water glass, footsteps on grass, a book closing at night, game notes) with a
+"Sounds" switch in You. Added `expo-audio`. A design brief for Gemini to build six more original,
+honestly described games is in `docs/gemini-mind-games-prompt.md`. **Next:** try the sounds on a real
+phone (only heard in the web preview so far); more animals and seasons from the same packs.
+
 ### Body and Insights (2026-11-10, owner testing)
 
 The owner asked for a "where is this pace taking me" view like a body composition machine's printout,
