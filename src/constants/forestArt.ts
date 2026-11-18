@@ -1,22 +1,30 @@
 import type { ImageSourcePropType } from 'react-native';
 
 /**
- * The forest's pictures: Kenney's CC0 low-poly models (Mini Forest, Fantasy Town, Platformer
- * and Cube Pets kits), rendered once to transparent PNGs and cropped so each stands on its
- * bottom edge, plus three skies cropped from Kenney's skyboxes. Credit: Kenney (kenney.nl).
- * `w` and `h` are the PNG's pixel size, so the scene can keep each picture's shape.
+ * The forest's pictures, all CC0:
+ * - Trees, bushes, grass and rocks: KayKit Forest Nature Pack by Kay Lousberg (kaylousberg.com).
+ * - Tent, pond, flowers, mushrooms, lantern, rocks and the animals: Kenney's Mini Forest, Fantasy
+ *   Town, Platformer and Cube Pets kits (kenney.nl).
+ * - Skies: cropped from Kenney's skyboxes.
+ * The 3D models were rendered once to transparent PNGs, cropped so each stands on its bottom
+ * edge. `w` and `h` are the PNG's pixel size, so the scene keeps each picture's shape.
  */
 export const FOREST_SPRITES = {
-  tree: { src: require('../../assets/forest/tree.png'), w: 224, h: 408 },
-  treeTall: { src: require('../../assets/forest/tree-tall.png'), w: 168, h: 401 },
-  treeRound: { src: require('../../assets/forest/tree-round.png'), w: 158, h: 403 },
-  treeCrooked: { src: require('../../assets/forest/tree-crooked.png'), w: 180, h: 400 },
-  pine: { src: require('../../assets/forest/pine.png'), w: 204, h: 410 },
-  plant: { src: require('../../assets/forest/plant.png'), w: 315, h: 187 },
+  oak: { src: require('../../assets/forest/kay-tree-1.png'), w: 309, h: 398 },
+  blockTree: { src: require('../../assets/forest/kay-tree-2.png'), w: 266, h: 414 },
+  pine: { src: require('../../assets/forest/kay-round.png'), w: 206, h: 387 },
+  tallPine: { src: require('../../assets/forest/kay-round-c.png'), w: 146, h: 387 },
+  umbrella: { src: require('../../assets/forest/kay-pine.png'), w: 324, h: 363 },
+  bush: { src: require('../../assets/forest/kay-bush-1.png'), w: 310, h: 307 },
+  bushTall: { src: require('../../assets/forest/kay-bush-2.png'), w: 374, h: 400 },
+  bushLow: { src: require('../../assets/forest/kay-bush-3.png'), w: 324, h: 195 },
+  grass: { src: require('../../assets/forest/kay-grass-1.png'), w: 342, h: 294 },
+  grassTall: { src: require('../../assets/forest/kay-grass-2.png'), w: 343, h: 342 },
+  grassBlades: { src: require('../../assets/forest/kay-grass-3.png'), w: 324, h: 393 },
+  boulder: { src: require('../../assets/forest/kay-rock-1.png'), w: 327, h: 390 },
+  stack: { src: require('../../assets/forest/kay-rock-3.png'), w: 362, h: 368 },
   rocks: { src: require('../../assets/forest/rocks.png'), w: 380, h: 289 },
-  stones: { src: require('../../assets/forest/stones.png'), w: 345, h: 217 },
   tent: { src: require('../../assets/forest/tent.png'), w: 410, h: 354 },
-  fence: { src: require('../../assets/forest/fence.png'), w: 404, h: 237 },
   lantern: { src: require('../../assets/forest/lantern.png'), w: 74, h: 405 },
   pond: { src: require('../../assets/forest/fountain.png'), w: 306, h: 163 },
   flowers: { src: require('../../assets/forest/flowers.png'), w: 317, h: 153 },

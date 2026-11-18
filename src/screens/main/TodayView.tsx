@@ -13,6 +13,8 @@ import { careToday, partOfDay } from '@/domain/home/care';
 import { dayFacts, dayPace, hasAnything, isEvening } from '@/domain/home/companion';
 import { localDayKey } from '@/domain/garden/days';
 import { ForestScene } from '@/components/home/ForestScene';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FLOW_STEPS as STEPS } from '@/components/flow/CheckInFlow';
 import { playSound } from '@/services/sound';
 import { useGardenStore } from '@/store/gardenStore';
 import { useProfileStore } from '@/store/profileStore';
@@ -46,6 +48,9 @@ export default function TodayView({ onOpenFlow }: Props) {
   const store = useGardenStore();
   const { checkIns, water, workouts, meals, sleep, goodThings, stepsToday, stepsStatus } = store;
   const now = new Date();
+  const insets = useSafeAreaInsets();
+  // The forest runs edge to edge and up under the status bar, out of the page padding.
+  const bleed = { marginHorizontal: -18, marginTop: -(insets.top + 16) };
   const today = (iso: string) => isSameLocalDay(new Date(iso), now);
 
   const mood = store.todayYardMood();
@@ -125,8 +130,10 @@ export default function TodayView({ onOpenFlow }: Props) {
     const night = flowThemes.sleep;
     return (
       <View>
-        <View style={[styles.hello, { backgroundColor: night.bg }]}>
-          <ForestScene done={done} goodThing={!!store.todayGoodThing()} closed dayKey={localDayKey(now)} now={now} />
+        <View style={bleed}>
+          <ForestScene done={done} goodThing={!!store.todayGoodThing()} closed dayKey={localDayKey(now)} now={now} topInset={insets.top} />
+        </View>
+        <View style={[styles.hello, styles.overlap, { backgroundColor: night.bg }]}>
           <Icon name="moon-waning-crescent" size={34} color={night.ink} />
           <Text style={[styles.greeting, styles.closedTitle, { color: night.ink }]} accessibilityRole="header">
             {paceInfo?.pace === 'rest' ? COMPANION_COPY.closedTitleRest : COMPANION_COPY.closedTitle}
@@ -152,8 +159,18 @@ export default function TodayView({ onOpenFlow }: Props) {
 
   return (
     <View>
-      <View style={[styles.hello, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}>
-        <ForestScene done={done} goodThing={!!todaysGood} closed={false} dayKey={localDayKey(now)} now={now} />
+      <View style={bleed}>
+        <ForestScene
+          done={done}
+          goodThing={!!todaysGood}
+          closed={false}
+          dayKey={localDayKey(now)}
+          now={now}
+          topInset={insets.top}
+          onOpen={(kind) => onOpenFlow(STEPS.indexOf(kind), true)}
+        />
+      </View>
+      <View style={[styles.hello, styles.overlap, paceInfo ? { backgroundColor: paceColors[paceInfo.pace] } : null]}>
         <Text style={styles.greeting} accessibilityRole="header">
           {HOME_COPY.greeting(part, name)}
         </Text>
@@ -325,6 +342,8 @@ const styles = StyleSheet.create({
   greeting: { ...font.extrabold, fontSize: 30, lineHeight: 36, color: colors.textPrimary },
   kind: { ...font.medium, fontSize: 17, lineHeight: 25, color: colors.textSecondary, marginTop: 6 },
   start: { marginTop: 18 },
+  // The card rises a little over the bottom of the forest.
+  overlap: { marginTop: -34 },
   pace: { marginTop: 10 },
   paceLabel: { ...font.bold, fontSize: 15, color: colors.primary },
   paceWhy: { ...font.regular, fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 1 },

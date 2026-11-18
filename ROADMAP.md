@@ -128,6 +128,11 @@ leaves-pointing-and-drifting game that copied a specific Lumosity game; it was r
 original rule-switching game. **Next:** sound on phones (needs a native audio module), and more
 games only if testers actually play these.
 
+**2026-11-18, forest round 2.** From the owner: the clearing was too small and did nothing. It is now
+edge to edge (sized by screen width, taller on bigger phones), built from the KayKit Forest Nature
+Pack (CC0) as well as Kenney's, and alive: swaying trees and grass, a visitor that hops and says
+hello, fireflies at night, and taps that open each check-in page.
+
 **2026-11-18, the forest.** The owner's Kenney asset packs (all CC0) became a small forest clearing at
 the top of Today that fills in as the day is cared for, a matching picture on each check-in page, and
 soft sounds (taps, a water glass, footsteps on grass, a book closing at night, game notes) with a

@@ -102,8 +102,15 @@ Verify changes with `npm run typecheck` and `npm test`.
   over exactly those claims); the tab shows a plain "Just games" note and a test checks the wording.
   Sounds come from `services/chime.ts` (Web Audio, so web only; silent on phones for now). The games
   are original takes on public, classic tasks: do not copy another product's names, art or layouts.
-- **The forest and sounds (2026-11-18).** Art and sounds come from Kenney's CC0 packs (credit
-  "Kenney, kenney.nl", not required). The packs ship 3D models and OGG audio, so they were converted
+- **The forest and sounds (2026-11-18).** Trees, bushes, grass and rocks come from the KayKit Forest
+  Nature Pack (Kay Lousberg, CC0); the tent, pond, flowers, mushrooms, lantern, animals, skies and
+  sounds from Kenney's CC0 packs (credit "Kenney, kenney.nl" and "Kay Lousberg", not required). The
+  KayKit pack's bare trees are left out on purpose: nothing in the app looks dead. **The forest is
+  edge to edge and sized to the screen** (`forestHeight(width)`, more trees on wider screens, never
+  stretched) and runs up under the status bar on Today, with the greeting card rising over its foot.
+  **It is alive**: trees and grass sway from their roots, the visitor hops, fireflies glow at night
+  (all still under reduced motion); tap a tree to rustle it, the visitor to say hello, and anything
+  care brought to open that page. The packs ship 3D models and OGG audio, so they were converted
   once: the models rendered to transparent, tightly cropped PNGs in `assets/forest/` (sprite sizes in
   [forestArt.ts](src/constants/forestArt.ts)), three skies cropped from Kenney's skyboxes, and the
   sounds turned into WAV in `assets/sounds/` (iPhones cannot play OGG), plus a pentatonic scale and a
